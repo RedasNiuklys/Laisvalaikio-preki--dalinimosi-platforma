@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { User } from '../types/User';
-import Constants from 'expo-constants';
+import { USER_ENDPOINT } from '../utils/envConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-const apiUrl = Constants.expoConfig?.extra?.API_apiUrl + '/user';
+const apiUrl = USER_ENDPOINT;
 
 export const getUsers = async () => {
   try {
@@ -51,6 +51,21 @@ export const deleteUser = async (userId: number) => {
     return response.data;  // Returns a success message
   } catch (error) {
     console.error(`Error deleting user with ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+export const getProfile = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${apiUrl}/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching profile:', error);
     throw error;
   }
 };

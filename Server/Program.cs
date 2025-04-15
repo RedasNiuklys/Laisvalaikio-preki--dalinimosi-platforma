@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Server.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +21,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -38,55 +40,78 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 })
-.AddOpenIdConnect("Google", "Google", options =>
+.AddOpenIdConnect("Google", options =>
 {
     options.Authority = "https://accounts.google.com";
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     options.ResponseType = "code";
-    options.CallbackPath = "/signin-google";
+        options.CallbackPath = "/api/login/google-callback";
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
-        options.TokenValidationParameters = new TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         NameClaimType = "name",
         RoleClaimType = "role"
     };
-
     options.SaveTokens = true;
-})
-    .AddOpenIdConnect("Facebook", options =>
+    options.Events = new OpenIdConnectEvents
     {
-        options.Authority = "https://www.facebook.com/v10.0/dialog/oauth"; // Facebook's OIDC endpoint
-        options.ClientId = builder.Configuration["Authentication:Facebook:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Facebook:ClientSecret"];
-        options.CallbackPath = "/signin-facebook";
-        options.ResponseType = "code";
-        options.Scope.Add("openid");
-        options.Scope.Add("email");
-        options.Scope.Add("public_profile");
-            options.TokenValidationParameters = new TokenValidationParameters
-    {
-        NameClaimType = "name",
-        RoleClaimType = "role"
+        OnRedirectToIdentityProvider = context =>
+        {
+                context.ProtocolMessage.RedirectUri = $"{builder.Configuration["Client:Url"]}/api/login/google-callback";
+            return Task.CompletedTask;
+        }
     };
-
-        options.SaveTokens = true;
-    });
-
+})
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration["Authentication:Facebook:ClientId"];
+    options.AppSecret = builder.Configuration["Authentication:Facebook:ClientSecret"];
+    options.CallbackPath = "/signin-facebook";
+    options.SaveTokens = true;
+    options.Fields.Add("name");
+    options.Fields.Add("email");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add CORS configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins(
+                builder.Configuration["Client:Url"],
+                "https://ddde-193-219-171-2.ngrok-free.app"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+// Use CORS before authentication and authorization
+app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add this after app.Build()
+using (var scope = app.Services.CreateScope())
+{
+    await SeedAdminUser.Initialize(scope.ServiceProvider);
+}
+
 app.Run();

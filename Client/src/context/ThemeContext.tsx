@@ -1,14 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { themes } from "../theme/GlobalTheme";
-
-
-
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { lightTheme, darkTheme } from "../theme/PaperTheme";
+import { MD3Theme } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 🌍 Define ThemeContext type
 interface ThemeContextType {
-  theme: ThemeType;
-  updateTheme: (themeKey: string | null) => void;
-  themes: Record<string, ThemeType>;
+  theme: MD3Theme;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
 // Create context with proper types
@@ -16,27 +21,27 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // 🎯 Provider component
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeType>(themes.Light);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   useEffect(() => {
-  //   AsyncStorage.getItem("theme").then((storedTheme) => {
-  //     if (storedTheme && themes[storedTheme]) {
-  //       setTheme(themes[storedTheme]);
-  //     }
-  //   });
-  },
-   []);
+    // Load saved theme preference
+    AsyncStorage.getItem("isDarkMode").then((value) => {
+      if (value !== null) {
+        setIsDarkMode(value === "true");
+      }
+    });
+  }, []);
 
-  const updateTheme = (themeKey: string | null) => {
-    let key = themeKey ? themeKey : 'light'
-    if (themes[key]) {
-      setTheme(themes[key]);
-      // AsyncStorage.setItem("theme", themeKey); // 
-    }
+  const toggleTheme = () => {
+    const newValue = !isDarkMode;
+    setIsDarkMode(newValue);
+    AsyncStorage.setItem("isDarkMode", newValue.toString());
   };
 
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
   return (
-    <ThemeContext.Provider value={{ theme, updateTheme, themes }}>
+    <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

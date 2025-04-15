@@ -1,54 +1,97 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Button, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { useTheme } from "../context/ThemeContext";
-import {getUserById} from "../api/users"
-import {User} from "../types/User"
-
+import React, { useState } from "react";
+import { View } from "react-native";
+import {
+  Text,
+  Button,
+  ActivityIndicator,
+  useTheme as usePaperTheme,
+} from "react-native-paper";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
+import { getProfile } from "../api/users";
+import { User } from "../types/User";
+import { styles } from "../styles/ProfileScreen.styles";
 
 const ProfileScreen = () => {
-  const { theme, updateTheme } = useTheme();
+  const theme = usePaperTheme();
   const navigation = useNavigation();
-  
+  const { logout } = useAuth();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await getUserById(1); // Adjust API endpoint
-        setUser(response);
-        // updateTheme(response.data.theme); // Automatically set theme from user data
-      } catch (err) {
-        setError("Failed to load user data");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUser = async () => {
+    try {
+      setLoading(true);
+      const response = await getProfile(); // Uses current user ID from auth token
+      setUser(response);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      setError("Failed to load profile data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchUser();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUser();
+      return () => {};
+    }, [])
+  );
 
-  if (loading) return <ActivityIndicator size="large" color={theme.ctaButtonColor} />;
-  if (error) return <Text style={{ color: theme.errorColor }}>{error}</Text>;
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (loading)
+    return <ActivityIndicator size="large" color={theme.colors.primary} />;
+  if (error) return <Text style={{ color: theme.colors.error }}>{error}</Text>;
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.backgroundColor }}>
-      <Text style={{ fontSize: 24, color: theme.primaryTextColor }}>Your Profile</Text>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Text
+        variant="headlineMedium"
+        style={{ color: theme.colors.onBackground }}
+      >
+        Your Profile
+      </Text>
 
       {user ? (
         <>
-          <Text style={{ color: theme.primaryTextColor, marginTop: 10 }}>Name: {user.name}</Text>
-          <Text style={{ color: theme.primaryTextColor, marginTop: 5 }}>Age: {user.age}</Text>
-          <Text style={{ color: theme.primaryTextColor, marginTop: 5 }}>Email: {user.email}</Text>
-          <Text style={{ color: theme.primaryTextColor, marginTop: 5 }}>Theme: {user.theme}</Text>
+          <Text style={[styles.text, { color: theme.colors.onBackground }]}>
+            Name: {user.name}
+          </Text>
+          <Text style={[styles.text, { color: theme.colors.onBackground }]}>
+            Age: {user.age}
+          </Text>
+          <Text style={[styles.text, { color: theme.colors.onBackground }]}>
+            Email: {user.email}
+          </Text>
+          <Text style={[styles.text, { color: theme.colors.onBackground }]}>
+            Theme: {user.theme}
+          </Text>
 
-          {/* Button to Edit Profile */}
-          {/* <Button title="Edit Profile" onPress={() => navigation.navigate("UserFormScreen", { userId: user.id })} /> */}
+          <Button
+            mode="contained"
+            onPress={handleLogout}
+            style={styles.logoutButton}
+            icon="logout"
+          >
+            Logout
+          </Button>
         </>
       ) : (
-        <Text style={{ color: theme.errorColor }}>No user data available</Text>
+        <Text style={{ color: theme.colors.error }}>
+          No user data available
+        </Text>
       )}
     </View>
   );

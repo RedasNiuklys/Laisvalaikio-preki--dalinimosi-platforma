@@ -1,44 +1,50 @@
-import React, { useState } from "react";
-import { useTheme } from "../../src/context/ThemeContext";
-import { View, Text, Button, Switch } from "react-native";
-import DropDownPicker from 'react-native-dropdown-picker';
-
+import { View, StyleSheet } from "react-native";
+import { Text, Switch, useTheme } from "react-native-paper";
+import { useTheme as useAppTheme } from "@/src/context/ThemeContext";
 
 export default function SettingsScreen() {
-  const { theme, updateTheme, themes } = useTheme();
-  const isTwoThemes = Object.keys(themes).length == 2;
-  const themeKeys = Object.keys(themes);
-
-  const [open, setOpen] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(theme.name); // ✅ Store the selected theme
+  const { isDarkMode, toggleTheme } = useAppTheme();
+  const theme = useTheme();
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.backgroundColor }}>
-      <Text style={{ color: theme.primaryTextColor, fontSize: 24 }}>Settings</Text>
-      <Text style={{ color: theme.primaryTextColor, marginTop: 20 }}>Select Theme</Text>
-{isTwoThemes ?          
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ color: theme.primaryTextColor }}>Toggle Light/Dark</Text>
-          
-          <Switch
-            value={theme.name === 'Dark'}
-            onValueChange={() => updateTheme(theme.name === 'Dark' ? 'Light' : 'Dark')}
-            thumbColor={theme.ctaButtonColor}
-          />
-        </View>:        
-        <DropDownPicker
-          open={open}
-          value={selectedTheme}
-          closeAfterSelecting={true}
-          items={themeKeys.map((key) => ({ label: themes[key].name, value: key }))}
-          setOpen={setOpen}
-          setValue={setSelectedTheme}
-          onChangeValue={(value :string | null) => {
-            console.log("Changing theme to:", value); // ✅ Debugging log
-            updateTheme(value); // ✅ Pass the new value to updateTheme
-          }}
-        />
-  }
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Text
+        variant="headlineMedium"
+        style={{ color: theme.colors.onBackground }}
+      >
+        Settings
+      </Text>
+      <Text
+        variant="bodyLarge"
+        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
+      >
+        Theme Settings
+      </Text>
+
+      <View style={styles.settingRow}>
+        <Text style={{ color: theme.colors.onBackground, marginRight: 10 }}>
+          Dark Mode
+        </Text>
+        <Switch value={isDarkMode} onValueChange={toggleTheme} />
+      </View>
     </View>
   );
-};
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  sectionTitle: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+});
