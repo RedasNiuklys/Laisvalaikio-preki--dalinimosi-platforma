@@ -1,7 +1,8 @@
 public class RegisterDto
 {
-    public string Name { get; set; }
-    public string Theme { get; set; }
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Name { get; set; } = null;
+    public string? UserName { get; set; } = null;
+    public string? Theme { get; set; } = "Light";
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
