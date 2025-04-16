@@ -26,7 +26,7 @@ const OAuthWebView: React.FC<OAuthWebViewProps> = ({
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         )}
-        style={styles.webview}
+        style={[styles.webview, { pointerEvents: "auto" }]}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         incognito={true}

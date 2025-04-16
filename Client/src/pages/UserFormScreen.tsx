@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "react-native-paper";
 import {
   createUser,
   deleteUser,
@@ -13,7 +13,7 @@ import { User } from "../types/User";
 import axios from "axios";
 
 const UserFormScreen = () => {
-  const { theme } = useTheme();
+  const theme = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
 
@@ -58,12 +58,12 @@ const UserFormScreen = () => {
 
   return (
     <View
-      style={{ flex: 1, padding: 20, backgroundColor: theme.backgroundColor }}
+      style={{ flex: 1, padding: 20, backgroundColor: theme.colors.background }}
     >
       <Text
         style={{
           fontSize: 24,
-          color: theme.primaryTextColor,
+          color: theme.colors.onSurface,
           marginBottom: 10,
         }}
       >
@@ -75,7 +75,7 @@ const UserFormScreen = () => {
           borderWidth: 1,
           padding: 10,
           marginBottom: 10,
-          color: theme.primaryTextColor,
+          color: theme.colors.onSurface,
         }}
         placeholder="Name"
         value={user.name}
@@ -87,7 +87,7 @@ const UserFormScreen = () => {
           borderWidth: 1,
           padding: 10,
           marginBottom: 10,
-          color: theme.primaryTextColor,
+          color: theme.colors.onSurface,
         }}
         placeholder="Age"
         keyboardType="numeric"
@@ -100,14 +100,12 @@ const UserFormScreen = () => {
           borderWidth: 1,
           padding: 10,
           marginBottom: 10,
-          color: theme.primaryTextColor,
+          color: theme.colors.onSurface,
         }}
         placeholder="Email"
         value={user.email}
         onChangeText={(text) => handleChange("email", text)}
       />
-
-      {/* <Button title={existingUser ? "Update User" : "Create User"} onPress={handleSubmit} /> */}
     </View>
   );
 };

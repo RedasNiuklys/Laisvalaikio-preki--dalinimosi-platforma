@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 
-public class ApplicationUser : IdentityUser
+namespace Server.Models
 {
-    public string Name {get; set; }
-    public string Theme { get; set; } = "Light";
+    public class ApplicationUser : IdentityUser
+    {
+        public string Name {get; set; }
+        public string Theme { get; set; } = "Light";
+        public string? Avatar { get; set; }
+    }
 }

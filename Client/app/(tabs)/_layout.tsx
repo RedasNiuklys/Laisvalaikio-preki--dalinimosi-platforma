@@ -18,10 +18,7 @@ export default function TabLayout() {
   const { theme: appTheme } = useAppTheme(); // Get the theme from context
   const theme = usePaperTheme(); // Get the Paper theme
   const { isAuthenticated } = useAuth(); // Get auth status from context
-  console.log(isAuthenticated);
-  // const isAuthenticated = false;
   if (!isAuthenticated) {
-    // You can return a login/register flow if the user is not authenticated
     return (
       <NavigationIndependentTree>
         <NavigationContainer>
@@ -46,12 +43,40 @@ export default function TabLayout() {
             if (route.name === "index") iconName = "home";
             else if (route.name === "profile") iconName = "person";
             else if (route.name === "settings") iconName = "settings";
+            else if (route.name === "locations") iconName = "map";
             return (
               <Ionicons name={iconName as any} size={size} color={color} />
             );
           },
         })}
-      />
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+          }}
+        />
+        <Tabs.Screen
+          name="locations"
+          options={{
+            title: "Locations",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+          }}
+        />
+      </Tabs>
     );
   }
 }
