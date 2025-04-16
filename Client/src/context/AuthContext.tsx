@@ -2,8 +2,12 @@
 import React, { createContext, ReactNode, useContext, useState } from "react";
 import { AuthContextType } from "../types/AuthContextType";
 import { authApi } from "../api/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
+import {
+  getAuthToken,
+  setAuthToken,
+  removeAuthToken,
+} from "../utils/authUtils";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -25,14 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for token in AsyncStorage on initial load
     const loadToken = async () => {
       try {
-        const storedToken = await AsyncStorage.getItem("token");
+        const storedToken = await getAuthToken();
         if (storedToken) {
           setToken(storedToken);
-          console.log("Stored token:", storedToken);
           setIsAuthenticated(true);
         }
       } catch (error) {
-        console.error("Error loading token:", error);
       } finally {
         setIsLoading(false);
       }
@@ -52,12 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await authApi.login(email, password);
         const { token } = response;
         setToken(token);
-        await AsyncStorage.setItem("token", token);
+        await setAuthToken(token);
         setIsAuthenticated(true);
         setAuthProvider("User");
       }
     } catch (error) {
-      console.error("Login error", error);
       setIsAuthenticated(false);
       throw error;
     }
@@ -68,11 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.register(email, password);
       const { token } = response;
       setToken(token);
-      await AsyncStorage.setItem("token", token);
+      await setAuthToken(token);
       setIsAuthenticated(true);
       setAuthProvider("User");
     } catch (error) {
-      console.error("Registration error", error);
       throw error;
     }
   };
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       // Set the current token before logout
-      const currentToken = await AsyncStorage.getItem("token");
+      const currentToken = await getAuthToken();
       if (currentToken) {
         setToken(currentToken);
       }
@@ -89,12 +89,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authApi.logout();
 
       // Clear the token and auth state
-      await AsyncStorage.removeItem("token");
+      await removeAuthToken();
       setToken(null);
       setIsAuthenticated(false);
       setAuthProvider("");
     } catch (error) {
-      console.error("Logout error", error);
+      throw error;
+    }
+  };
+  const clearToken = async () => {
+    try {
+      await removeAuthToken();
+      setToken(null);
+      setIsAuthenticated(false);
+      setAuthProvider("");
+    } catch (error) {
       throw error;
     }
   };
@@ -106,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        clearToken,
         token,
         authProvider,
         isLoading,

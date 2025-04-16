@@ -12,12 +12,12 @@ import {
   Text,
   Surface,
   useTheme as usePaperTheme,
-  Snackbar,
   HelperText,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { styles } from "../styles/RegisterScreen.styles";
+import { showToast } from "../components/Toast";
 
 const RegisterScreen = () => {
   const theme = usePaperTheme();
@@ -33,11 +33,6 @@ const RegisterScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarType, setSnackbarType] = useState<"success" | "error">(
-    "success"
-  );
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,40 +64,31 @@ const RegisterScreen = () => {
     setError(null);
 
     if (!isEmailValid) {
-      setSnackbarMessage("Please enter a valid email address");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", "Please enter a valid email address");
       return;
     }
 
     if (password !== confirmPassword) {
-      setSnackbarMessage("Passwords do not match");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", "Passwords do not match");
       return;
     }
 
     if (password.length < 8 || !/\d/.test(password)) {
-      setSnackbarMessage(
+      showToast(
+        "error",
         "Password must be at least 8 characters long and contain a number"
       );
-      setSnackbarType("error");
-      setSnackbarVisible(true);
       return;
     }
 
     try {
       setIsLoading(true);
       await register(email, password);
-      setSnackbarMessage("Registration successful!");
-      setSnackbarType("success");
-      setSnackbarVisible(true);
+      showToast("success", "Registration successful!");
       // @ts-ignore - Navigation type issue
       navigation.navigate("Home");
     } catch (err) {
-      setSnackbarMessage("Registration failed. Please try again.");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -236,19 +222,6 @@ const RegisterScreen = () => {
           </Surface>
         </View>
       </ScrollView>
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        style={{
-          backgroundColor:
-            snackbarType === "success"
-              ? theme.colors.secondary
-              : theme.colors.error,
-        }}
-      >
-        {snackbarMessage}
-      </Snackbar>
     </KeyboardAvoidingView>
   );
 };

@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Server.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.SignalR;
+using Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,21 @@ builder.Services.AddAuthentication(options =>
     options.Fields.Add("email");
 });
 
+// Add SignalR services
+builder.Services.AddSignalR();
+
+// Configure CORS for SignalR
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ChatPolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:8081", "http://localhost:19006") // Add your client URLs
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -103,10 +120,15 @@ app.UseHttpsRedirection();
 // Use CORS before authentication and authorization
 app.UseCors("AllowReactApp");
 
+app.UseCors("ChatPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<ChatHub>("/chatHub");
 
 // Add this after app.Build()
 using (var scope = app.Services.CreateScope())

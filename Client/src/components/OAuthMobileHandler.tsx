@@ -1,6 +1,7 @@
 import { Modal, View, StyleSheet } from "react-native";
 import OAuthWebView from "./OAuthWebView";
 import { LOGIN_ENDPOINT } from "../utils/envConfig";
+import { ClientOnly } from "./ClientOnly";
 
 interface OAuthMobileHandlerProps {
   provider: string;
@@ -33,10 +34,12 @@ const OAuthMobileHandler: React.FC<OAuthMobileHandlerProps> = ({
       presentationStyle="fullScreen"
     >
       <View style={styles.modalContainer}>
-        <OAuthWebView
-          url={`${LOGIN_ENDPOINT}/${provider.toLowerCase()}-login`}
-          onNavigationStateChange={handleNavigationStateChange}
-        />
+        <ClientOnly>
+          <OAuthWebView
+            url={`${LOGIN_ENDPOINT}/${provider.toLowerCase()}-login`}
+            onNavigationStateChange={handleNavigationStateChange}
+          />
+        </ClientOnly>
       </View>
     </Modal>
   );

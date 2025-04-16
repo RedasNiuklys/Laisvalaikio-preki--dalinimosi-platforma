@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "extra":{
+    "extra": {
       "API_BASE_URL": "http://localhost:5000/api/"
     },
     "android": {
@@ -20,7 +20,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "static"
     },
     "plugins": [
       "expo-router",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -14,7 +14,6 @@ import {
   Surface,
   useTheme as usePaperTheme,
   Divider,
-  Snackbar,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
@@ -23,6 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import OAuthWebHandler from "../components/OAuthWebHandler";
 import OAuthMobileHandler from "../components/OAuthMobileHandler";
 import { loginScreenStyles } from "../styles/LoginScreen.styles";
+import { showToast } from "../components/Toast";
 
 const LoginScreen = () => {
   const theme = usePaperTheme();
@@ -34,13 +34,9 @@ const LoginScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
   const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarType, setSnackbarType] = useState<"success" | "error">(
-    "success"
-  );
   const [showOAuthModal, setShowOAuthModal] = useState(false);
   const [currentProvider, setCurrentProvider] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Handle deep linking for OAuth callbacks
   const handleDeepLink = async (event: { url: string }) => {
@@ -85,16 +81,12 @@ const LoginScreen = () => {
       navigation.navigate("Home");
     } catch (error) {
       console.error("Error saving token:", error);
-      setSnackbarMessage("Failed to save authentication token");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", "Failed to save authentication token");
     }
   };
 
   const handleOAuthError = (error: string) => {
-    setSnackbarMessage(error);
-    setSnackbarType("error");
-    setSnackbarVisible(true);
+    showToast("error", error);
   };
 
   const handleOAuthLogin = async (provider: string) => {
@@ -104,31 +96,38 @@ const LoginScreen = () => {
       setShowOAuthModal(true);
     } catch (error) {
       console.error("OAuth login error:", error);
-      setSnackbarMessage(`Failed to start ${provider} login`);
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", `Failed to start ${provider} login`);
     }
   };
 
   const handleLogin = async () => {
+    setError(null);
+
+    if (!email || !password) {
+      showToast("error", "Please fill in all fields");
+      return;
+    }
+
     if (!isEmailValid) {
-      setSnackbarMessage("Please enter a valid email address");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+      showToast("error", "Please enter a valid email address");
       return;
     }
 
     try {
-      setError(null);
+      setIsLoading(true);
       await login(email, password);
-      setSnackbarMessage("Login successful!");
-      setSnackbarType("success");
-      setSnackbarVisible(true);
+      showToast("success", "Login successful!");
+      // @ts-ignore - Navigation type issue
       navigation.navigate("Home");
-    } catch (err) {
-      setSnackbarMessage("Login failed. Please check your credentials.");
-      setSnackbarType("error");
-      setSnackbarVisible(true);
+    } catch (err: any) {
+      // Only show the error toast if it's a specific error message from the server
+      if (err.response?.data?.message) {
+        showToast("error", err.response.data.message);
+      } else {
+        showToast("error", "Invalid email or password");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,14 +214,15 @@ const LoginScreen = () => {
                 autoComplete="password"
                 accessibilityRole="text"
                 accessibilityLabel="Password input"
+                left={<TextInput.Icon icon="lock" tabIndex={-1} />}
                 right={
                   <TextInput.Icon
                     icon={isPasswordVisible ? "eye-off" : "eye"}
                     onPressIn={handlePasswordVisibility}
                     onPressOut={handlePasswordVisibilityRelease}
+                    tabIndex={-1}
                   />
                 }
-                left={<TextInput.Icon icon="lock" tabIndex={-1} />}
               />
 
               <Button
@@ -231,6 +231,8 @@ const LoginScreen = () => {
                 style={loginScreenStyles.button}
                 contentStyle={loginScreenStyles.buttonContent}
                 icon="login"
+                loading={isLoading}
+                disabled={isLoading}
               >
                 Login
               </Button>
@@ -305,20 +307,6 @@ const LoginScreen = () => {
           onError={handleOAuthError}
         />
       )}
-
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        style={{
-          backgroundColor:
-            snackbarType === "success"
-              ? theme.colors.secondary
-              : theme.colors.error,
-        }}
-      >
-        {snackbarMessage}
-      </Snackbar>
     </>
   );
 };
