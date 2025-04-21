@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Server.Models;
 public static class SeedAdminUser
 {
     public static async Task Initialize(IServiceProvider serviceProvider)

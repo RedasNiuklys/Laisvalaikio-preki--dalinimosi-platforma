@@ -1,0 +1,4 @@
+../.env
+../*.pem
+../*.ppk
+../Server/bin

@@ -2,58 +2,92 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import Geocoding from "react-native-geocoding";
-import LocationMap from "./LocationMap";
+import LocationMap, { LocationMapRef } from "./LocationMap";
 import { showToast } from "./Toast";
 import { GOOGLE_API_KEY } from "../utils/envConfig";
+import { useTranslation } from "react-i18next";
+import { Location } from "../types/Location";
 
 // Initialize Geocoding with your API key
 Geocoding.init(GOOGLE_API_KEY);
-console.log("GOOGLE_API_KEY", GOOGLE_API_KEY);
 
-type LocationPickerProps = {
-  initialLocation?: {
-    latitude: number;
-    longitude: number;
-  };
-  onLocationSelected: (locationData: {
-    latitude: number;
-    longitude: number;
-    streetAddress: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  }) => void;
+type Coordinates = {
+  latitude: number;
+  longitude: number;
 };
+
+interface LocationPickerProps {
+  initialLocation?: Location;
+  onLocationSelected?: (location: Location) => void;
+}
 
 const LocationPicker = ({
   initialLocation,
   onLocationSelected,
 }: LocationPickerProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(
-    initialLocation || {
-      latitude: 54.903929466398154,
-      longitude: 23.957888105144654,
-    }
-  );
-  const mapRef = useRef(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location>({
+    latitude: initialLocation?.latitude ?? 54.903929466398154,
+    longitude: initialLocation?.longitude ?? 23.957888105144654,
+    name: initialLocation?.name ?? "",
+    streetAddress: initialLocation?.streetAddress ?? "",
+    city: initialLocation?.city ?? "",
+    country: initialLocation?.country ?? "",
+  });
+  const mapRef = useRef<LocationMapRef>(null);
 
-  const handleMapUpdate = (coordinates: {
-    latitude: number;
-    longitude: number;
-  }) => {
+  const handleMapUpdate = (location: Location) => {
     if (mapRef.current) {
-      // @ts-ignore - we know mapRef.current exists and has these methods
-      mapRef.current.animateToRegion(
-        {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          latitudeDelta: 0.01, // Smaller value = more zoom
-          longitudeDelta: 0.01,
-        },
-        1000
-      ); // Animation duration in ms
+      mapRef.current.animateToLocation(location);
+    }
+  };
+
+  const handleLocationSelect = async (location: Location) => {
+    try {
+      const response = await Geocoding.from(
+        location.latitude + "," + location.longitude
+      );
+      const result = response.results[0];
+      const addressComponents = result.address_components;
+
+      let streetNumber = "";
+      let route = "";
+      let city = "";
+      let country = "";
+
+      for (let component of addressComponents) {
+        if (component.types.includes("street_number")) {
+          streetNumber = component.long_name;
+        }
+        if (component.types.includes("route")) {
+          route = component.long_name;
+        }
+        if (component.types.includes("locality")) {
+          city = component.long_name;
+        }
+        if (component.types.includes("country")) {
+          country = component.long_name;
+        }
+      }
+
+      const newLocation: Location = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        name: result.formatted_address,
+        streetAddress: `${streetNumber} ${route}`.trim(),
+        city,
+        country,
+      };
+
+      setSelectedLocation(newLocation);
+      handleMapUpdate(newLocation);
+      if (onLocationSelected) {
+        onLocationSelected(newLocation);
+      }
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      showToast("error", t("location.errors.addressFetchFailed"));
     }
   };
 
@@ -61,93 +95,37 @@ const LocationPicker = ({
     try {
       const response = await Geocoding.from(searchQuery);
       const { lat, lng } = response.results[0].geometry.location;
-      const coordinates = { latitude: lat, longitude: lng };
-      setSelectedLocation(coordinates);
-      handleMapUpdate(coordinates);
-      handleLocationSelect(coordinates);
+      await handleLocationSelect({
+        latitude: lat,
+        longitude: lng,
+        name: response.results[0].formatted_address,
+      });
     } catch (error) {
       console.error("Geocoding error:", error);
-      showToast("error", "Failed to find location");
+      showToast("error", t("location.errors.addressFetchFailed"));
     }
   };
 
-  const handleLocationSelect = async (coordinates: {
-    latitude: number;
-    longitude: number;
-  }) => {
-    try {
-      const response = await Geocoding.from(
-        coordinates.latitude,
-        coordinates.longitude
-      );
-      const result = response.results[0];
-
-      // Parse address components
-      const addressComponents = result.address_components;
-      let streetNumber = "",
-        route = "",
-        city = "",
-        state = "",
-        postalCode = "",
-        country = "";
-
-      addressComponents.forEach((component) => {
-        const types = component.types;
-        if (types.includes("street_number")) {
-          streetNumber = component.long_name;
-        } else if (types.includes("route")) {
-          route = component.long_name;
-        } else if (types.includes("locality")) {
-          city = component.long_name;
-        } else if (types.includes("administrative_area_level_1")) {
-          state = component.long_name;
-        } else if (types.includes("postal_code")) {
-          postalCode = component.long_name;
-        } else if (types.includes("country")) {
-          country = component.long_name;
-        }
-      });
-
-      const streetAddress = `${streetNumber} ${route}`.trim();
-
-      setSelectedLocation(coordinates);
-      handleMapUpdate(coordinates);
-
-      onLocationSelected({
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
-        streetAddress,
-        city,
-        state,
-        postalCode,
-        country,
-      });
-    } catch (error) {
-      console.error("Reverse geocoding error:", error);
-      showToast("error", "Failed to get address details");
-    }
+  const handleMapLocationSelect = (location: Location) => {
+    handleLocationSelect(location);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <TextInput
-          mode="outlined"
-          placeholder="Search location..."
+          label={t("location.search")}
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchInput}
           right={<TextInput.Icon icon="magnify" onPress={handleSearch} />}
-          onSubmitEditing={handleSearch}
         />
       </View>
-
       <LocationMap
         ref={mapRef}
-        locations={[]}
         selectedLocation={selectedLocation}
-        onLocationSelect={handleLocationSelect}
-        onAddLocation={handleLocationSelect}
+        onLocationSelect={handleMapLocationSelect}
+        isAddingLocation={true}
       />
     </View>
   );
@@ -158,10 +136,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchContainer: {
-    padding: 16,
+    padding: 10,
   },
   searchInput: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
 });
 

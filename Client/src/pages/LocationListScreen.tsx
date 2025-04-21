@@ -26,7 +26,6 @@ export default function LocationListScreen() {
       setLoading(true);
       const data = await getLocations();
       const locationArray = Array.isArray(data) ? data : [];
-      console.log(locationArray);
       setLocations(locationArray);
     } catch (error) {
       console.error("Error fetching locations:", error);
@@ -44,26 +43,19 @@ export default function LocationListScreen() {
     });
   };
 
-  const handleAddLocation = (coordinates: any) => {
-    navigation.navigate("Add Location", {
-      initialCoordinates: coordinates,
-      isEditing: false,
-      onSubmitSuccess: fetchLocations,
-    });
+  const handleLocationClick = (location: Location) => {
+    if (location.latitude && location.longitude) {
+      setSelectedLocation(location);
+      mapRef.current?.animateToLocation(location);
+    } else {
+      showToast("error", "Location coordinates not available");
+    }
   };
 
   const handleShowOnMap = (location: Location) => {
     if (location.latitude && location.longitude) {
       setSelectedLocation(location);
-      mapRef.current?.animateToRegion(
-        {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.01, // Smaller value = more zoom
-          longitudeDelta: 0.01,
-        },
-        1000 // Animation duration in ms
-      );
+      mapRef.current?.animateToLocation(location);
     } else {
       showToast("error", "Location coordinates not available");
     }
@@ -105,10 +97,11 @@ export default function LocationListScreen() {
       <View style={styles.mapContainer}>
         <LocationMap
           ref={mapRef}
-          locations={locations as Location[]}
-          selectedLocation={selectedLocation || undefined}
+          locations={locations}
+          selectedLocation={selectedLocation}
           onLocationSelect={handleLocationSelect}
-          onAddLocation={handleAddLocation}
+          onLocationClick={handleLocationClick}
+          isAddingLocation={false}
         />
       </View>
 
