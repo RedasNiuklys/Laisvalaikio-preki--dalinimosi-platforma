@@ -1,7 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import { Map, Marker } from "pigeon-maps";
+import React, { useState } from "react";
+import { View, StyleSheet, Text } from "react-native";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { Location } from "../types/Location";
+import { GOOGLE_API_KEY } from "../utils/envConfig";
+
+// Declare google maps types
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
+
+const containerStyle = {
+  width: "100%",
+  height: "400px",
+};
+
+interface WebMapProps {
+  onLocationSelect: (location: Location) => void;
+  initialPosition?: { lat: number; lng: number };
+  locations: Location[];
+  onLocationClick: (location: Location) => void;
+  isAddingLocation: boolean;
+  selectedLocation: Location | null;
+}
 
 export default function WebMap({
   onLocationSelect,
@@ -10,83 +32,126 @@ export default function WebMap({
   onLocationClick,
   isAddingLocation = false,
   selectedLocation = null,
-}: {
-  onLocationSelect: (coordinates: any) => void;
-  initialPosition?: { lat: number; lng: number };
-  locations: Location[];
-  onLocationClick: (location: Location) => void;
-  isAddingLocation: boolean;
-  selectedLocation: Location | null;
-}) {
-  const [center, setCenter] = useState([
-    initialPosition.lat,
-    initialPosition.lng,
-  ]);
+}: WebMapProps) {
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: GOOGLE_API_KEY,
+  });
+
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [center, setCenter] = useState(initialPosition);
   const [zoom, setZoom] = useState(13);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedLocation) {
-      // Update center when selected location changes
-      setCenter([
-        selectedLocation.latitude || 0,
-        selectedLocation.longitude || 0,
-      ]);
-      setZoom(15); // Zoom in closer when location is selected
+      setCenter({
+        lat: selectedLocation.latitude || 0,
+        lng: selectedLocation.longitude || 0,
+      });
+      setZoom(15);
     }
   }, [selectedLocation]);
 
-  const handleClick = ({ latLng, event }: { latLng: number[]; event: any }) => {
-    if (isAddingLocation) {
-      onLocationSelect({
-        latitude: latLng[0],
-        longitude: latLng[1],
-      });
+  const handleClick = (e: google.maps.MapMouseEvent) => {
+    if (isAddingLocation && e.latLng) {
+      const newLocation: Location = {
+        latitude: e.latLng.lat(),
+        longitude: e.latLng.lng(),
+        name: "",
+        streetAddress: "",
+        city: "",
+        country: "",
+      };
+      onLocationSelect(newLocation);
     }
   };
 
+  const onLoad = React.useCallback((map: google.maps.Map) => {
+    setMap(map);
+  }, []);
+
+  const onUnmount = React.useCallback(() => {
+    setMap(null);
+  }, []);
+
+  if (!isLoaded)
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+
   return (
     <View style={styles.container}>
-      <Map
-        height={400}
-        center={center as [number, number]}
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
         zoom={zoom}
         onClick={handleClick}
-        onBoundsChanged={({ center, zoom }) => {
-          setCenter(center);
-          setZoom(zoom);
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        options={{
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: true,
+          fullscreenControl: false,
         }}
       >
         {/* Display existing location markers */}
-        {locations.map((location, index) => (
-          <Marker
-            key={index}
-            width={50}
-            anchor={[location.latitude || 0, location.longitude || 0]}
-            onClick={() => onLocationClick(location)}
-            color={selectedLocation?.id === location.id ? "#FF0000" : "#3498db"}
-          />
-        ))}
+        {locations.map((location, index) =>
+          location.latitude && location.longitude ? (
+            <Marker
+              key={index}
+              position={{
+                lat: location.latitude || 0,
+                lng: location.longitude || 0,
+              }}
+              onClick={() => onLocationClick(location)}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor:
+                  selectedLocation?.id === location.id ? "#FF0000" : "#3498db",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#FFFFFF",
+              }}
+            />
+          ) : null
+        )}
 
         {/* Initial position marker */}
         <Marker
-          width={50}
-          anchor={[initialPosition.lat, initialPosition.lng]}
-          color="#2ecc71"
+          position={initialPosition}
+          icon={{
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: "#2ecc71",
+            fillOpacity: 1,
+            strokeWeight: 2,
+            strokeColor: "#FFFFFF",
+          }}
         />
 
         {/* Selected location marker (if not in locations array) */}
         {selectedLocation &&
           !locations.find((l) => l.id === selectedLocation.id) && (
             <Marker
-              width={50}
-              anchor={[
-                selectedLocation.latitude || 0,
-                selectedLocation.longitude || 0,
-              ]}
-              color="#FF0000"
+              position={{
+                lat: selectedLocation.latitude || 0,
+                lng: selectedLocation.longitude || 0,
+              }}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor: "#FF0000",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#FFFFFF",
+              }}
             />
           )}
-      </Map>
+      </GoogleMap>
     </View>
   );
 }

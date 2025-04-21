@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication;
 using Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
+using Server.Models;
+using Google.Apis.Auth;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -17,17 +19,20 @@ public class LoginController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IConfiguration _configuration;
 
     public LoginController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
         _httpContextAccessor = httpContextAccessor;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -103,6 +108,41 @@ public class LoginController : ControllerBase
         return Ok(new { token });
     }
 
+    [HttpPost("google-mobile")]
+    public async Task<IActionResult> GoogleMobile([FromBody] GoogleMobileRequest request)
+    {
+        try
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new[] { 
+                    _configuration["Authentication:Google:ExpoClientId"]
+                }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+            
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                user = new ApplicationUser 
+                { 
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    Name = payload.Name
+                };
+                await _userManager.CreateAsync(user);
+            }
+
+            var token = await _tokenService.CreateTokenAsync(user);
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized("Invalid token");
+        }
+    }
+
     [HttpGet("facebook-login")]
     public IActionResult FacebookLogin()
     {
@@ -140,27 +180,29 @@ public class LoginController : ControllerBase
     {
         try
         {
-            // Get the current user's ID from the token
             var userId = User.FindFirstValue("uid");
             var user = await _userManager.FindByIdAsync(userId);
             
             if (user == null)
                 return NotFound("User not found");
 
-            // Get the current token
             var token = await _tokenService.CreateTokenAsync(user);
             
-            // Sign out the user
             await _signInManager.SignOutAsync();
             
             return Ok(new { 
                 message = "Logged out successfully",
-                token = token // Return the token that was invalidated
+                token = token
             });
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred during logout", error = ex.Message });
         }
+    }
+
+    public class GoogleMobileRequest
+    {
+        public string IdToken { get; set; }
     }
 }

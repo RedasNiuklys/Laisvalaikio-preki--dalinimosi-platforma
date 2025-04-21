@@ -2,11 +2,11 @@ export type Location = {
     id?: number;
     name: string;
     description?: string;
-    streetAddress: string;
-    city: string;
+    streetAddress?: string;
+    city?: string;
     state?: string;
     postalCode?: string;
-    country: string;
+    country?: string;
     latitude?: number | null;
     longitude?: number | null;
     userId?: string;

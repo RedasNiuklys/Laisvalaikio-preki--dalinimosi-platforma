@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
-
+using Server.Models;
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase

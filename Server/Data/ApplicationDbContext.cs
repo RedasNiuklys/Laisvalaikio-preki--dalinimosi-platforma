@@ -10,11 +10,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<UsedDates> UsedDates { get; set; }
     public DbSet<Category> Categories { get; set; }
-    public DbSet<Chat> Chats { get; set; }
-    public DbSet<ChatMember> ChatMembers { get; set; }
-    public DbSet<Message> Messages { get; set; }
-    public DbSet<MessageRead> MessageReads { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -71,42 +66,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(c => c.Equipment)
             .HasForeignKey(e => e.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        // Chat configurations
-        modelBuilder.Entity<Chat>()
-            .HasMany(c => c.Members)
-            .WithOne(m => m.Chat)
-            .HasForeignKey(m => m.ChatId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Chat>()
-            .HasMany(c => c.Messages)
-            .WithOne(m => m.Chat)
-            .HasForeignKey(m => m.ChatId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ChatMember>()
-            .HasOne(cm => cm.User)
-            .WithMany()
-            .HasForeignKey(cm => cm.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Message>()
-            .HasOne(m => m.Sender)
-            .WithMany()
-            .HasForeignKey(m => m.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<MessageRead>()
-            .HasOne(mr => mr.Message)
-            .WithMany(m => m.ReadBy)
-            .HasForeignKey(mr => mr.MessageId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<MessageRead>()
-            .HasOne(mr => mr.User)
-            .WithMany()
-            .HasForeignKey(mr => mr.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

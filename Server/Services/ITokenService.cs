@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-
+using Server.Models;
 namespace Server.Services
 {
     public interface ITokenService

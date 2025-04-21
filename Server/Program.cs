@@ -6,8 +6,7 @@ using System.Text;
 using Server.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR;
-using Server.Hubs;
-
+using Server.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 var dbPath = Path.Combine(Directory.GetCurrentDirectory(),"Data", "database.db");
@@ -80,36 +79,21 @@ builder.Services.AddAuthentication(options =>
 // Add SignalR services
 builder.Services.AddSignalR();
 
-// Configure CORS for SignalR
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ChatPolicy", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.WithOrigins("http://localhost:8081", "http://localhost:19006") // Add your client URLs
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        policy.WithOrigins(builder.Configuration["Client:Url"], "http://localhost:19006", "exp://localhost:19000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Add CORS configuration
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp", policy =>
-    {
-        policy.WithOrigins(
-                builder.Configuration["Client:Url"],
-                "https://ddde-193-219-171-2.ngrok-free.app"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-    });
-});
 
 var app = builder.Build();
 app.UseSwagger();
@@ -118,9 +102,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 // Use CORS before authentication and authorization
-app.UseCors("AllowReactApp");
-
-app.UseCors("ChatPolicy");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -128,7 +110,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Map SignalR hub
-app.MapHub<ChatHub>("/chatHub");
+// app.MapHub<ChatHub>("/chatHub");
 
 // Add this after app.Build()
 using (var scope = app.Services.CreateScope())

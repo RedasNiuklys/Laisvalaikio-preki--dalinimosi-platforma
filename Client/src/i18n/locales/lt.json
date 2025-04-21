@@ -1,0 +1,116 @@
+{
+  "common": {
+    "buttons": {
+      "cancel": "Atšaukti",
+      "confirm": "Patvirtinti",
+      "save": "Išsaugoti",
+      "delete": "Ištrinti",
+      "logout": "Atsijungti",
+      "clear": "Išvalyti"
+    },
+    "status": {
+      "success": "Sėkmingai",
+      "error": "Klaida",
+      "warning": "Įspėjimas",
+      "info": "Informacija"
+    }
+  },
+  "calendar": {
+    "selectDates": "Pasirinkite datas",
+    "selectEndDate": "Pasirinkite pabaigos datą",
+    "selectEndDateMobile": "Pasirinkite pabaigos datą arba ilgai paspauskite, kad atšauktumėte",
+    "clearLastSelection": "Išvalyti paskutinį pasirinkimą",
+    "selectedPeriods": "Pasirinkti periodai",
+    "dateUnavailable": "Data nepasiekiama",
+    "dateUnavailableMessage": "Ši data yra praeityje arba jau rezervuota",
+    "dateOverlap": "Datų intervalų persidengimas",
+    "dateOverlapMessage": "Pasirinktos datos persidengia su esama rezervacija (pažymėta raudonai)",
+    "selectionRemoved": "Pasirinkimas pašalintas",
+    "lastSelectionCleared": "Paskutinis pasirinkimas išvalytas",
+    "currentSelectionCleared": "Dabartinis pasirinkimas išvalytas"
+  },
+  "location": {
+    "search": "Ieškoti vietos...",
+    "currentLocation": "Dabartinė vieta",
+    "errors": {
+      "addressFetchFailed": "Nepavyko gauti adreso informacijos"
+    }
+  },
+  "settings": {
+    "title": "Nustatymai",
+    "calendar": {
+      "preferences": "Kalendoriaus nustatymai",
+      "startWeekMonday": "Pradėti savaitę nuo pirmadienio",
+      "startWeekMondayDesc": "Perjungti tarp pirmadienio ir sekmadienio kaip pirmos savaitės dienos"
+    },
+    "language": {
+      "title": "Kalba",
+      "english": "Anglų",
+      "lithuanian": "Lietuvių"
+    },
+    "theme": {
+      "title": "Temos nustatymai",
+      "darkMode": "Tamsi tema"
+    },
+    "appData": {
+      "title": "Programos duomenys",
+      "clearCache": "Išvalyti talpyklą ir atsijungti",
+      "clearCacheConfirm": "Ar tikrai norite išvalyti visus talpyklos duomenis ir atsijungti? Tai pašalins visą vietinę informaciją ir nukreips jus į prisijungimo ekraną."
+    },
+    "account": {
+      "title": "Paskyra",
+      "forceLogout": "Priverstinai atsijungti",
+      "logoutConfirm": "Ar tikrai norite atsijungti? Tai išvalys jūsų autentifikaciją ir nukreips į prisijungimo ekraną."
+    },
+    "toast": {
+      "cacheCleared": "Talpykla išvalyta ir sėkmingai atsijungta",
+      "cacheClearError": "Nepavyko išvalyti talpyklos",
+      "logoutSuccess": "Sėkmingai atsijungta",
+      "logoutError": "Nepavyko atsijungti"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Prisijungimas",
+      "email": "El. paštas",
+      "password": "Slaptažodis",
+      "submit": "Prisijungti",
+      "forgotPassword": "Pamiršote slaptažodį?",
+      "noAccount": "Neturite paskyros?",
+      "signUp": "Registruotis"
+    },
+    "register": {
+      "title": "Registracija",
+      "email": "El. paštas",
+      "password": "Slaptažodis",
+      "confirmPassword": "Pakartokite slaptažodį",
+      "submit": "Sukurti paskyrą",
+      "haveAccount": "Jau turite paskyrą?",
+      "signIn": "Prisijungti"
+    }
+  },
+  "equipment": {
+    "list": {
+      "title": "Įranga",
+      "search": "Ieškoti įrangos",
+      "noResults": "Įrangos nerasta",
+      "addNew": "Pridėti naują įrangą"
+    },
+    "details": {
+      "title": "Įrangos informacija",
+      "description": "Aprašymas",
+      "category": "Kategorija",
+      "location": "Vieta",
+      "availability": "Prieinamumas",
+      "price": "Kaina",
+      "contact": "Susisiekti su savininku"
+    }
+  },
+  "profile": {
+    "title": "Profilis",
+    "personalInfo": "Asmeninė informacija",
+    "myEquipment": "Mano įranga",
+    "myBookings": "Mano rezervacijos",
+    "settings": "Nustatymai"
+  }
+}

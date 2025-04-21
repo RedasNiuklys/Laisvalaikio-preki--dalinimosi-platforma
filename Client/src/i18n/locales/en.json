@@ -1,0 +1,116 @@
+{
+  "common": {
+    "buttons": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "save": "Save",
+      "delete": "Delete",
+      "logout": "Logout",
+      "clear": "Clear"
+    },
+    "status": {
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info"
+    }
+  },
+  "calendar": {
+    "selectDates": "Select Dates",
+    "selectEndDate": "Select end date",
+    "selectEndDateMobile": "Select end date or long press to reset",
+    "clearLastSelection": "Clear last selection",
+    "selectedPeriods": "Selected Periods",
+    "dateUnavailable": "Date Unavailable",
+    "dateUnavailableMessage": "This date is either in the past or already reserved",
+    "dateOverlap": "Date Range Overlap",
+    "dateOverlapMessage": "Selected dates overlap with existing reservation (marked in red)",
+    "selectionRemoved": "Selection Removed",
+    "lastSelectionCleared": "Last Selection Cleared",
+    "currentSelectionCleared": "Current Selection Cleared"
+  },
+  "location": {
+    "search": "Search location...",
+    "currentLocation": "Current Location",
+    "errors": {
+      "addressFetchFailed": "Failed to get address details"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "calendar": {
+      "preferences": "Calendar Preferences",
+      "startWeekMonday": "Start week on Monday",
+      "startWeekMondayDesc": "Toggle between Monday and Sunday as first day of week"
+    },
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "lithuanian": "Lithuanian"
+    },
+    "theme": {
+      "title": "Theme Settings",
+      "darkMode": "Dark Mode"
+    },
+    "appData": {
+      "title": "App Data",
+      "clearCache": "Clear Cache & Logout",
+      "clearCacheConfirm": "Are you sure you want to clear all cached data and log out? This will remove all locally stored information and redirect you to the login screen."
+    },
+    "account": {
+      "title": "Account",
+      "forceLogout": "Force Logout",
+      "logoutConfirm": "Are you sure you want to log out? This will clear your authentication and redirect you to the login screen."
+    },
+    "toast": {
+      "cacheCleared": "Cache cleared and logged out successfully",
+      "cacheClearError": "Failed to clear cache",
+      "logoutSuccess": "Logged out successfully",
+      "logoutError": "Failed to log out"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "forgotPassword": "Forgot Password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up"
+    },
+    "register": {
+      "title": "Register",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign In"
+    }
+  },
+  "equipment": {
+    "list": {
+      "title": "Equipment",
+      "search": "Search equipment",
+      "noResults": "No equipment found",
+      "addNew": "Add New Equipment"
+    },
+    "details": {
+      "title": "Equipment Details",
+      "description": "Description",
+      "category": "Category",
+      "location": "Location",
+      "availability": "Availability",
+      "price": "Price",
+      "contact": "Contact Owner"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "myEquipment": "My Equipment",
+    "myBookings": "My Bookings",
+    "settings": "Settings"
+  }
+}

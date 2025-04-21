@@ -1,4 +1,4 @@
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, Platform, ScrollView } from "react-native";
 import {
   Text,
   Switch,
@@ -7,6 +7,8 @@ import {
   Portal,
   Dialog,
   Divider,
+  List,
+  RadioButton,
 } from "react-native-paper";
 import { useTheme as useAppTheme } from "@/src/context/ThemeContext";
 import { useState } from "react";
@@ -14,33 +16,38 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { router } from "expo-router";
+import { useSettings } from "@/src/context/SettingsContext";
+import { useTranslation } from "react-i18next";
+import { changeLanguage } from "@/src/i18n";
 
 export default function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useAppTheme();
   const theme = useTheme();
   const { logout, clearToken } = useAuth();
+  const { settings, updateSettings } = useSettings();
+  const { t } = useTranslation();
   const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
+  const handleLanguageChange = async (language: string) => {
+    await changeLanguage(language);
+    await updateSettings({ ...settings, language });
+  };
+
   const clearCache = async () => {
     try {
-      // Clear all AsyncStorage data
       let allItems = await AsyncStorage.getAllKeys();
-      console.log("All items", allItems);
       await AsyncStorage.clear();
-
-      // Force logout without going through the API
       await clearToken();
 
-      showToast("success", "Cache cleared and logged out successfully");
+      showToast("success", t("settings.toast.cacheCleared"));
 
-      // Redirect to login screen using expo-router
       setTimeout(() => {
         router.replace("/");
       }, 1000);
     } catch (error) {
       console.error("Error clearing cache:", error);
-      showToast("error", "Failed to clear cache");
+      showToast("error", t("settings.toast.cacheClearError"));
     } finally {
       setConfirmDialogVisible(false);
     }
@@ -49,35 +56,79 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     try {
       await logout();
-      showToast("success", "Logged out successfully");
+      showToast("success", t("settings.toast.logoutSuccess"));
     } catch (error) {
       console.error("Error logging out:", error);
-      showToast("error", "Failed to log out");
+      showToast("error", t("settings.toast.logoutError"));
     } finally {
       setLogoutDialogVisible(false);
     }
   };
 
   return (
-    <View
+    <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <Text
         variant="headlineMedium"
         style={{ color: theme.colors.onBackground }}
       >
-        Settings
+        {t("settings.title")}
       </Text>
+
       <Text
         variant="bodyLarge"
         style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
       >
-        Theme Settings
+        {t("settings.calendar.preferences")}
+      </Text>
+
+      <List.Item
+        title={t("settings.calendar.startWeekMonday")}
+        description={t("settings.calendar.startWeekMondayDesc")}
+        right={(props) => (
+          <Switch
+            value={settings.startWeekOnMonday}
+            onValueChange={(value) =>
+              updateSettings({ ...settings, startWeekOnMonday: value })
+            }
+          />
+        )}
+      />
+
+      <Text
+        variant="bodyLarge"
+        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
+      >
+        {t("settings.language.title")}
+      </Text>
+
+      <RadioButton.Group
+        value={settings.language}
+        onValueChange={handleLanguageChange}
+      >
+        <RadioButton.Item
+          label={t("settings.language.english")}
+          value="en"
+          labelStyle={{ color: theme.colors.onBackground }}
+        />
+        <RadioButton.Item
+          label={t("settings.language.lithuanian")}
+          value="lt"
+          labelStyle={{ color: theme.colors.onBackground }}
+        />
+      </RadioButton.Group>
+
+      <Text
+        variant="bodyLarge"
+        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
+      >
+        {t("settings.theme.title")}
       </Text>
 
       <View style={styles.settingRow}>
         <Text style={{ color: theme.colors.onBackground, marginRight: 10 }}>
-          Dark Mode
+          {t("settings.theme.darkMode")}
         </Text>
         <Switch value={isDarkMode} onValueChange={toggleTheme} />
       </View>
@@ -86,7 +137,7 @@ export default function SettingsScreen() {
         variant="bodyLarge"
         style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
       >
-        App Data
+        {t("settings.appData.title")}
       </Text>
 
       <Button
@@ -95,7 +146,7 @@ export default function SettingsScreen() {
         style={styles.button}
         icon="delete"
       >
-        Clear Cache & Logout
+        {t("settings.appData.clearCache")}
       </Button>
 
       <Divider style={styles.divider} />
@@ -104,7 +155,7 @@ export default function SettingsScreen() {
         variant="bodyLarge"
         style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
       >
-        Account
+        {t("settings.account.title")}
       </Text>
 
       <Button
@@ -114,7 +165,7 @@ export default function SettingsScreen() {
         icon="logout"
         textColor={theme.colors.error}
       >
-        Force Logout
+        {t("settings.account.forceLogout")}
       </Button>
 
       <Portal>
@@ -122,19 +173,17 @@ export default function SettingsScreen() {
           visible={confirmDialogVisible}
           onDismiss={() => setConfirmDialogVisible(false)}
         >
-          <Dialog.Title>Clear Cache & Logout</Dialog.Title>
+          <Dialog.Title>{t("settings.appData.clearCache")}</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              Are you sure you want to clear all cached data and log out? This
-              will remove all locally stored information and redirect you to the
-              login screen.
+              {t("settings.appData.clearCacheConfirm")}
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setConfirmDialogVisible(false)}>
-              Cancel
+              {t("common.buttons.cancel")}
             </Button>
-            <Button onPress={clearCache}>Clear & Logout</Button>
+            <Button onPress={clearCache}>{t("common.buttons.clear")}</Button>
           </Dialog.Actions>
         </Dialog>
 
@@ -142,24 +191,23 @@ export default function SettingsScreen() {
           visible={logoutDialogVisible}
           onDismiss={() => setLogoutDialogVisible(false)}
         >
-          <Dialog.Title>Force Logout</Dialog.Title>
+          <Dialog.Title>{t("settings.account.forceLogout")}</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              Are you sure you want to log out? This will clear your
-              authentication and redirect you to the login screen.
+              {t("settings.account.logoutConfirm")}
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setLogoutDialogVisible(false)}>
-              Cancel
+              {t("common.buttons.cancel")}
             </Button>
             <Button onPress={handleLogout} textColor={theme.colors.error}>
-              Logout
+              {t("common.buttons.logout")}
             </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </View>
+    </ScrollView>
   );
 }
 

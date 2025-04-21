@@ -45,7 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, provider?: string) => {
     try {
       if (provider === "Google") {
+        console.log("Google login started");
         authApi.googleLogin();
+        console.log("Google login successful");
         return;
       } else if (provider === "Facebook") {
         authApi.facebookLogin();
