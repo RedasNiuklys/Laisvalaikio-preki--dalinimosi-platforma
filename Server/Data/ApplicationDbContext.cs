@@ -10,6 +10,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<UsedDates> UsedDates { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Chat> Chats { get; set; }
+    public DbSet<ChatParticipant> ChatParticipants { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<MessageRead> MessageReads { get; set; }
+    public DbSet<EquipmentImage> EquipmentImages { get; set; }
+    public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,10 +38,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(e => e.LocationId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Equipment>()
-            .Property(e => e.Status)
-            .HasConversion<string>();
 
         modelBuilder.Entity<Equipment>()
             .Property(e => e.Condition)
@@ -61,10 +64,52 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(c => c.ParentCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Equipment>()
-            .HasOne<Category>()
-            .WithMany(c => c.Equipment)
-            .HasForeignKey(e => e.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Chat>()
+            .HasMany(c => c.Participants)
+            .WithOne(p => p.Chat)
+            .HasForeignKey(p => p.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Chat>()
+            .HasMany(c => c.Messages)
+            .WithOne(m => m.Chat)
+            .HasForeignKey(m => m.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChatParticipant>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany()
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MessageRead>()
+            .HasOne(r => r.Message)
+            .WithMany(m => m.ReadReceipts)
+            .HasForeignKey(r => r.MessageId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MessageRead>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EquipmentImage>()
+            .HasOne(i => i.Equipment)
+            .WithMany(e => e.Images)
+            .HasForeignKey(i => i.EquipmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MaintenanceRecord>()
+            .HasOne(m => m.Equipment)
+            .WithMany(e => e.MaintenanceHistory)
+            .HasForeignKey(m => m.EquipmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -6,7 +6,8 @@
       "save": "Save",
       "delete": "Delete",
       "logout": "Logout",
-      "clear": "Clear"
+      "clear": "Clear",
+      "edit": "Edit"
     },
     "status": {
       "success": "Success",
@@ -31,10 +32,33 @@
   },
   "location": {
     "search": "Search location...",
-    "currentLocation": "Current Location",
+    "currentLocation": "Show location",
+    "openInMaps": "Open in Google Maps",
     "errors": {
-      "addressFetchFailed": "Failed to get address details"
+      "addressFetchFailed": "Failed to get address details",
+      "nameRequired": "Name is required"
+    },
+    "form": {
+      "addNew": "Add New Location",
+      "edit": "Edit Location",
+      "name": "Name",
+      "description": "Description",
+      "success": {
+        "created": "Location added successfully",
+        "updated": "Location updated successfully"
+      },
+      "error": {
+        "save": "Failed to save location"
+      }
     }
+  },
+  "navigation": {
+    "home": "Home",
+    "equipment": "Equipment",
+    "profile": "Profile",
+    "locations": "Locations",
+    "settings": "Settings",
+    "messages": "Messages"
   },
   "settings": {
     "title": "Settings",

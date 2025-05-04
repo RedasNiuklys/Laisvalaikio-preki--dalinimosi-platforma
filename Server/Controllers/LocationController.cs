@@ -1,3 +1,4 @@
+using System.Data.SqlTypes;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,7 +58,7 @@ namespace Server.Controllers
 
         // GET: api/Location/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<LocationResponseDto>> GetLocation(int id)
+        public async Task<ActionResult<LocationResponseDto>> GetLocation(string id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var location = await _context.Locations
@@ -96,6 +97,7 @@ namespace Server.Controllers
             
             var location = new Location
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = createLocationDto.Name,
                 Description = createLocationDto.Description,
                 StreetAddress = createLocationDto.StreetAddress,
@@ -135,7 +137,7 @@ namespace Server.Controllers
 
         // Patch: api/Location/5
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateLocation(int id, UpdateLocationDto updateLocationDto)
+        public async Task<IActionResult> UpdateLocation(string id, UpdateLocationDto updateLocationDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var location = await _context.Locations
@@ -175,7 +177,7 @@ namespace Server.Controllers
 
         // DELETE: api/Location/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLocation(int id)
+        public async Task<IActionResult> DeleteLocation(string id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var location = await _context.Locations
@@ -192,7 +194,7 @@ namespace Server.Controllers
             return Ok();
         }
 
-        private bool LocationExists(int id)
+        private bool LocationExists(string id)
         {
             return _context.Locations.Any(e => e.Id == id);
         }

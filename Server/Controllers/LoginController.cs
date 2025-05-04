@@ -200,6 +200,7 @@ public class LoginController : ControllerBase
             return StatusCode(500, new { message = "An error occurred during logout", error = ex.Message });
         }
     }
+    
 
     public class GoogleMobileRequest
     {

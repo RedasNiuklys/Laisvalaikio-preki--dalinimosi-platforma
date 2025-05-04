@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Server.DataTransferObjects
@@ -20,18 +21,10 @@ namespace Server.DataTransferObjects
         [Required]
         public string Condition { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue)]
-        public decimal DailyRate { get; set; }
-
-        [Required]
-        [Range(0, double.MaxValue)]
-        public decimal WeeklyRate { get; set; }
-
         public List<string> ImageUrls { get; set; }
 
         [Required]
-        public int LocationId { get; set; }
+        public string LocationId { get; set; }
     }
 
     public class UpdateEquipmentDto : CreateEquipmentDto
@@ -41,7 +34,7 @@ namespace Server.DataTransferObjects
 
     public class EquipmentResponseDto : CreateEquipmentDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string OwnerId { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }

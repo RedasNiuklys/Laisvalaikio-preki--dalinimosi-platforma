@@ -1,27 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const TOKEN_KEY = 'token';
 
-export const getAuthToken = async (): Promise<string | null> => {
-    try {
-        return await AsyncStorage.getItem("token");
-    } catch (error) {
-        console.error("Error getting auth token:", error);
-        return null;
+export const getAuthToken = async (): Promise<string> => {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    if (!token) {
+        throw new Error('No authentication token found');
     }
+    return token;
 };
 
 export const setAuthToken = async (token: string): Promise<void> => {
-    try {
-        await AsyncStorage.setItem("token", token);
-    } catch (error) {
-        console.error("Error setting auth token:", error);
-    }
+    await AsyncStorage.setItem(TOKEN_KEY, token);
 };
 
 export const removeAuthToken = async (): Promise<void> => {
-    try {
-        await AsyncStorage.removeItem("token");
-    } catch (error) {
-        console.error("Error removing auth token:", error);
-    }
+    await AsyncStorage.removeItem(TOKEN_KEY);
 };

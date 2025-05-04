@@ -76,7 +76,7 @@ const RegisterScreen = () => {
     if (password.length < 8 || !/\d/.test(password)) {
       showToast(
         "error",
-        "Password must be at least 8 characters long and contain a number"
+        "Password must be at least 8 characters long and contain a number and a special character"
       );
       return;
     }
@@ -169,7 +169,8 @@ const RegisterScreen = () => {
               }
             />
             <HelperText type="info" visible={true}>
-              Password must be at least 8 characters with a number
+              Password must be at least 8 characters with a number and a special
+              character
             </HelperText>
 
             <TextInput

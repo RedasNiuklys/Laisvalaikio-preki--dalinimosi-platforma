@@ -1,20 +1,5 @@
 export type Location = {
-    id?: number;
-    name: string;
-    description?: string;
-    streetAddress?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
-    latitude?: number | null;
-    longitude?: number | null;
-    userId?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-};
-
-export interface LocationFormData {
+    id?: string;
     name: string;
     description?: string;
     streetAddress: string;
@@ -22,6 +7,11 @@ export interface LocationFormData {
     state?: string;
     postalCode?: string;
     country: string;
-    latitude?: number | null;
-    longitude?: number | null;
-} 
+    latitude: number;
+    longitude: number;
+    userId: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+};
+
+export type LocationFormData = Omit<Location, 'id' | 'createdAt' | 'updatedAt'>; 

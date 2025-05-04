@@ -7,6 +7,7 @@ using Server.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR;
 using Server.Models;
+using Server.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 var dbPath = Path.Combine(Directory.GetCurrentDirectory(),"Data", "database.db");
@@ -23,6 +24,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+// Configure authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -32,13 +35,29 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
+        ValidateIssuer = false,// required for live server
+        ValidateAudience = false,// required for live server
+        ValidateLifetime = true,// required for live server
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtIssuer,
+        // ValidIssuer = jwtIssuer, // required for live server
+        // ValidAudience = jwtIssuer, // required for live server
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+
+    // Configure for SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 })
 .AddOpenIdConnect("Google", options =>
@@ -47,7 +66,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     options.ResponseType = "code";
-        options.CallbackPath = "/api/login/google-callback";
+    options.CallbackPath = "/api/login/google-callback";
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
@@ -61,7 +80,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnRedirectToIdentityProvider = context =>
         {
-                context.ProtocolMessage.RedirectUri = $"{builder.Configuration["Client:Url"]}/api/login/google-callback";
+            context.ProtocolMessage.RedirectUri = $"{builder.Configuration["Client:Url"]}/api/login/google-callback";
             return Task.CompletedTask;
         }
     };
@@ -82,13 +101,25 @@ builder.Services.AddSignalR();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.WithOrigins(builder.Configuration["Client:Url"], "http://localhost:19006", "exp://localhost:19000")
+    options.AddPolicy("CorsPolicy", builder =>
+        builder
+            .WithOrigins(
+                "http://localhost:5000",
+                "http://localhost:19006", 
+                "http://localhost:8081",
+                "http://localhost:19000",
+                "http://10.151.26.44:5000",
+                "http://10.151.26.44:8081",
+                "http://10.151.26.44:19006",
+                "http://10.151.26.44:19000",
+                "exp://10.151.26.44:19000",
+                "exp://localhost:19000",
+                "exp://localhost:8081"
+            )
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
-    });
+            .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition"));
 });
 
 builder.Services.AddControllers();
@@ -101,8 +132,11 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+// Enable static file serving
+app.UseStaticFiles();
+
 // Use CORS before authentication and authorization
-app.UseCors("AllowAll");
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -110,7 +144,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Map SignalR hub
-// app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/chatHub");
 
 // Add this after app.Build()
 using (var scope = app.Services.CreateScope())

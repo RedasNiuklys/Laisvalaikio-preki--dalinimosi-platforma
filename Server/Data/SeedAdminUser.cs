@@ -19,7 +19,7 @@ public static class SeedAdminUser
         }
 
         // Create default admin user if it doesn't exist
-        var adminEmail = "admin@example.com";
+        var adminEmail = "admin2@example.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
         if (adminUser == null)

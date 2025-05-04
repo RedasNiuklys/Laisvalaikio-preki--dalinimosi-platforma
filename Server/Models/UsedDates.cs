@@ -8,7 +8,7 @@ namespace Server.Models
         public int Id { get; set; }
 
         [Required]
-        public int EquipmentId { get; set; }
+        public string EquipmentId { get; set; }
         public Equipment Equipment { get; set; }
 
         [Required]
@@ -20,6 +20,9 @@ namespace Server.Models
 
         [Required]
         public DateTime EndDate { get; set; }
+
+        [Required]
+        public string Type { get; set; } = "Taken"; // Default to "Taken"
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

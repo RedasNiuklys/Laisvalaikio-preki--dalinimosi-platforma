@@ -13,6 +13,9 @@ namespace Server.DataTransferObjects
 
         [Required]
         public DateTime EndDate { get; set; }
+
+        [Required]
+        public string Type { get; set; } = "Taken";
     }
 
     public class UpdateUsedDatesDto
@@ -22,6 +25,9 @@ namespace Server.DataTransferObjects
 
         [Required]
         public DateTime EndDate { get; set; }
+
+        [Required]
+        public string Type { get; set; }
     }
 
     public class UsedDatesResponseDto : CreateUsedDatesDto

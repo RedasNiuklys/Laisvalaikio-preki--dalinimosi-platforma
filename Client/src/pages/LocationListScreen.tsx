@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList, Platform, Linking } from "react-native";
 import { Text, Card, FAB, useTheme, Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { getLocations } from "../api/locationApi";
 import { showToast } from "../components/Toast";
 import { Location } from "../types/Location";
 import LocationMap, { LocationMapRef } from "../components/LocationMap";
+import { useTranslation } from "react-i18next";
 
 export default function LocationListScreen() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -16,6 +17,7 @@ export default function LocationListScreen() {
   const navigation = useNavigation();
   const theme = useTheme();
   const mapRef = useRef<LocationMapRef>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchLocations();
@@ -29,7 +31,7 @@ export default function LocationListScreen() {
       setLocations(locationArray);
     } catch (error) {
       console.error("Error fetching locations:", error);
-      showToast("error", "Failed to load locations");
+      showToast("error", t("location.errors.addressFetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,7 @@ export default function LocationListScreen() {
       setSelectedLocation(location);
       mapRef.current?.animateToLocation(location);
     } else {
-      showToast("error", "Location coordinates not available");
+      showToast("error", t("location.errors.addressFetchFailed"));
     }
   };
 
@@ -57,7 +59,14 @@ export default function LocationListScreen() {
       setSelectedLocation(location);
       mapRef.current?.animateToLocation(location);
     } else {
-      showToast("error", "Location coordinates not available");
+      showToast("error", t("location.errors.addressFetchFailed"));
+    }
+  };
+
+  const openInMaps = (location: Location) => {
+    if (Platform.OS === "web" && location.latitude && location.longitude) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;
+      Linking.openURL(url);
     }
   };
 
@@ -72,14 +81,23 @@ export default function LocationListScreen() {
             onPress={() => handleShowOnMap(item)}
             icon="map-marker"
           >
-            Show on Map
+            {t("location.currentLocation")}
           </Button>
+          {Platform.OS === "web" && item.latitude && item.longitude && (
+            <Button
+              mode="contained-tonal"
+              onPress={() => openInMaps(item)}
+              icon="google-maps"
+            >
+              {t("location.openInMaps")}
+            </Button>
+          )}
           <Button
             mode="contained"
             onPress={() => handleLocationSelect(item)}
             icon="pencil"
           >
-            Edit
+            {t("common.buttons.edit")}
           </Button>
         </View>
       </Card.Content>
@@ -90,8 +108,8 @@ export default function LocationListScreen() {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <Text variant="headlineMedium" style={styles.title}>
-        Locations
+      <Text variant="titleLarge" style={styles.title}>
+        {t("navigation.locations")}
       </Text>
 
       <View style={styles.mapContainer}>
@@ -103,6 +121,18 @@ export default function LocationListScreen() {
           onLocationClick={handleLocationClick}
           isAddingLocation={false}
         />
+        {Platform.OS === "web" &&
+          selectedLocation?.latitude &&
+          selectedLocation?.longitude && (
+            <Button
+              mode="contained-tonal"
+              onPress={() => openInMaps(selectedLocation)}
+              icon="google-maps"
+              style={styles.openInMapsButton}
+            >
+              {t("location.openInMaps")}
+            </Button>
+          )}
       </View>
 
       <View style={styles.listContainer}>
@@ -112,7 +142,9 @@ export default function LocationListScreen() {
           keyExtractor={(item: Location) => item.id?.toString() ?? ""}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No locations found</Text>
+            <Text style={styles.emptyText}>
+              {t("equipment.list.noResults")}
+            </Text>
           }
         />
       </View>
@@ -146,6 +178,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     height: "45%", // Slightly less than 50% to account for the title
     marginBottom: 16,
+    position: "relative",
   },
   listContainer: {
     flex: 1, // Takes remaining space
@@ -160,6 +193,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 8,
+    gap: 8,
   },
   fab: {
     position: "absolute",
@@ -170,5 +204,11 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     marginTop: 20,
+  },
+  openInMapsButton: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    zIndex: 1,
   },
 });

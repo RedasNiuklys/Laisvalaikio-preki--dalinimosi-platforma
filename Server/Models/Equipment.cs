@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Server.Models
 {
     public class Equipment
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -16,28 +17,29 @@ namespace Server.Models
         public string Description { get; set; }
 
         [Required]
-        public int CategoryId { get; set; }
-        public Category Category { get; set; }
-
-        [Required]
-        public string Condition { get; set; }
-        public List<string> ImageUrls { get; set; } = new List<string>();
-
-        [Required]
         public string OwnerId { get; set; }
         public ApplicationUser Owner { get; set; }
 
         [Required]
-        public int LocationId { get; set; }
-        public Location Location { get; set; }
+        public string Category { get; set; }
+
+        public List<string> Tags { get; set; } = new List<string>();
 
         [Required]
-        public string Status { get; set; } = "Available";
+        public string Condition { get; set; } = "Good";
+
+        public bool IsAvailable { get; set; } = true;
+
+        [Required]
+        public string LocationId { get; set; }
+        public Location Location { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation property for UsedDates
-        public ICollection<UsedDates> UsedDates { get; set; }
+        // Navigation properties
+        public List<UsedDates> UsedDates { get; set; } = new List<UsedDates>();
+        public List<MaintenanceRecord> MaintenanceHistory { get; set; } = new List<MaintenanceRecord>();
+        public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }
 } 

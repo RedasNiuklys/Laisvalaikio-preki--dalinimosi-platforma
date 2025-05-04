@@ -8,6 +8,7 @@ import {
   setAuthToken,
   removeAuthToken,
 } from "../utils/authUtils";
+import { User } from "../types/User";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authProvider, setAuthProvider] = useState<string>("");
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Check for token in AsyncStorage on initial load
@@ -31,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const storedToken = await getAuthToken();
         if (storedToken) {
+          loadUser();
           setToken(storedToken);
           setIsAuthenticated(true);
         }
@@ -41,6 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     loadToken();
   }, []);
+
+  const loadUser = async () => {
+    try {
+      const response = await authApi.getUser();
+      setUser(response);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const login = async (email: string, password: string, provider?: string) => {
     try {
@@ -54,11 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       } else {
         const response = await authApi.login(email, password);
-        const { token } = response;
-        setToken(token);
-        await setAuthToken(token);
+        console.log("Token:", response.token);
+        setToken(response.token);
+        await setAuthToken(response.token);
         setIsAuthenticated(true);
         setAuthProvider("User");
+        setUser(response);
       }
     } catch (error) {
       setIsAuthenticated(false);
@@ -71,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.register(email, password);
       const { token } = response;
       setToken(token);
+      console.log("Token:", token);
       await setAuthToken(token);
       setIsAuthenticated(true);
       setAuthProvider("User");
@@ -95,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
       setIsAuthenticated(false);
       setAuthProvider("");
+      setUser(null);
     } catch (error) {
       throw error;
     }
@@ -105,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
       setIsAuthenticated(false);
       setAuthProvider("");
+      setUser(null);
     } catch (error) {
       throw error;
     }
@@ -114,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        loadUser,
         login,
         register,
         logout,
@@ -121,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         authProvider,
         isLoading,
+        user,
       }}
     >
       {children}

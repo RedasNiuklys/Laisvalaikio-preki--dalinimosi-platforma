@@ -1,4 +1,5 @@
-../.env
-../*.pem
-../*.ppk
-../Server/bin
+/.env
+*.pem
+*.ppk
+Server/bin/*
+node_modules/*
