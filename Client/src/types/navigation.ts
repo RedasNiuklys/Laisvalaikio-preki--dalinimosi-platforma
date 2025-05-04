@@ -22,6 +22,9 @@ export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Profile: undefined;
+    Equipment: undefined;
+    EquipmentDetails: { equipmentId: string };
+    AddEquipment: undefined;
     'Location List': undefined;
     'Add Location': {
         initialCoordinates?: {

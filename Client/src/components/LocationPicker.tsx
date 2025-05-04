@@ -6,7 +6,7 @@ import LocationMap, { LocationMapRef } from "./LocationMap";
 import { showToast } from "./Toast";
 import { GOOGLE_API_KEY } from "../utils/envConfig";
 import { useTranslation } from "react-i18next";
-import { Location } from "../types/Location";
+import { Location, LocationFormData } from "../types/Location";
 
 // Initialize Geocoding with your API key
 Geocoding.init(GOOGLE_API_KEY);
@@ -17,7 +17,7 @@ type Coordinates = {
 };
 
 interface LocationPickerProps {
-  initialLocation?: Location;
+  initialLocation?: LocationFormData;
   onLocationSelected?: (location: Location) => void;
 }
 
@@ -27,13 +27,14 @@ const LocationPicker = ({
 }: LocationPickerProps) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState<Location>({
+  const [selectedLocation, setSelectedLocation] = useState<LocationFormData>({
     latitude: initialLocation?.latitude ?? 54.903929466398154,
     longitude: initialLocation?.longitude ?? 23.957888105144654,
     name: initialLocation?.name ?? "",
     streetAddress: initialLocation?.streetAddress ?? "",
     city: initialLocation?.city ?? "",
     country: initialLocation?.country ?? "",
+    userId: initialLocation?.userId ?? "",
   });
   const mapRef = useRef<LocationMapRef>(null);
 
@@ -43,7 +44,7 @@ const LocationPicker = ({
     }
   };
 
-  const handleLocationSelect = async (location: Location) => {
+  const handleLocationSelect = async (location: LocationFormData) => {
     try {
       const response = await Geocoding.from(
         location.latitude + "," + location.longitude
@@ -55,6 +56,8 @@ const LocationPicker = ({
       let route = "";
       let city = "";
       let country = "";
+      let state = "";
+      let zipCode = "";
 
       for (let component of addressComponents) {
         if (component.types.includes("street_number")) {
@@ -69,15 +72,25 @@ const LocationPicker = ({
         if (component.types.includes("country")) {
           country = component.long_name;
         }
+        if (component.types.includes("administrative_area_level_1")) {
+          state = component.long_name;
+        }
+        if (component.types.includes("postal_code")) {
+          zipCode = component.long_name;
+        }
       }
 
       const newLocation: Location = {
-        latitude: location.latitude,
-        longitude: location.longitude,
+        description: "",
+        latitude: location.latitude ?? 0,
+        longitude: location.longitude ?? 0,
         name: result.formatted_address,
         streetAddress: `${streetNumber} ${route}`.trim(),
         city,
         country,
+        state: "",
+        postalCode: "",
+        userId: "",
       };
 
       setSelectedLocation(newLocation);
@@ -99,6 +112,10 @@ const LocationPicker = ({
         latitude: lat,
         longitude: lng,
         name: response.results[0].formatted_address,
+        streetAddress: "",
+        city: "",
+        userId: "",
+        country: "",
       });
     } catch (error) {
       console.error("Geocoding error:", error);
@@ -106,7 +123,7 @@ const LocationPicker = ({
     }
   };
 
-  const handleMapLocationSelect = (location: Location) => {
+  const handleMapLocationSelect = (location: LocationFormData) => {
     handleLocationSelect(location);
   };
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, Platform, Pressable } from "react-native";
 import { Text, useTheme, Button, List } from "react-native-paper";
-import { Calendar, DateData } from "react-native-calendars";
+import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import Toast from "react-native-toast-message";
 import { getUsedDatesForEquipment } from "../api/usedDatesApi";
 import { UsedDates } from "../types/UsedDates";
 import { IconButton } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../context/SettingsContext";
+import { ltLocale, enLocale } from "../locales/calendarLocales";
 
 interface DateSelectorProps {
   equipmentId: string;
@@ -28,6 +29,11 @@ interface MarkedDates {
   [date: string]: MarkedDate;
 }
 
+// Move locale configuration outside of component
+
+LocaleConfig.locales["lt"] = ltLocale;
+LocaleConfig.locales["en"] = enLocale;
+
 export default function DateSelector({
   equipmentId,
   onDateSelect,
@@ -43,7 +49,6 @@ export default function DateSelector({
   ); // Current active selection
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const sessionIdCounter = useRef(1);
-
   // Initialize past dates on first load
   useEffect(() => {
     const today = new Date();
@@ -65,11 +70,29 @@ export default function DateSelector({
       sessionSelections,
       currentSelection
     );
-  }, []);
+  }, [theme.dark]);
 
   useEffect(() => {
     fetchUsedDates();
-  }, [equipmentId]);
+  }, [equipmentId, theme.dark]);
+
+  // Update marked dates when theme changes
+  useEffect(() => {
+    updateCalendarMarks(
+      pastDates,
+      blockedDates,
+      sessionSelections,
+      currentSelection
+    );
+  }, [theme.dark]);
+
+  useEffect(() => {
+    // Reset locales to force update
+    LocaleConfig.locales = {};
+    LocaleConfig.locales["lt"] = ltLocale;
+    LocaleConfig.locales["en"] = enLocale;
+    LocaleConfig.defaultLocale = settings.language || "en";
+  }, [settings.language]);
 
   const fetchUsedDates = async () => {
     try {
@@ -84,15 +107,6 @@ export default function DateSelector({
     } catch (error) {
       console.error("Error fetching used dates:", error);
     }
-  };
-
-  const isDateInRange = (date: Date, range: UsedDates): boolean => {
-    const start = new Date(range.startDate);
-    const end = new Date(range.endDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
-    return date >= start && date <= end;
   };
 
   const checkDateOverlap = (startDate: Date, endDate: Date): boolean => {
@@ -364,6 +378,7 @@ export default function DateSelector({
 
   const handleDayPress = (day: DateData) => {
     const selectedDate = new Date(day.dateString);
+    console.log(theme.colors.background);
 
     // Check if date is blocked or in past
     if (markedDates[day.dateString]?.disabled) {
@@ -503,26 +518,63 @@ export default function DateSelector({
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="titleMedium" style={styles.title}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Text
+        variant="titleMedium"
+        style={[styles.title, { color: theme.colors.onBackground }]}
+      >
         {t("calendar.selectDates")}
       </Text>
       <Calendar
+        key={`${theme.dark ? "dark" : "light"}-${settings.language}-${
+          settings.startWeekOnMonday ? "monday" : "sunday"
+        }-${Date.now()}`}
         onDayPress={handleDayPress}
         onDayLongPress={handleDayLongPress}
         markedDates={markedDates}
         markingType="period"
         firstDay={settings.startWeekOnMonday ? 1 : 0}
         minDate={new Date().toISOString().split("T")[0]}
+        locale={settings.language}
         theme={{
-          todayTextColor: theme.colors.primary,
-          textDisabledColor: theme.colors.outline,
+          backgroundColor: theme.colors.background,
+          calendarBackground: theme.colors.background,
+
+          // Text colors
+          textColor: theme.colors.onBackground,
+          monthTextColor: theme.colors.onBackground,
+          dayTextColor: theme.colors.onBackground,
+          textSectionTitleColor: theme.colors.onBackground,
+
+          // Disabled states
+          textDisabledColor: theme.colors.onSurfaceDisabled,
+          disabledArrowColor: theme.colors.onSurfaceDisabled,
+
+          // Selected states
           selectedDayBackgroundColor: theme.colors.primary,
           selectedDayTextColor: theme.colors.onPrimary,
+
+          // Today
+          todayTextColor: theme.colors.primary,
+          todayBackgroundColor: theme.colors.primaryContainer,
+
+          // Arrows and indicators
+          arrowColor: theme.colors.primary,
+          dotColor: theme.colors.primary,
+
+          // Font styling
+          textMonthFontFamily: theme.fonts.titleMedium.fontFamily,
+          textDayFontFamily: theme.fonts.bodyMedium.fontFamily,
+          textDayHeaderFontFamily: theme.fonts.bodyMedium.fontFamily,
+          textMonthFontWeight: theme.fonts.titleMedium.fontWeight,
+          textDayFontWeight: theme.fonts.bodyMedium.fontWeight,
+          textDayHeaderFontWeight: theme.fonts.bodyMedium.fontWeight,
         }}
       />
       {currentSelection && (
-        <Text style={styles.hint}>
+        <Text style={[styles.hint, { color: theme.colors.onBackground }]}>
           {Platform.OS === "web"
             ? t("calendar.selectEndDate")
             : t("calendar.selectEndDateMobile")}
@@ -537,6 +589,7 @@ export default function DateSelector({
               onPress={() => clearSelection()}
               icon="close"
               style={styles.clearButton}
+              textColor={theme.colors.primary}
             >
               {t("calendar.clearLastSelection")}
             </Button>
@@ -544,15 +597,19 @@ export default function DateSelector({
         )}
       {sessionSelections.length > 0 && (
         <List.Section>
-          <List.Subheader>{t("calendar.selectedPeriods")}</List.Subheader>
+          <List.Subheader style={{ color: theme.colors.onBackground }}>
+            {t("calendar.selectedPeriods")}
+          </List.Subheader>
           {sessionSelections.map((selection) => (
             <List.Item
               key={selection.id}
               title={formatDateRange(selection)}
+              titleStyle={{ color: theme.colors.onBackground }}
               right={(props) => (
                 <IconButton
                   {...props}
                   icon="close"
+                  iconColor={theme.colors.primary}
                   onPress={() => clearSelection(selection.id)}
                 />
               )}

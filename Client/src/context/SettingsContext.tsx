@@ -9,7 +9,7 @@ interface Settings {
 
 interface SettingsContextType {
   settings: Settings;
-  updateSettings: (newSettings: Settings) => Promise<void>;
+  updateSettings: (newSettings: Settings) => void;
 }
 
 const defaultSettings: Settings = {
@@ -40,9 +40,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateSettings = async (newSettings: Settings) => {
+  const updateSettings = (newSettings: Settings) => {
     try {
-      await AsyncStorage.setItem("appSettings", JSON.stringify(newSettings));
+      AsyncStorage.setItem("appSettings", JSON.stringify(newSettings));
       setSettings(newSettings);
     } catch (error) {
       console.error("Error saving settings:", error);

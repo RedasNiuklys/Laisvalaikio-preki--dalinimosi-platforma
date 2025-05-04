@@ -1,0 +1,8 @@
+Easy multi language, report a bug in settings, check with avatars, Test chat, test dates, implement visible dates for multiple items, items are per location, group can access selected locations, 
+locations visible only to group, leave comment under item about performance, check maps with Web side, normally test Oauth on web. Read up how to do on mobile, Image picker/take photo on mobiles only
+
+There are quite a few inconsistencies within current mode. I have reverted all files. Can we try to generate code for real-time chatting with 1to1 and group chats using signalR?
+Back end ASP.NET with EF and front react-native with react-native-web lib. So it should work on both platforms.
+
+
+Conflicts between bookings, insta chats with links, chat groups, locations per user group

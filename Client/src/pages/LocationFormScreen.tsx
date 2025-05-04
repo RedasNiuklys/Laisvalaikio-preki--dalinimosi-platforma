@@ -12,7 +12,8 @@ import { Location, LocationFormData } from "../types/Location";
 import { createLocation, updateLocation } from "../api/locationApi";
 import { showToast } from "../components/Toast";
 import LocationPicker from "../components/LocationPicker";
-
+import { useTranslation } from "react-i18next";
+import { useAuth } from "../context/AuthContext";
 type LocationFormScreenParams = {
   location?: Location;
   isEditing?: boolean;
@@ -23,10 +24,14 @@ type LocationFormScreenParams = {
   };
 };
 
-const LocationFormScreen = () => {
+const LocationFormScreen = (
+  locationformscreenparams: LocationFormScreenParams
+) => {
   const theme = useTheme();
   const navigation = useNavigation();
+  const { user } = useAuth();
   const route = useRoute();
+  const { t } = useTranslation();
   const {
     location: existingLocation,
     isEditing,
@@ -35,6 +40,7 @@ const LocationFormScreen = () => {
   } = (route.params as LocationFormScreenParams) || {};
 
   const [formData, setFormData] = useState<Partial<Location>>({
+    userId: user?.id,
     name: "",
     description: "",
     streetAddress: "",
@@ -55,14 +61,23 @@ const LocationFormScreen = () => {
     } else if (initialCoordinates) {
       setFormData((prev) => ({
         ...prev,
+        userId: user?.id,
         latitude: initialCoordinates.latitude,
         longitude: initialCoordinates.longitude,
       }));
+      console.log(formData);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        userId: user?.id,
+      }));
+      console.log(formData);
     }
   }, [existingLocation, initialCoordinates]);
 
   const handleChange = (field: keyof LocationFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    console.log(formData);
   };
 
   const handleLocationSelected = (locationData: {
@@ -71,19 +86,21 @@ const LocationFormScreen = () => {
     streetAddress: string;
     city: string;
     state: string;
-    postalCode: string;
     country: string;
   }) => {
+    console.log(locationData);
     setFormData((prev) => ({
       ...prev,
       ...locationData,
+      userId: user?.id,
     }));
+    console.log(formData);
   };
 
   const validateForm = (): boolean => {
     if (!formData.name) {
-      setError("Name is required");
-      showToast("error", "Name is required");
+      setError(t("location.errors.nameRequired"));
+      showToast("error", t("location.errors.nameRequired"));
       return false;
     }
     return true;
@@ -100,10 +117,10 @@ const LocationFormScreen = () => {
 
       if (isEditing && existingLocation?.id) {
         await updateLocation(existingLocation.id, formData as Location);
-        showToast("success", "Location updated successfully");
+        showToast("success", t("location.form.success.updated"));
       } else {
         await createLocation(formData as Location);
-        showToast("success", "Location added successfully");
+        showToast("success", t("location.form.success.created"));
       }
 
       if (onSubmitSuccess) {
@@ -114,8 +131,8 @@ const LocationFormScreen = () => {
         navigation.goBack();
       }, 1500);
     } catch (err) {
-      setError("Failed to save location");
-      showToast("error", "Failed to save location");
+      setError(t("location.form.error.save"));
+      showToast("error", t("location.form.error.save"));
       console.error("Error saving location:", err);
     } finally {
       setLoading(false);
@@ -138,7 +155,7 @@ const LocationFormScreen = () => {
           ]}
         >
           <Text variant="headlineMedium" style={styles.title}>
-            {isEditing ? "Edit Location" : "Add New Location"}
+            {isEditing ? t("location.form.edit") : t("location.form.addNew")}
           </Text>
 
           {error && (
@@ -148,7 +165,7 @@ const LocationFormScreen = () => {
           )}
 
           <TextInput
-            label="Name"
+            label={t("location.form.name")}
             value={formData.name}
             onChangeText={(text) => handleChange("name", text)}
             style={styles.input}
@@ -156,7 +173,7 @@ const LocationFormScreen = () => {
           />
 
           <TextInput
-            label="Description"
+            label={t("location.form.description")}
             value={formData.description}
             onChangeText={(text) => handleChange("description", text)}
             style={styles.input}
@@ -186,7 +203,7 @@ const LocationFormScreen = () => {
             loading={loading}
             disabled={loading}
           >
-            {isEditing ? "Update Location" : "Add Location"}
+            {isEditing ? t("location.form.edit") : t("location.form.addNew")}
           </Button>
         </View>
       </ScrollView>

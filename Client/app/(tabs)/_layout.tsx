@@ -1,8 +1,7 @@
 import { Stack, Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Button, View, Text } from "react-native";
-import { useTheme as useAppTheme } from "@/src/context/ThemeContext";
-import { useTheme as usePaperTheme } from "react-native-paper";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Button, View, Text, Settings } from "react-native";
+import { useTheme } from "react-native-paper";
 import { useAuth } from "@/src/context/AuthContext";
 import LoginScreen from "@/src/pages/LoginScreen";
 import RegisterScreen from "@/src/pages/RegisterScreen";
@@ -11,13 +10,34 @@ import {
   NavigationContainer,
   NavigationIndependentTree,
 } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import { useSettings } from "@/src/context/SettingsContext";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
   const Stack = createNativeStackNavigator();
+  const { t } = useTranslation();
+  const { settings } = useSettings();
+  const theme = useTheme();
+  const { isAuthenticated } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const { theme: appTheme } = useAppTheme(); // Get the theme from context
-  const theme = usePaperTheme(); // Get the Paper theme
-  const { isAuthenticated } = useAuth(); // Get auth status from context
+  useEffect(() => {
+    // Check for unread messages every second
+    const interval = setInterval(async () => {
+      if (typeof window !== "undefined") {
+        const count = parseInt(
+          (await AsyncStorage.getItem("unreadMessageCount")) || "0",
+          10
+        );
+        setUnreadCount(count);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   if (!isAuthenticated) {
     return (
       <NavigationIndependentTree>
@@ -32,6 +52,7 @@ export default function TabLayout() {
   } else {
     return (
       <Tabs
+        key={settings.language}
         screenOptions={({ route }) => ({
           tabBarStyle: { backgroundColor: theme.colors.background },
           tabBarActiveTintColor: theme.colors.primary,
@@ -44,6 +65,8 @@ export default function TabLayout() {
             else if (route.name === "profile") iconName = "person";
             else if (route.name === "settings") iconName = "settings";
             else if (route.name === "locations") iconName = "map";
+            else if (route.name === "chat") iconName = "chatbubbles";
+            else if (route.name === "equipment") iconName = "cube";
             return (
               <Ionicons name={iconName as any} size={size} color={color} />
             );
@@ -53,27 +76,40 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: t("navigation.home"),
           }}
         />
         <Tabs.Screen
           name="locations"
           options={{
-            title: "Locations",
+            title: t("navigation.locations"),
             headerShown: false,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+            title: t("navigation.profile"),
             headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: t("navigation.messages"),
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          }}
+        />
+        <Tabs.Screen
+          name="equipment"
+          options={{
+            title: t("navigation.equipment"),
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
-            title: "Settings",
+            title: t("navigation.settings"),
           }}
         />
       </Tabs>

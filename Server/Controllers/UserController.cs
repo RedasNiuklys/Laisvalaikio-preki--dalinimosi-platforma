@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using Server.Models;
+using Microsoft.EntityFrameworkCore;
+
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -18,6 +20,7 @@ public class UserController : ControllerBase
         public string Theme { get; set; }
         [EmailAddress]
         public string Email { get; set; }
+        public string AvatarUrl { get; set; }
     }
 
     public UserController(
@@ -93,7 +96,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirstValue("uid");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(userId);
             
             if (user == null)
@@ -107,6 +110,7 @@ public class UserController : ControllerBase
                 user.Email,
                 user.UserName,
                 user.Name,
+                user.AvatarUrl,
                 user.Theme,
                 Roles = roles
             });
@@ -188,6 +192,9 @@ public class UserController : ControllerBase
             if (!string.IsNullOrEmpty(updateDto.Theme))
                 user.Theme = updateDto.Theme;
 
+            if (!string.IsNullOrEmpty(updateDto.AvatarUrl))
+                user.AvatarUrl = updateDto.AvatarUrl;
+
             if (!string.IsNullOrEmpty(updateDto.Email) && updateDto.Email != user.Email)
             {
                 var emailToken = await _userManager.GenerateChangeEmailTokenAsync(user, updateDto.Email);
@@ -210,6 +217,7 @@ public class UserController : ControllerBase
                 user.UserName,
                 user.Name,
                 user.Theme,
+                user.AvatarUrl,
                 Roles = roles
             });
         }
@@ -336,6 +344,39 @@ public class UserController : ControllerBase
         {
             _logger.LogError(ex, "Error removing user {UserId} from Admin role", id);
             return StatusCode(500, "Internal server error occurred while removing user from Admin role");
+        }
+    }
+
+    // GET: api/user/chat-users
+    [Authorize]
+    [HttpGet("chat-users")]
+    public async Task<IActionResult> GetUsersForChat()
+    {
+        try
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var users = await _userManager.Users
+                .Where(u => u.Id != currentUserId)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Name,
+                    u.Email,
+                    u.AvatarUrl
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving users for chat");
+            return StatusCode(500, "Internal server error occurred while retrieving users");
         }
     }
 }

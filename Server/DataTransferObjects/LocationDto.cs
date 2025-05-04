@@ -5,6 +5,7 @@ namespace Server.DataTransferObjects
 {
     public class CreateLocationDto
     {
+        public string Id { get; set; }
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
@@ -20,11 +21,9 @@ namespace Server.DataTransferObjects
         [StringLength(100)]
         public string City { get; set; }
 
-        [Required]
         [StringLength(50)]
         public string State { get; set; }
 
-        [Required]
         [StringLength(20)]
         public string PostalCode { get; set; }
 
@@ -42,7 +41,7 @@ namespace Server.DataTransferObjects
 
     public class LocationResponseDto : CreateLocationDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

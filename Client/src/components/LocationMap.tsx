@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { Location } from "../types/Location";
+import { Location, LocationFormData } from "../types/Location";
 
 export type Coordinates = {
   latitude: number;
@@ -8,9 +8,9 @@ export type Coordinates = {
 
 export interface LocationMapProps {
   locations?: Location[];
-  selectedLocation?: Location | null;
-  onLocationSelect: (location: Location) => void;
-  onLocationClick?: (location: Location) => void;
+  selectedLocation?: LocationFormData | null;
+  onLocationSelect: (location: LocationFormData) => void;
+  onLocationClick?: (location: LocationFormData) => void;
   isAddingLocation?: boolean;
 }
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Linking } from 'react-native';
-import { LOGIN_ENDPOINT } from '../utils/envConfig';
+import { LOGIN_ENDPOINT, USER_ENDPOINT } from '../utils/envConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -10,6 +10,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export const authApi = {
     login: async (email: string, password: string) => {
+        console.log("Login started");
         const response = await axios.post(`${LOGIN_ENDPOINT}/login`, { email, password });
         return response.data;
     },
@@ -65,13 +66,24 @@ export const authApi = {
             }
         );
         return response.data;
+    },
+
+    getUser: async () => {
+        const token = await AsyncStorage.getItem('token');
+        console.log("token", token);
+        const response = await axios.get(`${USER_ENDPOINT}/profile`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
     }
 };
 
 // For mobile, we'll use Expo's auth session
 export const useGoogleAuth = () => {
     const [request, response, promptAsync] = Google.useAuthRequest({
-        redirectUri: "http://10.151.26.44:19000",
+        redirectUri: "http://10.151.26.44:8081",
         scopes: ['profile', 'email']
     });
 

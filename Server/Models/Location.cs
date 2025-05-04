@@ -5,7 +5,7 @@ namespace Server.Models
 {
     public class Location
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -22,11 +22,9 @@ namespace Server.Models
         [StringLength(100)]
         public string City { get; set; }
 
-        [Required]
         [StringLength(50)]
         public string State { get; set; }
 
-        [Required]
         [StringLength(20)]
         public string PostalCode { get; set; }
 

@@ -31,7 +31,8 @@ export default function SettingsScreen() {
 
   const handleLanguageChange = async (language: string) => {
     await changeLanguage(language);
-    await updateSettings({ ...settings, language });
+
+    updateSettings({ ...settings, language });
   };
 
   const clearCache = async () => {
@@ -105,7 +106,10 @@ export default function SettingsScreen() {
 
       <RadioButton.Group
         value={settings.language}
-        onValueChange={handleLanguageChange}
+        onValueChange={(value) => {
+          handleLanguageChange(value);
+          updateSettings({ ...settings, language: value });
+        }}
       >
         <RadioButton.Item
           label={t("settings.language.english")}

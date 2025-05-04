@@ -1,0 +1,4 @@
+bin/*
+*.pem
+*.ppk
+node_modules/*

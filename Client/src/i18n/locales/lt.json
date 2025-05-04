@@ -6,7 +6,8 @@
       "save": "Išsaugoti",
       "delete": "Ištrinti",
       "logout": "Atsijungti",
-      "clear": "Išvalyti"
+      "clear": "Išvalyti",
+      "edit": "Redaguoti"
     },
     "status": {
       "success": "Sėkmingai",
@@ -31,10 +32,33 @@
   },
   "location": {
     "search": "Ieškoti vietos...",
-    "currentLocation": "Dabartinė vieta",
+    "currentLocation": "Rodyti vietą",
+    "openInMaps": "Rodyti Google Maps",
     "errors": {
-      "addressFetchFailed": "Nepavyko gauti adreso informacijos"
+      "addressFetchFailed": "Nepavyko gauti adreso informacijos",
+      "nameRequired": "Pavadinimas yra privalomas"
+    },
+    "form": {
+      "addNew": "Pridėti naują vietą",
+      "edit": "Redaguoti vietą",
+      "name": "Pavadinimas",
+      "description": "Aprašymas",
+      "success": {
+        "created": "Vieta sėkmingai pridėta",
+        "updated": "Vieta sėkmingai atnaujinta"
+      },
+      "error": {
+        "save": "Nepavyko išsaugoti vietos"
+      }
     }
+  },
+  "navigation": {
+    "home": "Pradžia",
+    "equipment": "Įranga",
+    "profile": "Profilis",
+    "locations": "Vietos",
+    "settings": "Nustatymai",
+    "messages": "Pranešimai"
   },
   "settings": {
     "title": "Nustatymai",
