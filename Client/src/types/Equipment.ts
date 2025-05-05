@@ -24,31 +24,29 @@ export interface MaintenanceRecord {
     updatedAt?: Date;
 }
 
-export interface Equipment {
+export interface EquipmentResponseDto extends CreateEquipmentDto {
     id: string;
-    name: string;
-    description: string;
     ownerId: string;
-    locationId?: string;
-    condition: string;
-    isAvailable: boolean;
-    images: string[];
+    status: string;
     createdAt: Date;
-    updatedAt: Date;
+    updatedAt?: Date;
+    location: Location;
+}
+
+export interface Equipment extends EquipmentResponseDto {
+    images: EquipmentImage[];
 }
 
 export interface CreateEquipmentDto {
     name: string;
     description: string;
-    locationId?: string;
+    category: string;
     condition: string;
     isAvailable: boolean;
+    locationId: string;
+    images?: EquipmentImage[];
 }
 
-export interface UpdateEquipmentDto {
-    name?: string;
-    description?: string;
-    locationId?: string;
-    condition?: string;
-    isAvailable?: boolean;
+export interface UpdateEquipmentDto extends CreateEquipmentDto {
+    status?: string;
 } 

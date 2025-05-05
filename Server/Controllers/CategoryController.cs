@@ -23,22 +23,19 @@ namespace Server.Controllers
         public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetCategories()
         {
             var categories = await _context.Categories
-                .Include(c => c.Subcategories)
-                .Where(c => c.ParentCategoryId == null)
+                .Include(c => c.Categories)
                 .Select(c => new CategoryResponseDto
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Description = c.Description,
                     IconName = c.IconName,
                     ParentCategoryId = c.ParentCategoryId,
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
-                    Subcategories = c.Subcategories.Select(sc => new CategoryResponseDto
+                    Categories = c.Categories.Select(sc => new CategoryResponseDto
                     {
                         Id = sc.Id,
                         Name = sc.Name,
-                        Description = sc.Description,
                         IconName = sc.IconName,
                         ParentCategoryId = sc.ParentCategoryId,
                         CreatedAt = sc.CreatedAt,
@@ -55,7 +52,7 @@ namespace Server.Controllers
         public async Task<ActionResult<CategoryResponseDto>> GetCategory(int id)
         {
             var category = await _context.Categories
-                .Include(c => c.Subcategories)
+                .Include(c => c.Categories)
                 .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -68,7 +65,6 @@ namespace Server.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
-                Description = category.Description,
                 IconName = category.IconName,
                 ParentCategoryId = category.ParentCategoryId,
                 CreatedAt = category.CreatedAt,
@@ -77,16 +73,14 @@ namespace Server.Controllers
                 {
                     Id = category.ParentCategory.Id,
                     Name = category.ParentCategory.Name,
-                    Description = category.ParentCategory.Description,
                     IconName = category.ParentCategory.IconName,
                     CreatedAt = category.ParentCategory.CreatedAt,
                     UpdatedAt = category.ParentCategory.UpdatedAt
                 } : null,
-                Subcategories = category.Subcategories.Select(sc => new CategoryResponseDto
+                Categories = category.Categories.Select(sc => new CategoryResponseDto
                 {
                     Id = sc.Id,
                     Name = sc.Name,
-                    Description = sc.Description,
                     IconName = sc.IconName,
                     ParentCategoryId = sc.ParentCategoryId,
                     CreatedAt = sc.CreatedAt,
@@ -102,7 +96,6 @@ namespace Server.Controllers
             var category = new Category
             {
                 Name = createCategoryDto.Name,
-                Description = createCategoryDto.Description,
                 IconName = createCategoryDto.IconName,
                 ParentCategoryId = createCategoryDto.ParentCategoryId,
                 CreatedAt = DateTime.UtcNow
@@ -118,7 +111,6 @@ namespace Server.Controllers
                 {
                     Id = category.Id,
                     Name = category.Name,
-                    Description = category.Description,
                     IconName = category.IconName,
                     ParentCategoryId = category.ParentCategoryId,
                     CreatedAt = category.CreatedAt,
@@ -137,7 +129,6 @@ namespace Server.Controllers
             }
 
             category.Name = updateCategoryDto.Name;
-            category.Description = updateCategoryDto.Description;
             category.IconName = updateCategoryDto.IconName;
             category.ParentCategoryId = updateCategoryDto.ParentCategoryId;
             category.UpdatedAt = DateTime.UtcNow;
@@ -163,7 +154,7 @@ namespace Server.Controllers
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.Categories
-                .Include(c => c.Subcategories)
+                .Include(c => c.Categories)
                 .Include(c => c.Equipment)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -172,7 +163,7 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            if (category.Subcategories.Any() || category.Equipment.Any())
+            if (category.Categories.Any() || category.Equipment.Any())
             {
                 return BadRequest("Cannot delete category with subcategories or equipment");
             }
@@ -193,7 +184,6 @@ namespace Server.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Description = c.Description,
                     IconName = c.IconName,
                     ParentCategoryId = c.ParentCategoryId,
                     CreatedAt = c.CreatedAt,
@@ -209,4 +199,4 @@ namespace Server.Controllers
             return _context.Categories.Any(e => e.Id == id);
         }
     }
-} 
+}

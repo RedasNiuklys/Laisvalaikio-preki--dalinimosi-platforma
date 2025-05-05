@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Equipment } from '../types/Equipment';
+import { CreateEquipmentDto, Equipment } from '../types/Equipment';
 import { getAuthToken } from '../utils/authUtils';
 import { EQUIPMENT_ENDPOINT } from '../utils/envConfig';
 
@@ -27,12 +27,14 @@ export const getById = async (id: string): Promise<Equipment> => {
     return response.data;
 }
 
-export const create = async (equipment: Omit<Equipment, 'id'>): Promise<Equipment> => {
+export const create = async (equipment: CreateEquipmentDto): Promise<Equipment> => {
     const token = await getAuthToken();
     console.log("equipment", equipment);
     console.log("token", token);
     const response = await axios.post(`${EQUIPMENT_ENDPOINT}`, equipment, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
     });
     return response.data;
 }
@@ -64,11 +66,12 @@ export const getByCategory = async (category: string): Promise<Equipment[]> => {
 export const uploadImage = async (equipmentId: string, imageUri: string, isMainImage: boolean = false): Promise<void> => {
     const token = await getAuthToken();
     const formData = new FormData();
-    formData.append('file', {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: 'image.jpg'
-    } as any);
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+    formData.append("file", file);
+
+    console.log("formData", formData);
     formData.append('isMainImage', isMainImage.toString());
 
     await axios.post(`${EQUIPMENT_ENDPOINT}/${equipmentId}/images`, formData, {

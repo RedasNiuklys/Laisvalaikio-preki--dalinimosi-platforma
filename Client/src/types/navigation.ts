@@ -23,6 +23,8 @@ export type RootStackParamList = {
     Register: undefined;
     Profile: undefined;
     Equipment: undefined;
+    Admin: undefined;
+    'Add Category': undefined;
     EquipmentDetails: { equipmentId: string };
     AddEquipment: undefined;
     'Location List': undefined;

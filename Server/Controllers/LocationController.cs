@@ -94,7 +94,8 @@ namespace Server.Controllers
         public async Task<ActionResult<LocationResponseDto>> CreateLocation(CreateLocationDto createLocationDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+            System.Console.WriteLine("Came to CreateLocation");
+
             var location = new Location
             {
                 Id = Guid.NewGuid().ToString(),
@@ -198,5 +199,32 @@ namespace Server.Controllers
         {
             return _context.Locations.Any(e => e.Id == id);
         }
+
+        // GET: api/Location/owner/{id}
+        [HttpGet("owner/{id}")]
+        public async Task<ActionResult<IEnumerable<LocationResponseDto>>> GetLocationsByOwner(string id)
+        {
+            var locations = await _context.Locations
+                .Where(l => l.UserId == id)
+                .Select(l => new LocationResponseDto
+                {
+                    Id = l.Id,
+                    Name = l.Name,
+                    Description = l.Description,
+                    StreetAddress = l.StreetAddress,
+                    City = l.City,
+                    State = l.State,
+                    PostalCode = l.PostalCode,
+                    Country = l.Country,
+                    Latitude = l.Latitude,
+                    Longitude = l.Longitude,
+                    UserId = l.UserId,
+                    CreatedAt = l.CreatedAt,
+                    UpdatedAt = l.UpdatedAt
+                })
+                .ToListAsync();
+
+            return locations;
+        }
     }
-} 
+}

@@ -14,9 +14,11 @@ export default function EquipmentScreen() {
   const navigation = useNavigation();
 
   const loadEquipment = async () => {
+    console.log("user", user);
     try {
       if (user?.id) {
         const data = await getByOwner(user.id);
+        console.log("data", data);
         setEquipment(data);
       }
     } catch (error) {
@@ -28,7 +30,7 @@ export default function EquipmentScreen() {
 
   useEffect(() => {
     loadEquipment();
-  }, [user]);
+  }, []);
 
   return (
     <View style={styles.container}>

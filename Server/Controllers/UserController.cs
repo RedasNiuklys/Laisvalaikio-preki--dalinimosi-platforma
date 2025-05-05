@@ -12,7 +12,8 @@ public class UserController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly ILogger<UserController> _logger;
+    private readonly IConfiguration _configuration;
+    // private readonly ILogger<UserController> // _logger;
 
     public class UpdateUserDto
     {
@@ -26,11 +27,36 @@ public class UserController : ControllerBase
     public UserController(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration,
         ILogger<UserController> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _logger = logger;
+        _configuration = configuration;
+        // _logger = logger;
+    }
+
+    private static string GetFullAvatarUrl(string relativeUrl, IConfiguration configuration)
+    {
+        if (string.IsNullOrEmpty(relativeUrl)) return null;
+        if (relativeUrl.StartsWith("http")) return relativeUrl; // Already a full URL
+
+        var localIP = configuration["AppSettings:LocalIP"];
+        var apiPort = configuration["AppSettings:ApiPort"];
+        return $"http://{localIP}:{apiPort}/{relativeUrl}";
+    }
+
+    private static string GetRelativeAvatarUrl(string fullUrl, IConfiguration configuration)
+    {
+        if (string.IsNullOrEmpty(fullUrl)) return null;
+
+        var localIP = configuration["AppSettings:LocalIP"];
+        var apiPort = configuration["AppSettings:ApiPort"];
+        var baseUrl = $"http://{localIP}:{apiPort}/";
+
+        return fullUrl.StartsWith(baseUrl)
+            ? fullUrl.Substring(baseUrl.Length)
+            : fullUrl;
     }
 
     // GET: api/user
@@ -46,14 +72,15 @@ public class UserController : ControllerBase
                 u.Email,
                 u.UserName,
                 u.Name,
-                u.Theme
+                u.Theme,
+                AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
             });
 
             return Ok(users);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving all users");
+            // _logger.LogError(ex, "Error retrieving all users");
             return StatusCode(500, "Internal server error occurred while retrieving users");
         }
     }
@@ -66,7 +93,7 @@ public class UserController : ControllerBase
         try
         {
             var user = await _userManager.FindByIdAsync(id);
-            
+
             if (user == null)
                 return NotFound($"User with ID {id} not found");
 
@@ -79,12 +106,13 @@ public class UserController : ControllerBase
                 user.UserName,
                 user.Name,
                 user.Theme,
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving user {UserId}", id);
+            // _logger.LogError(ex, "Error retrieving user {UserId}", id);
             return StatusCode(500, "Internal server error occurred while retrieving user");
         }
     }
@@ -98,7 +126,7 @@ public class UserController : ControllerBase
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
                 return NotFound("User not found");
 
@@ -110,14 +138,14 @@ public class UserController : ControllerBase
                 user.Email,
                 user.UserName,
                 user.Name,
-                user.AvatarUrl,
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 user.Theme,
                 Roles = roles
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving user profile");
+            // _logger.LogError(ex, "Error retrieving user profile");
             return StatusCode(500, "Internal server error occurred while retrieving profile");
         }
     }
@@ -136,7 +164,7 @@ public class UserController : ControllerBase
             // Update user properties
             if (!string.IsNullOrEmpty(updateDto.Name))
                 user.Name = updateDto.Name;
-            
+
             if (!string.IsNullOrEmpty(updateDto.Theme))
                 user.Theme = updateDto.Theme;
 
@@ -144,7 +172,7 @@ public class UserController : ControllerBase
             {
                 var emailToken = await _userManager.GenerateChangeEmailTokenAsync(user, updateDto.Email);
                 var emailResult = await _userManager.ChangeEmailAsync(user, updateDto.Email, emailToken);
-                
+
                 if (!emailResult.Succeeded)
                     return BadRequest(emailResult.Errors);
             }
@@ -162,12 +190,13 @@ public class UserController : ControllerBase
                 user.UserName,
                 user.Name,
                 user.Theme,
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating user {UserId}", id);
+            // _logger.LogError(ex, "Error updating user {UserId}", id);
             return StatusCode(500, "Internal server error occurred while updating user");
         }
     }
@@ -188,18 +217,18 @@ public class UserController : ControllerBase
             // Update user properties
             if (!string.IsNullOrEmpty(updateDto.Name))
                 user.Name = updateDto.Name;
-            
+
             if (!string.IsNullOrEmpty(updateDto.Theme))
                 user.Theme = updateDto.Theme;
 
             if (!string.IsNullOrEmpty(updateDto.AvatarUrl))
-                user.AvatarUrl = updateDto.AvatarUrl;
+                user.AvatarUrl = GetRelativeAvatarUrl(updateDto.AvatarUrl, _configuration);
 
             if (!string.IsNullOrEmpty(updateDto.Email) && updateDto.Email != user.Email)
             {
                 var emailToken = await _userManager.GenerateChangeEmailTokenAsync(user, updateDto.Email);
                 var emailResult = await _userManager.ChangeEmailAsync(user, updateDto.Email, emailToken);
-                
+
                 if (!emailResult.Succeeded)
                     return BadRequest(emailResult.Errors);
             }
@@ -217,13 +246,13 @@ public class UserController : ControllerBase
                 user.UserName,
                 user.Name,
                 user.Theme,
-                user.AvatarUrl,
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating profile");
+            // _logger.LogError(ex, "Error updating profile");
             return StatusCode(500, "Internal server error occurred while updating profile");
         }
     }
@@ -236,7 +265,7 @@ public class UserController : ControllerBase
         try
         {
             var user = await _userManager.FindByIdAsync(id);
-            
+
             if (user == null)
                 return NotFound($"User with ID {id} not found");
 
@@ -249,7 +278,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting user {UserId}", id);
+            // _logger.LogError(ex, "Error deleting user {UserId}", id);
             return StatusCode(500, "Internal server error occurred while deleting user");
         }
     }
@@ -276,7 +305,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting profile");
+            // _logger.LogError(ex, "Error deleting profile");
             return StatusCode(500, "Internal server error occurred while deleting profile");
         }
     }
@@ -312,7 +341,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting user {UserId} as Admin", id);
+            // _logger.LogError(ex, "Error setting user {UserId} as Admin", id);
             return StatusCode(500, "Internal server error occurred while setting user as Admin");
         }
     }
@@ -342,7 +371,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing user {UserId} from Admin role", id);
+            // _logger.LogError(ex, "Error removing user {UserId} from Admin role", id);
             return StatusCode(500, "Internal server error occurred while removing user from Admin role");
         }
     }
@@ -355,10 +384,6 @@ public class UserController : ControllerBase
         try
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId))
-            {
-                return Unauthorized();
-            }
 
             var users = await _userManager.Users
                 .Where(u => u.Id != currentUserId)
@@ -366,8 +391,7 @@ public class UserController : ControllerBase
                 {
                     u.Id,
                     u.Name,
-                    u.Email,
-                    u.AvatarUrl
+                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
                 })
                 .ToListAsync();
 
@@ -375,7 +399,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving users for chat");
+            // _logger.LogError(ex, "Error retrieving users for chat");
             return StatusCode(500, "Internal server error occurred while retrieving users");
         }
     }

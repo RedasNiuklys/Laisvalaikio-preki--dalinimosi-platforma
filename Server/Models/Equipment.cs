@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Server.Models
 {
     public class Equipment
     {
+        [Key]
         public string Id { get; set; }
 
         [Required]
@@ -42,4 +44,4 @@ namespace Server.Models
         public List<MaintenanceRecord> MaintenanceHistory { get; set; } = new List<MaintenanceRecord>();
         public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }
-} 
+}
