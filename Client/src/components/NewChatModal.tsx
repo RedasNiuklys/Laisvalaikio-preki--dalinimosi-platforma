@@ -6,11 +6,13 @@ import {
   TextInput,
   Button,
   Switch,
+  useTheme as usePaperTheme,
   Text,
 } from "react-native-paper";
 import { UserSelector } from "./UserSelector";
 import axios from "axios";
 import { BASE_URL } from "../utils/envConfig";
+import { useTranslation } from "react-i18next";
 
 interface User {
   id: string;
@@ -34,6 +36,8 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [loading, setLoading] = useState(false);
+  const theme = usePaperTheme();
+  const { t } = useTranslation();
 
   const handleUserSelect = (user: User) => {
     if (!isGroupChat) {
@@ -81,19 +85,29 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
       <Modal
         visible={visible}
         onDismiss={handleDismiss}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
         <View style={styles.header}>
-          <Text variant="headlineSmall">New Chat</Text>
+          <Text
+            variant="headlineSmall"
+            style={{ color: theme.colors.onBackground }}
+          >
+            {t("chat.newChat")}
+          </Text>
           <View style={styles.groupSwitch}>
-            <Text>Group Chat</Text>
+            <Text style={{ color: theme.colors.onBackground }}>
+              {t("chat.groupChat")}
+            </Text>
             <Switch value={isGroupChat} onValueChange={setIsGroupChat} />
           </View>
         </View>
 
         {isGroupChat && (
           <TextInput
-            label="Group Name"
+            label={t("chat.groupName")}
             value={groupName}
             onChangeText={setGroupName}
             style={styles.input}
@@ -108,7 +122,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
 
         <View style={styles.footer}>
           <Button mode="outlined" onPress={handleDismiss} style={styles.button}>
-            Cancel
+            {t("common.buttons.cancel")}
           </Button>
           <Button
             mode="contained"
@@ -121,7 +135,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
             }
             style={styles.button}
           >
-            Create Chat
+            {t("chat.create")}
           </Button>
         </View>
       </Modal>

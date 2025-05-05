@@ -1,14 +1,13 @@
-
 // Default values (will be overridden by server config)
-let LOCAL_IP = '10.151.2.109';
-let API_PORT = '5000';
+const LOCAL_IP = '10.151.26.44';
+const API_PORT = '5000';
 
 const getBaseUrl = () => {
     return `http://${LOCAL_IP}:${API_PORT}/api`;
 };
 
 const getWebSocketUrl = () => {
-    return `http://${LOCAL_IP}:${API_PORT}/chatHub`;
+    return `ws://${LOCAL_IP}:${API_PORT}/chatHub`;
 };
 
 export const BASE_URL = getBaseUrl();

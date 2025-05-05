@@ -9,9 +9,10 @@
     "editCategory": "Edit Category",
     "deleteCategory": "Delete Category",
     "edit": "Edit",
+    "selectIcon": "Select Icon",
     "delete": "Delete",
     "parentCategory": "Parent Category",
-    "searchIcon": "Search Icon"
+    "searchIcons": "Search Icons"
   },
   "common": {
     "buttons": {
@@ -113,6 +114,7 @@
       "title": "Login",
       "email": "Email",
       "password": "Password",
+      "welcomeBack": "Welcome back!",
       "submit": "Sign In",
       "forgotPassword": "Forgot Password?",
       "noAccount": "Don't have an account?",
@@ -150,6 +152,15 @@
     "personalInfo": "Personal Information",
     "myEquipment": "My Equipment",
     "myBookings": "My Bookings",
-    "settings": "Settings"
+    "settings": "Settings",
+    "logout": "Logout",
+    "name": "Name",
+    "email": "Email",
+    "image": {
+      "choose": "Choose Image",
+      "take": "Take Photo",
+      "noData": "No data available",
+      "success": "Image uploaded successfully"
+    }
   }
 }

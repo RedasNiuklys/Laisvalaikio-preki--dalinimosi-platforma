@@ -48,8 +48,7 @@ export default function AddEquipmentScreen({
   });
   useEffect(() => {
     loadCategories();
-  }, [])
-
+  }, []);
 
   useEffect(() => {
     loadLocations();
@@ -112,12 +111,13 @@ export default function AddEquipmentScreen({
 
   const handleAddImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Toast.show({
           type: "error",
           text1: "Permission needed",
-          text2: "Please grant permission to access your photos"
+          text2: "Please grant permission to access your photos",
         });
         return;
       }
@@ -136,7 +136,7 @@ export default function AddEquipmentScreen({
             let imageUrl = asset.uri;
 
             // Only handle file system operations on native platforms
-            if (Platform.OS !== 'web') {
+            if (Platform.OS !== "web") {
               const fileName = `${uuidv4()}.jpg`;
               const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
@@ -163,14 +163,14 @@ export default function AddEquipmentScreen({
         );
 
         setEquipmentImages([...equipmentImages, ...newImages]);
-        setImageUrls([...imageUrls, ...newImages.map(img => img.imageUrl)]);
+        setImageUrls([...imageUrls, ...newImages.map((img) => img.imageUrl)]);
       }
     } catch (error) {
       console.error("Error picking image:", error);
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Failed to pick image"
+        text2: "Failed to pick image",
       });
     }
   };
@@ -180,8 +180,13 @@ export default function AddEquipmentScreen({
       const imageToRemove = equipmentImages[index];
 
       // Only handle file system operations on native platforms
-      if (Platform.OS !== 'web' && imageToRemove.imageUrl.startsWith(FileSystem.cacheDirectory || "")) {
-        await FileSystem.deleteAsync(imageToRemove.imageUrl, { idempotent: true });
+      if (
+        Platform.OS !== "web" &&
+        imageToRemove.imageUrl.startsWith(FileSystem.cacheDirectory || "")
+      ) {
+        await FileSystem.deleteAsync(imageToRemove.imageUrl, {
+          idempotent: true,
+        });
       }
 
       setEquipmentImages(equipmentImages.filter((_, i) => i !== index));
@@ -191,17 +196,23 @@ export default function AddEquipmentScreen({
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Failed to remove image"
+        text2: "Failed to remove image",
       });
     }
   };
 
   const handleSubmit = async () => {
-    if (!equipment.name || !equipment.description || !selectedLocationId || !user?.id || !selectedCategoryId) {
+    if (
+      !equipment.name ||
+      !equipment.description ||
+      !selectedLocationId ||
+      !user?.id ||
+      !selectedCategoryId
+    ) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Please fill in all required fields"
+        text2: "Please fill in all required fields",
       });
       return;
     }
@@ -213,7 +224,7 @@ export default function AddEquipmentScreen({
         Toast.show({
           type: "error",
           text1: "Error",
-          text2: "Please select a valid category"
+          text2: "Please select a valid category",
         });
         return;
       }
@@ -246,7 +257,7 @@ export default function AddEquipmentScreen({
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Failed to create equipment"
+        text2: "Failed to create equipment",
       });
     } finally {
       setLoading(false);
@@ -254,17 +265,17 @@ export default function AddEquipmentScreen({
   };
 
   return (
-    <>
-      <ScrollView style={styles.container}>
-        <Text style={styles.title}>Add New Equipment</Text>
-
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <ScrollView style={styles.scrollView}>
         <TextInput
           label="Name"
           value={equipment.name}
           onChangeText={(text) => setEquipment({ ...equipment, name: text })}
           style={styles.input}
+          textColor={theme.colors.onSurface}
         />
-
         <TextInput
           label="Description"
           value={equipment.description}
@@ -273,100 +284,98 @@ export default function AddEquipmentScreen({
           }
           style={styles.input}
           multiline
+          numberOfLines={4}
+          textColor={theme.colors.onSurface}
         />
-
-        <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Category</Text>
+        <Text style={[styles.label, { color: theme.colors.onSurface }]}>
+          Category
+        </Text>
+        <View
+          style={[
+            styles.pickerContainer,
+            { backgroundColor: theme.colors.surfaceVariant },
+          ]}
+        >
           <Picker
             selectedValue={selectedCategoryId}
-            onValueChange={(value: number) => setSelectedCategoryId(value)}
-            style={styles.picker}
+            onValueChange={(value) => {
+              setSelectedCategoryId(value);
+              const selectedCategory = categories.find((c) => c.id === value);
+              if (selectedCategory) {
+                setEquipment({ ...equipment, category: selectedCategory.name });
+              }
+            }}
+            style={[styles.picker, { color: theme.colors.onSurface }]}
           >
-            <Picker.Item label="Select a category" value={0} />
             {categories.map((category) => (
               <Picker.Item
                 key={category.id}
                 label={category.name}
                 value={category.id}
+                color={theme.colors.onSurface}
               />
             ))}
           </Picker>
         </View>
-
-        <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Condition</Text>
+        <Text style={[styles.label, { color: theme.colors.onSurface }]}>
+          Location
+        </Text>
+        <View
+          style={[
+            styles.pickerContainer,
+            { backgroundColor: theme.colors.surfaceVariant },
+          ]}
+        >
           <Picker
-            selectedValue={equipment.condition}
-            onValueChange={(value: string) =>
-              setEquipment({ ...equipment, condition: value })
-            }
-            style={styles.picker}
+            selectedValue={selectedLocationId}
+            onValueChange={(value) => {
+              setSelectedLocationId(value);
+              setEquipment({ ...equipment, locationId: value });
+            }}
+            style={[styles.picker, { color: theme.colors.onSurface }]}
           >
-            <Picker.Item label="Good" value="Good" />
-            <Picker.Item label="Fair" value="Fair" />
-            <Picker.Item label="Poor" value="Poor" />
-            <Picker.Item label="Needs Repair" value="Needs Repair" />
+            <Picker.Item
+              label="Select a location"
+              value=""
+              color={theme.colors.onSurface}
+            />
+            {locations.map((location) => (
+              <Picker.Item
+                key={location.id}
+                label={location.name}
+                value={location.id}
+                color={theme.colors.onSurface}
+              />
+            ))}
           </Picker>
         </View>
-
-        <View style={styles.locationSection}>
-          <Text style={styles.sectionTitle}>Location</Text>
-
-          {initialLocation && (
-            <Text style={styles.currentLocation}>
-              Current Location: {initialLocation.latitude.toFixed(6)},{" "}
-              {initialLocation.longitude.toFixed(6)}
-            </Text>
-          )}
-
-          <View style={styles.pickerContainer}>
-            <Text style={styles.label}>Select Location</Text>
-            <Picker
-              selectedValue={selectedLocationId}
-              onValueChange={(value: string) => setSelectedLocationId(value)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a location" value="" />
-              {locations.map((location) => (
-                <Picker.Item
-                  key={location.id}
-                  label={location.name}
-                  value={location.id}
-                />
-              ))}
-            </Picker>
-          </View>
-
-          <Button
-            mode="outlined"
-            onPress={handleCreateLocation}
-            style={styles.createLocationButton}
-          >
-            Create New Location
-          </Button>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Images</Text>
-          <ImageList
-            images={imageUrls}
-            onAddImage={handleAddImage}
-            onRemoveImage={handleRemoveImage}
-          />
-        </View>
-
+        <Button
+          mode="outlined"
+          onPress={handleCreateLocation}
+          style={styles.button}
+          textColor={theme.colors.primary}
+        >
+          Create New Location
+        </Button>
+        <Text style={[styles.label, { color: theme.colors.onSurface }]}>
+          Images
+        </Text>
+        <ImageList
+          images={imageUrls}
+          onAddImage={handleAddImage}
+          onRemoveImage={handleRemoveImage}
+        />
         <Button
           mode="contained"
           onPress={handleSubmit}
-          style={styles.submitButton}
           loading={loading}
           disabled={loading}
+          style={styles.submitButton}
         >
-          Create Equipment
+          Add Equipment
         </Button>
       </ScrollView>
-      <Toast />
-    </>
+    </View>
   );
 }
 
@@ -375,11 +384,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+  scrollView: {
+    flex: 1,
   },
   input: {
     marginBottom: 16,
@@ -398,26 +404,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: "#666",
   },
-  locationSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  currentLocation: {
-    marginBottom: 10,
-    color: "#666",
-  },
-  createLocationButton: {
+  button: {
     marginTop: 10,
   },
   submitButton: {
     marginTop: 20,
-    marginBottom: 20,
-  },
-  section: {
     marginBottom: 20,
   },
 });
