@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, FlatList } from "react-native";
-import { Text, Card, useTheme, FAB, Searchbar, Chip, ActivityIndicator } from "react-native-paper";
+import {
+  Text,
+  Card,
+  useTheme,
+  FAB,
+  Searchbar,
+  Chip,
+  ActivityIndicator,
+} from "react-native-paper";
 import { useAuth } from "../context/AuthContext";
 import { getByOwner } from "../api/equipmentApi";
 import { Equipment, EquipmentImage } from "../types/Equipment";
@@ -40,9 +48,12 @@ export default function EquipmentScreen() {
       const data = await getCategories();
       // Sort categories: parent categories first, then their children
       const sortedCategories = data.sort((a, b) => {
-        if (a.parentCategoryId === null && b.parentCategoryId !== null) return -1;
-        if (a.parentCategoryId !== null && b.parentCategoryId === null) return 1;
-        if (a.parentCategoryId === b.parentCategoryId) return a.name.localeCompare(b.name);
+        if (a.parentCategoryId === null && b.parentCategoryId !== null)
+          return -1;
+        if (a.parentCategoryId !== null && b.parentCategoryId === null)
+          return 1;
+        if (a.parentCategoryId === b.parentCategoryId)
+          return a.name.localeCompare(b.name);
         return 0;
       });
       setCategories(sortedCategories);
@@ -61,29 +72,35 @@ export default function EquipmentScreen() {
 
     // Apply category filter
     if (selectedCategory) {
-      const selectedCategoryObj = categories.find(c => c.name === selectedCategory);
+      const selectedCategoryObj = categories.find(
+        (c) => c.name === selectedCategory
+      );
       if (selectedCategoryObj) {
         if (selectedCategoryObj.parentCategoryId === null) {
           // If parent category is selected, show all its children
           const childCategories = categories
-            .filter(c => c.parentCategoryId === selectedCategoryObj.id)
-            .map(c => c.name);
-          filtered = filtered.filter(item =>
-            childCategories.includes(item.category) ||
-            item.category === selectedCategory
+            .filter((c) => c.parentCategoryId === selectedCategoryObj.id)
+            .map((c) => c.name);
+          filtered = filtered.filter(
+            (item) =>
+              childCategories.includes(item.category) ||
+              item.category === selectedCategory
           );
         } else {
           // If child category is selected, show only that category
-          filtered = filtered.filter(item => item.category === selectedCategory);
+          filtered = filtered.filter(
+            (item) => item.category === selectedCategory
+          );
         }
       }
     }
 
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -91,11 +108,18 @@ export default function EquipmentScreen() {
   }, [searchQuery, selectedCategory, equipment, categories]);
 
   const getMainImage = (images: EquipmentImage[]) => {
-    return images.find(img => img.isMainImage)?.imageUrl || images[0]?.imageUrl;
+    return (
+      images.find((img) => img.isMainImage)?.imageUrl || images[0]?.imageUrl
+    );
   };
 
   const renderEquipmentCard = ({ item }: { item: Equipment }) => (
-    <Card style={styles.card} onPress={() => navigation.navigate("EquipmentDetails", { equipmentId: item.id })}>
+    <Card
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate("EquipmentDetails", { equipmentId: item.id })
+      }
+    >
       {item.images && item.images.length > 0 && (
         <Card.Cover
           source={{ uri: getMainImage(item.images) }}
@@ -103,13 +127,26 @@ export default function EquipmentScreen() {
         />
       )}
       <Card.Content style={styles.cardContent}>
-        <Text variant="titleMedium" style={styles.cardTitle}>{item.name}</Text>
-        <Text variant="bodyMedium" numberOfLines={2} style={styles.cardDescription}>
+        <Text
+          variant="titleMedium"
+          style={[styles.cardTitle, { color: theme.colors.onSurface }]}
+        >
+          {item.name}
+        </Text>
+        <Text
+          variant="bodyMedium"
+          numberOfLines={2}
+          style={[
+            styles.cardDescription,
+            { color: theme.colors.onSurfaceVariant },
+          ]}
+        >
           {item.description}
         </Text>
         <View style={styles.cardFooter}>
           <Chip
             style={styles.categoryChip}
+            textStyle={{ color: theme.colors.primary }}
             icon={() => (
               <MaterialCommunityIcons
                 name="tag"
@@ -123,13 +160,24 @@ export default function EquipmentScreen() {
           <Chip
             style={[
               styles.statusChip,
-              { backgroundColor: item.isAvailable ? theme.colors.primaryContainer : theme.colors.errorContainer }
+              {
+                backgroundColor: item.isAvailable
+                  ? theme.colors.primaryContainer
+                  : theme.colors.errorContainer,
+              },
             ]}
+            textStyle={{
+              color: item.isAvailable
+                ? theme.colors.primary
+                : theme.colors.error,
+            }}
             icon={() => (
               <MaterialCommunityIcons
                 name={item.isAvailable ? "check-circle" : "close-circle"}
                 size={16}
-                color={item.isAvailable ? theme.colors.primary : theme.colors.error}
+                color={
+                  item.isAvailable ? theme.colors.primary : theme.colors.error
+                }
               />
             )}
           >
@@ -149,7 +197,9 @@ export default function EquipmentScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.filtersContainer}>
         <Searchbar
           placeholder="Search equipment..."
@@ -166,6 +216,7 @@ export default function EquipmentScreen() {
             selected={!selectedCategory}
             onPress={() => setSelectedCategory("")}
             style={styles.categoryChip}
+            textStyle={{ color: theme.colors.primary }}
             icon={() => (
               <MaterialCommunityIcons
                 name="apps"
@@ -183,13 +234,25 @@ export default function EquipmentScreen() {
               onPress={() => setSelectedCategory(category.name)}
               style={[
                 styles.categoryChip,
-                category.parentCategoryId === null && { backgroundColor: theme.colors.primaryContainer }
+                category.parentCategoryId === null && {
+                  backgroundColor: theme.colors.primaryContainer,
+                },
               ]}
+              textStyle={{
+                color:
+                  category.parentCategoryId === null
+                    ? theme.colors.primary
+                    : theme.colors.onSurface,
+              }}
               icon={() => (
                 <MaterialCommunityIcons
                   name={category.iconName as any}
                   size={16}
-                  color={theme.colors.primary}
+                  color={
+                    category.parentCategoryId === null
+                      ? theme.colors.primary
+                      : theme.colors.onSurface
+                  }
                 />
               )}
             >

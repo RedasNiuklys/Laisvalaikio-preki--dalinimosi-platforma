@@ -18,9 +18,11 @@ import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { styles } from "../styles/RegisterScreen.styles";
 import { showToast } from "../components/Toast";
+import { useTranslation } from "react-i18next";
 
 const RegisterScreen = () => {
   const theme = usePaperTheme();
+  const { t } = useTranslation();
   const { register } = useAuth();
   const navigation = useNavigation();
 
@@ -114,7 +116,7 @@ const RegisterScreen = () => {
               variant="headlineMedium"
               style={[styles.title, { color: theme.colors.onSurface }]}
             >
-              Create Account
+              {t("auth.register.title")}
             </Text>
 
             {error && (
@@ -125,7 +127,7 @@ const RegisterScreen = () => {
 
             <TextInput
               mode="outlined"
-              label="Email"
+              label={t("auth.register.email")}
               value={email}
               onChangeText={handleEmailChange}
               style={styles.input}
@@ -134,37 +136,35 @@ const RegisterScreen = () => {
               autoComplete="email"
               autoFocus
               accessibilityRole="text"
-              accessibilityLabel="Email input"
-              tabIndex={-1}
-              left={<TextInput.Icon icon="email" tabIndex={-1} />}
+              accessibilityLabel={t("auth.register.email")}
+              left={<TextInput.Icon icon="email" />}
               right={
                 <TextInput.Icon
                   icon={isEmailValid ? "check" : "close"}
                   color={
                     isEmailValid ? theme.colors.primary : theme.colors.error
                   }
-                  tabIndex={-1}
                 />
               }
             />
 
             <TextInput
               mode="outlined"
-              label="Password"
+              label={t("auth.register.password")}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!isPasswordVisible}
               style={styles.input}
+              returnKeyType="done"
               autoComplete="password"
               accessibilityRole="text"
-              accessibilityLabel="Password input"
-              left={<TextInput.Icon icon="lock" tabIndex={-1} />}
+              accessibilityLabel={t("auth.register.password")}
+              left={<TextInput.Icon icon="lock" />}
               right={
                 <TextInput.Icon
                   icon={isPasswordVisible ? "eye-off" : "eye"}
                   onPressIn={handlePasswordVisibility}
                   onPressOut={handlePasswordVisibilityRelease}
-                  tabIndex={-1}
                 />
               }
             />
@@ -175,21 +175,21 @@ const RegisterScreen = () => {
 
             <TextInput
               mode="outlined"
-              label="Confirm Password"
+              label={t("auth.register.confirmPassword")}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!isConfirmPasswordVisible}
               style={styles.input}
+              returnKeyType="done"
               autoComplete="password"
               accessibilityRole="text"
-              accessibilityLabel="Confirm password input"
-              left={<TextInput.Icon icon="lock-check" tabIndex={-1} />}
+              accessibilityLabel={t("auth.register.confirmPassword")}
+              left={<TextInput.Icon icon="lock" />}
               right={
                 <TextInput.Icon
                   icon={isConfirmPasswordVisible ? "eye-off" : "eye"}
                   onPressIn={handleConfirmPasswordVisibility}
                   onPressOut={handleConfirmPasswordVisibilityRelease}
-                  tabIndex={-1}
                 />
               }
             />
@@ -197,13 +197,11 @@ const RegisterScreen = () => {
             <Button
               mode="contained"
               onPress={handleRegister}
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-              icon="account-plus"
               loading={isLoading}
-              disabled={isLoading}
+              disabled={!isEmailValid || !password || !confirmPassword}
+              style={styles.button}
             >
-              Register
+              {t("auth.register.submit")}
             </Button>
 
             <TouchableOpacity
@@ -216,8 +214,7 @@ const RegisterScreen = () => {
               <Text
                 style={[styles.loginText, { color: theme.colors.onSurface }]}
               >
-                Already have an account?{" "}
-                <Text style={{ color: theme.colors.primary }}>Login here</Text>
+                {t("auth.register.haveAccount")} {t("auth.register.signIn")}
               </Text>
             </TouchableOpacity>
           </Surface>

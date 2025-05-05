@@ -23,6 +23,7 @@ import { getAuthToken } from "../utils/authUtils";
 import { BASE_URL } from "../utils/envConfig";
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
+import { useTranslation } from "react-i18next";
 
 interface UserProfile {
   id: string;
@@ -35,6 +36,7 @@ const ProfileScreen = () => {
   const theme = usePaperTheme();
   const navigation = useNavigation();
   const { logout } = useAuth();
+  const { t } = useTranslation();
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,8 +80,8 @@ const ProfileScreen = () => {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
-          "Permission required",
-          "Please grant camera roll permissions to upload images"
+          t("profile.permissions.title"),
+          t("profile.permissions.message")
         );
         return false;
       }
@@ -104,7 +106,7 @@ const ProfileScreen = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image");
+      Alert.alert(t("common.error"), t("profile.image.pickError"));
     }
   };
 
@@ -124,7 +126,7 @@ const ProfileScreen = () => {
       }
     } catch (error) {
       console.error("Error taking photo:", error);
-      Alert.alert("Error", "Failed to take photo");
+      Alert.alert(t("common.error"), t("profile.image.takeError"));
     }
   };
 
@@ -198,10 +200,10 @@ const ProfileScreen = () => {
       setProfile((prev) =>
         prev ? { ...prev, avatarUrl: response.data.avatarUrl } : null
       );
-      Alert.alert("Success", "Profile picture updated successfully");
+      Alert.alert(t("common.success"), t("profile.image.uploadSuccess"));
     } catch (error) {
       console.error("Error uploading image:", error);
-      Alert.alert("Error", "Failed to upload profile picture");
+      Alert.alert(t("common.error"), t("profile.image.uploadError"));
     } finally {
       setLoading(false);
     }
@@ -222,7 +224,7 @@ const ProfileScreen = () => {
         variant="headlineMedium"
         style={{ color: theme.colors.onBackground }}
       >
-        Your Profile
+        {t("profile.title")}
       </Text>
 
       {profile ? (
@@ -244,31 +246,29 @@ const ProfileScreen = () => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={pickImage}>
-              <Text style={styles.buttonText}>Choose from Gallery</Text>
+              <Text style={styles.buttonText}>{t("profile.image.choose")}</Text>
             </TouchableOpacity>
 
             {Platform.OS !== "web" && (
               <TouchableOpacity style={styles.button} onPress={takePhoto}>
-                <Text style={styles.buttonText}>Take Photo</Text>
+                <Text style={styles.buttonText}>{t("profile.image.take")}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           <Text style={[styles.text, { color: theme.colors.onBackground }]}>
-            Name: {profile.name}
+            {t("profile.name")}: {profile.name}
           </Text>
           <Text style={[styles.text, { color: theme.colors.onBackground }]}>
-            Email: {profile.email}
+            {t("profile.email")}: {profile.email}
           </Text>
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Logout</Text>
+            <Text style={styles.logoutButtonText}>{t("profile.logout")}</Text>
           </TouchableOpacity>
         </>
       ) : (
-        <Text style={{ color: theme.colors.error }}>
-          No user data available
-        </Text>
+        <Text style={{ color: theme.colors.error }}>{t("profile.noData")}</Text>
       )}
     </View>
   );

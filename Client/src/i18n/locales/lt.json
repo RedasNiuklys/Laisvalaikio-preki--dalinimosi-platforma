@@ -59,7 +59,9 @@
     "categoryName": "Kategorijos pavadinimas",
     "categoryDescription": "Kategorijos aprašymas",
     "parentCategory": "Tėvinė kategorija",
-    "searchIcon": "Ieškoti paveiksliuko"
+    "searchIcon": "Ieškoti paveiksliuko",
+    "selectIcon": "Pasirinkti paveiksliuką",
+    "searchIcons": "Ieškoti paveiksliukų"
   },
   "navigation": {
     "home": "Pradžia",
@@ -107,6 +109,7 @@
     "login": {
       "title": "Prisijungimas",
       "email": "El. paštas",
+      "welcomeback": "Sveiki atvykę!",
       "password": "Slaptažodis",
       "submit": "Prisijungti",
       "forgotPassword": "Pamiršote slaptažodį?",
@@ -142,6 +145,15 @@
   },
   "profile": {
     "title": "Profilis",
+    "logout": "Atsijungti",
+    "name": "Vardas",
+    "email": "El. paštas",
+    "image": {
+      "choose": "Pasirinkti nuotrauką",
+      "take": "Nuotraukos pažymėjimas",
+      "noData": "Nera duomenų",
+      "success": "Nuotrauka sėkmingai įkelta"
+    },
     "personalInfo": "Asmeninė informacija",
     "myEquipment": "Mano įranga",
     "myBookings": "Mano rezervacijos",

@@ -18,19 +18,32 @@ builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
+Console.WriteLine("Database path: " + dbPath);
 
 // Use SQLite instead of SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+{
+    options.UseSqlite($"Data Source={dbPath}");
+    options.EnableSensitiveDataLogging();
+    options.EnableDetailedErrors();
+});
 
 // Identity + EF Core
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// Configure URLs
+builder.WebHost.UseUrls("http://10.151.26.44:5000");
+
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+System.Console.WriteLine("JWT Key: " + jwtKey);
+System.Console.WriteLine("JWT Issuer: " + jwtIssuer);
+System.Console.WriteLine("JWT Audience: " + jwtAudience);
 
 // Configure authentication
 builder.Services.AddAuthentication(options =>
@@ -42,12 +55,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,// required for live server
-        ValidateAudience = false,// required for live server
-        ValidateLifetime = true,// required for live server
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        // ValidIssuer = jwtIssuer, // required for live server
-        // ValidAudience = jwtIssuer, // required for live server
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 
@@ -103,25 +116,27 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Add SignalR services
+System.Console.WriteLine("Adding SignalR services");
 builder.Services.AddSignalR();
 
 // Configure CORS
+System.Console.WriteLine("Configuring CORS");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
         builder
             .WithOrigins(
-                "http://localhost:5000",
-                "http://localhost:19006",
-                "http://localhost:8081",
-                "http://localhost:19000",
-                "http://10.151.2.109:5000",
-                "http://10.151.2.109:8081",
-                "http://10.151.2.109:19006",
-                "http://10.151.2.109:19000",
-                "exp://10.151.2.109:19000",
-                "exp://localhost:19000",
-                "exp://localhost:8081"
+                "http://10.151.26.44:5000",    // Server
+                "http://10.151.26.44:8081",    // Client web
+                "http://10.151.26.44:19000",   // Expo dev client
+                "http://10.151.26.44:19006",   // Expo web
+                "http://localhost:8081",        // Local client web
+                "http://localhost:19000",       // Local Expo dev client
+                "http://localhost:19006",       // Local Expo web
+                "exp://10.151.26.44:19000",    // Expo dev client
+                "exp://10.151.26.44:8081",     // Expo web
+                "exp://localhost:19000",        // Local Expo dev client
+                "exp://localhost:8081"          // Local Expo web
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -133,11 +148,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+System.Console.WriteLine("Building app");
 var app = builder.Build();
+System.Console.WriteLine("Building app done");
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// Disable HTTPS redirection
+// app.UseHttpsRedirection();
 
 // Enable static file serving
 app.UseStaticFiles();
@@ -151,12 +169,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Map SignalR hub
+System.Console.WriteLine("Mapping SignalR hub");
 app.MapHub<ChatHub>("/chatHub");
 
 // Add this after app.Build()
-using (var scope = app.Services.CreateScope())
-{
-    await SeedAdminUser.Initialize(scope.ServiceProvider);
-}
 
+System.Console.WriteLine("Running app");
 app.Run();
+System.Console.WriteLine("Running app done");

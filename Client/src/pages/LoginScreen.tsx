@@ -23,9 +23,11 @@ import OAuthWebHandler from "../components/OAuthWebHandler";
 import OAuthMobileHandler from "../components/OAuthMobileHandler";
 import { loginScreenStyles } from "../styles/LoginScreen.styles";
 import { showToast } from "../components/Toast";
+import { useTranslation } from "react-i18next";
 
 const LoginScreen = () => {
   const theme = usePaperTheme();
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigation = useNavigation();
 
@@ -156,7 +158,7 @@ const LoginScreen = () => {
                   { color: theme.colors.onSurface },
                 ]}
               >
-                Login
+                {t("auth.login.title")}
               </Text>
               <Text
                 variant="headlineMedium"
@@ -165,7 +167,7 @@ const LoginScreen = () => {
                   { color: theme.colors.onSurface },
                 ]}
               >
-                Welcome Back
+                {t("auth.login.welcomeBack")}
               </Text>
 
               {error && (
@@ -181,7 +183,7 @@ const LoginScreen = () => {
 
               <TextInput
                 mode="outlined"
-                label="Email"
+                label={t("auth.login.email")}
                 value={email}
                 onChangeText={handleEmailChange}
                 style={loginScreenStyles.input}
@@ -190,7 +192,7 @@ const LoginScreen = () => {
                 autoComplete="email"
                 autoFocus
                 accessibilityRole="text"
-                accessibilityLabel="Email input"
+                accessibilityLabel={t("auth.login.email")}
                 tabIndex={-1}
                 left={<TextInput.Icon icon="email" tabIndex={-1} />}
                 right={
@@ -206,7 +208,7 @@ const LoginScreen = () => {
 
               <TextInput
                 mode="outlined"
-                label="Password"
+                label={t("auth.login.password")}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!isPasswordVisible}
@@ -214,7 +216,7 @@ const LoginScreen = () => {
                 returnKeyType="done"
                 autoComplete="password"
                 accessibilityRole="text"
-                accessibilityLabel="Password input"
+                accessibilityLabel={t("auth.login.password")}
                 left={<TextInput.Icon icon="lock" tabIndex={-1} />}
                 right={
                   <TextInput.Icon
@@ -229,13 +231,11 @@ const LoginScreen = () => {
               <Button
                 mode="contained"
                 onPress={handleLogin}
-                style={loginScreenStyles.button}
-                contentStyle={loginScreenStyles.buttonContent}
-                icon="login"
                 loading={isLoading}
-                disabled={isLoading}
+                disabled={!isEmailValid || !password}
+                style={loginScreenStyles.button}
               >
-                Login
+                {t("auth.login.submit")}
               </Button>
 
               <View style={loginScreenStyles.dividerContainer}>
@@ -244,7 +244,9 @@ const LoginScreen = () => {
                 <Divider style={loginScreenStyles.divider} />
               </View>
 
-              <Text style={loginScreenStyles.socialLoginText}>Log in with</Text>
+              <Text style={loginScreenStyles.socialLoginText}>
+                {t("auth.login.logInWith")}
+              </Text>
 
               <View style={loginScreenStyles.socialButtonsContainer}>
                 <TouchableOpacity
@@ -282,9 +284,9 @@ const LoginScreen = () => {
                     { color: theme.colors.onSurface },
                   ]}
                 >
-                  Don't have an account?{" "}
+                  {t("auth.login.noAccount")}
                   <Text style={{ color: theme.colors.primary }}>
-                    Register here
+                    {t("auth.login.signUp")}
                   </Text>
                 </Text>
               </TouchableOpacity>

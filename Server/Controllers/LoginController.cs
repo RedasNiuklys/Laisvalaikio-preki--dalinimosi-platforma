@@ -20,19 +20,22 @@ public class LoginController : ControllerBase
     private readonly ITokenService _tokenService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
     public LoginController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
         IHttpContextAccessor httpContextAccessor,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
+        _roleManager = roleManager;
     }
 
     [HttpPost("register")]
@@ -44,9 +47,13 @@ public class LoginController : ControllerBase
             Email = dto.Email, 
             UserName = dto.UserName ?? dto.Email,
             Name = dto.Name ?? "John Doe",
-            Theme = dto.Theme ?? "Light"
+            Theme = dto.Theme ?? "Light",
         };
-        
+        Console.WriteLine("User: {0}", user.Email);
+        Console.WriteLine("User: {0}", user.UserName);
+        Console.WriteLine("User: {0}", user.Name);
+        Console.WriteLine("User: {0}", user.Theme);
+        Console.WriteLine("User: {0}", user.AvatarUrl);
         var result = await _userManager.CreateAsync(user, dto.Password);
         Console.WriteLine("User created: {0}", result.Succeeded);
         
@@ -58,6 +65,25 @@ public class LoginController : ControllerBase
             }
             var errors = result.Errors.Select(e => e.Description).ToList();
             return BadRequest(new { errors });
+        }
+
+        // Check if this is the first user and make them an admin
+        Console.WriteLine("Checking if this is the first user");
+        var isFirstUser = _userManager.Users.Count() == 1;
+        Console.WriteLine("Is first user: {0}", isFirstUser);
+        if (isFirstUser)
+        {
+            // Ensure Admin role exists
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                Console.WriteLine("Admin role does not exist, creating it");
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
+            
+            // Add user to Admin role
+            await _userManager.AddToRoleAsync(user, "Admin");
+            Console.WriteLine("User added to Admin role");
+            Console.WriteLine("First user registered and set as Admin");
         }
 
         var token = await _tokenService.CreateTokenAsync(user);
@@ -200,7 +226,40 @@ public class LoginController : ControllerBase
             return StatusCode(500, new { message = "An error occurred during logout", error = ex.Message });
         }
     }
-    
+
+    [HttpPost("assign-admin/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AssignAdmin(string userId)
+    {
+        try
+        {
+            // Ensure Admin role exists
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID {userId} not found");
+
+            // Check if user is already an admin
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                return BadRequest("User is already an Admin");
+
+            // Add user to Admin role
+            var result = await _userManager.AddToRoleAsync(user, "Admin");
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok($"User {userId} has been set as Admin");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error occurred while setting user as Admin");
+        }
+    }
 
     public class GoogleMobileRequest
     {

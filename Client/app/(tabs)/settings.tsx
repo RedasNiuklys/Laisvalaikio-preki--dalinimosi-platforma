@@ -1,4 +1,10 @@
-import { View, StyleSheet, Platform, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import {
   Text,
   Switch,
@@ -10,6 +16,8 @@ import {
   List,
   RadioButton,
 } from "react-native-paper";
+import CountryFlag from "react-native-country-flag";
+
 import { useTheme as useAppTheme } from "@/src/context/ThemeContext";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -111,16 +119,49 @@ export default function SettingsScreen() {
           updateSettings({ ...settings, language: value });
         }}
       >
-        <RadioButton.Item
-          label={t("settings.language.english")}
-          value="en"
-          labelStyle={{ color: theme.colors.onBackground }}
-        />
-        <RadioButton.Item
-          label={t("settings.language.lithuanian")}
-          value="lt"
-          labelStyle={{ color: theme.colors.onBackground }}
-        />
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center" }}
+            onPress={() => {
+              handleLanguageChange("en");
+              updateSettings({ ...settings, language: "en" });
+            }}
+          >
+            <CountryFlag isoCode="GB" size={24} style={{ marginRight: 8 }} />
+            <RadioButton
+              value="en"
+              status={settings.language === "en" ? "checked" : "unchecked"}
+              onPress={() => {
+                handleLanguageChange("en");
+                updateSettings({ ...settings, language: "en" });
+              }}
+            />
+            <Text style={{ color: theme.colors.onBackground }}>
+              {t("settings.language.english")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ flexDirection: "row", alignItems: "center" }}
+            onPress={() => {
+              handleLanguageChange("lt");
+              updateSettings({ ...settings, language: "lt" });
+            }}
+          >
+            <CountryFlag isoCode="LT" size={24} style={{ marginRight: 8 }} />
+            <RadioButton
+              value="lt"
+              status={settings.language === "lt" ? "checked" : "unchecked"}
+              onPress={() => {
+                handleLanguageChange("lt");
+                updateSettings({ ...settings, language: "lt" });
+              }}
+            />
+            <Text style={{ color: theme.colors.onBackground }}>
+              {t("settings.language.lithuanian")}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </RadioButton.Group>
 
       <Text

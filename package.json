@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "expo-image-manipulator": "^13.0.6",
-    "react-native-geocoding": "^0.5.0"
-  }
-}

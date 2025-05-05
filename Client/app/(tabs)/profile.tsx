@@ -6,6 +6,7 @@ import { useTheme } from "react-native-paper";
 import { Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/src/context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export type ProfileStackParamList = {
   Profile: undefined;
@@ -17,6 +18,7 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 export default function ProfileStack() {
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     requestPermissions();
@@ -46,12 +48,12 @@ export default function ProfileStack() {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: "Your Profile" }}
+        options={{ title: t("profile.title") }}
       />
       <Stack.Screen
         name="UserForm"
         component={UserFormScreen}
-        options={{ title: "Edit Profile" }}
+        options={{ title: t("common.buttons.edit") }}
       />
     </Stack.Navigator>
   );

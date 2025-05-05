@@ -1,94 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { List, Button, Text, Divider } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { Category } from '@/src/types/Category';
-import { deleteCategory, getCategories } from '@/src/api/categoryApi';
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { List, Button, Text, Divider, useTheme } from "react-native-paper";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Category } from "@/src/types/Category";
+import { deleteCategory, getCategories } from "@/src/api/categoryApi";
 
 export default function AdminScreen() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-    const { t } = useTranslation();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { t } = useTranslation();
+  const theme = useTheme();
 
-    useEffect(() => {
-        loadCategories();
-    }, []);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
-    const loadCategories = async () => {
-        try {
-            const data = await getCategories();
-            setCategories(data);
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <View style={styles.container}>
-            <Text variant="headlineMedium" style={styles.title}>
-                {t('admin.title')}
-            </Text>
+  return (
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Text
+        variant="headlineMedium"
+        style={[styles.title, { color: theme.colors.onBackground }]}
+      >
+        {t("admin.title")}
+      </Text>
 
-            <ScrollView>
-                <List.Section>
-                    <List.Subheader>{t('admin.categories')}</List.Subheader>
-                    {categories.map((category) => (
-                        <React.Fragment key={category.id}>
-                            <List.Item
-                                title={category.name}
-                                description={category.description}
-                                right={() => (
-                                    <View style={styles.actions}>
-                                        <Button
-                                            mode="text"
-                                            onPress={() => router.push(`/(modals)/admin/${category.id}`)}
-                                        >
-                                            {t('admin.edit')}
-                                        </Button>
-                                        <Button
-                                            mode="text"
-                                            onPress={() => deleteCategory(category.id)}
-                                        >
-                                            {t('admin.delete')}
-                                        </Button>
-                                    </View>
-                                )}
-                            />
-                            <Divider />
-                        </React.Fragment>
-                    ))}
-                </List.Section>
-            </ScrollView>
+      <ScrollView>
+        <List.Section>
+          <List.Subheader style={{ color: theme.colors.onBackground }}>
+            {t("admin.categories")}
+          </List.Subheader>
+          {categories.map((category) => (
+            <React.Fragment key={category.id}>
+              <List.Item
+                title={category.name}
+                description={category.description}
+                titleStyle={{ color: theme.colors.onBackground }}
+                descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
+                right={() => (
+                  <View style={styles.actions}>
+                    <Button
+                      mode="text"
+                      onPress={() =>
+                        router.push(`/(modals)/admin/${category.id}`)
+                      }
+                      textColor={theme.colors.primary}
+                    >
+                      {t("admin.edit")}
+                    </Button>
+                    <Button
+                      mode="text"
+                      onPress={() => deleteCategory(category.id)}
+                      textColor={theme.colors.error}
+                    >
+                      {t("admin.delete")}
+                    </Button>
+                  </View>
+                )}
+              />
+              <Divider />
+            </React.Fragment>
+          ))}
+        </List.Section>
+      </ScrollView>
 
-            <Button
-                mode="contained"
-                onPress={() => router.push('/(modals)/admin/addCategory')}
-                style={styles.addButton}
-            >
-                {t('admin.addCategory')}
-            </Button>
-        </View>
-    );
+      <Button
+        mode="contained"
+        onPress={() => router.push("/(modals)/admin/addCategory")}
+        style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
+        textColor={theme.colors.onPrimary}
+      >
+        {t("admin.addCategory")}
+      </Button>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    title: {
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    actions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    addButton: {
-        marginTop: 16,
-    },
-}); 
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addButton: {
+    marginTop: 16,
+  },
+});
