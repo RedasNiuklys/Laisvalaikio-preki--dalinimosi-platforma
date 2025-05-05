@@ -38,7 +38,7 @@
     },
     "extra": {
       "router": {
-        "origin": false
+        "origin": true
       },
       "API_BASE_URL": "http://10.151.2.109:5000/api",
       "expoClientId": true

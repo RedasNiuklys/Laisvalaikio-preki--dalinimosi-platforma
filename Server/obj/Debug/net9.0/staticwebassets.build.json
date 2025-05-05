@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "HtMGK9i0jd8hl5Sy8z8ai/9Vy6+nhzrjzOsC//pzyuo=",
+  "Hash": "vw01adNrOy2sLCMQzZAeCylUGECHfkcCIbfAOlK8UX8=",
   "Source": "Server",
   "BasePath": "_content/Server",
   "Mode": "Default",
@@ -351,27 +351,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\equipment\\2bf48e3c-44b1-4b7d-83b5-a2040dd65169.jpg"
-    },
-    {
-      "Identity": "C:\\Users\\redniu\\OneDrive - Softera Baltic UAB\\Desktop\\Bakalauro\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg",
-      "SourceId": "Server",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redniu\\OneDrive - Softera Baltic UAB\\Desktop\\Bakalauro\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
-      "BasePath": "_content/Server",
-      "RelativePath": "uploads/equipment/af63986e-4305-4e49-97f9-d5107609f82b#[.{fingerprint}]?.jpg",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "s9vkkf8saa",
-      "Integrity": "UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg"
     }
   ],
   "Endpoints": [
@@ -1684,88 +1663,6 @@
         {
           "Name": "integrity",
           "Value": "sha256-mNiPWINm1A1LleNmS0d4srg4OFh5wWJC4MlDvrd2yPI="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/equipment/af63986e-4305-4e49-97f9-d5107609f82b.jpg",
-      "AssetFile": "C:\\Users\\redniu\\OneDrive - Softera Baltic UAB\\Desktop\\Bakalauro\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "110471"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/jpeg"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 17:24:53 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/equipment/af63986e-4305-4e49-97f9-d5107609f82b.s9vkkf8saa.jpg",
-      "AssetFile": "C:\\Users\\redniu\\OneDrive - Softera Baltic UAB\\Desktop\\Bakalauro\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "110471"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/jpeg"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 17:24:53 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "s9vkkf8saa"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/equipment/af63986e-4305-4e49-97f9-d5107609f82b.jpg"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc="
         }
       ]
     }

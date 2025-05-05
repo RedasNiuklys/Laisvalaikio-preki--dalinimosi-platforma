@@ -288,23 +288,5 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\equipment\2bf48e3c-44b1-4b7d-83b5-a2040dd65169.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\equipment\af63986e-4305-4e49-97f9-d5107609f82b.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Server</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Server</BasePath>
-      <RelativePath>uploads/equipment/af63986e-4305-4e49-97f9-d5107609f82b.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>s9vkkf8saa</Fingerprint>
-      <Integrity>UIuIY9oCiqtEhEe1ZX094QBSF30xxYn9Bobs06fsEXc=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\equipment\af63986e-4305-4e49-97f9-d5107609f82b.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
   </ItemGroup>
 </Project>

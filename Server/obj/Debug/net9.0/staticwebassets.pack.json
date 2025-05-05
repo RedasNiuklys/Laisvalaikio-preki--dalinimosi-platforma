@@ -65,10 +65,6 @@
       "PackagePath": "staticwebassets\\uploads\\equipment\\2bf48e3c-44b1-4b7d-83b5-a2040dd65169.jpg"
     },
     {
-      "Id": "C:\\Users\\redniu\\OneDrive - Softera Baltic UAB\\Desktop\\Bakalauro\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg",
-      "PackagePath": "staticwebassets\\uploads\\equipment\\af63986e-4305-4e49-97f9-d5107609f82b.jpg"
-    },
-    {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },
