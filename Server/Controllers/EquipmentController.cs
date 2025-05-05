@@ -13,10 +13,37 @@ namespace Server.Controllers
     public class EquipmentController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public EquipmentController(ApplicationDbContext context)
+        public EquipmentController(
+            ApplicationDbContext context,
+            IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+        }
+
+        private static string GetFullImageUrl(string relativeUrl, IConfiguration configuration)
+        {
+            if (string.IsNullOrEmpty(relativeUrl)) return null;
+            if (relativeUrl.StartsWith("http")) return relativeUrl; // Already a full URL
+
+            var localIP = configuration["AppSettings:LocalIP"];
+            var apiPort = configuration["AppSettings:ApiPort"];
+            return $"http://{localIP}:{apiPort}/{relativeUrl}";
+        }
+
+        private static string GetRelativeImageUrl(string fullUrl, IConfiguration configuration)
+        {
+            if (string.IsNullOrEmpty(fullUrl)) return null;
+
+            var localIP = configuration["AppSettings:LocalIP"];
+            var apiPort = configuration["AppSettings:ApiPort"];
+            var baseUrl = $"http://{localIP}:{apiPort}/";
+
+            return fullUrl.StartsWith(baseUrl)
+                ? fullUrl.Substring(baseUrl.Length)
+                : fullUrl;
         }
 
         // GET: api/Equipment
@@ -44,7 +71,7 @@ namespace Server.Controllers
                     Status = e.IsAvailable ? "Available" : "Unavailable",
                     CreatedAt = e.CreatedAt,
                     UpdatedAt = e.UpdatedAt,
-                    Location = new LocationResponseDto
+                    Location = new Location
                     {
                         Id = e.Location.Id,
                         Name = e.Location.Name,
@@ -60,7 +87,15 @@ namespace Server.Controllers
                         CreatedAt = e.Location.CreatedAt,
                         UpdatedAt = e.Location.UpdatedAt
                     },
-                    ImageUrls = e.Images.Select(i => i.ImageUrl).ToList()
+                    Images = e.Images.Select(i => new EquipmentImage
+                    {
+                        Id = i.Id,
+                        EquipmentId = i.EquipmentId,
+                        ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
+                        IsMainImage = i.IsMainImage,
+                        CreatedAt = i.CreatedAt,
+                        UpdatedAt = i.UpdatedAt
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -92,7 +127,7 @@ namespace Server.Controllers
                 Status = equipment.IsAvailable ? "Available" : "Unavailable",
                 CreatedAt = equipment.CreatedAt,
                 UpdatedAt = equipment.UpdatedAt,
-                Location = new LocationResponseDto
+                Location = new Location
                 {
                     Id = equipment.Location.Id,
                     Name = equipment.Location.Name,
@@ -108,14 +143,92 @@ namespace Server.Controllers
                     CreatedAt = equipment.Location.CreatedAt,
                     UpdatedAt = equipment.Location.UpdatedAt
                 },
-                ImageUrls = equipment.Images.Select(i => i.ImageUrl).ToList()
+                Images = equipment.Images.Select(i => new EquipmentImage
+                {
+                    Id = i.Id,
+                    EquipmentId = i.EquipmentId,
+                    ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
+                    IsMainImage = i.IsMainImage,
+                    CreatedAt = i.CreatedAt,
+                    UpdatedAt = i.UpdatedAt
+                }).ToList()
             };
+        }
+        // POST: api/Equipment/{id}/images
+        [HttpPost("{id}/images")]
+        public async Task<ActionResult> AddEquipmentImage(string id, [FromForm] IFormFile file, [FromForm] bool isMainImage = false)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var equipment = await _context.Equipment.FindAsync(id);
+            if (equipment == null)
+            {
+                return NotFound();
+            }
+
+            if (equipment.OwnerId != userId)
+            {
+                return Forbid();
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded");
+            }
+
+            try
+            {
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine("wwwroot", "uploads", "equipment", fileName);
+
+                // Ensure directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Create equipment image record
+                var equipmentImage = new EquipmentImage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    EquipmentId = equipment.Id,
+                    ImageUrl = Path.Combine("uploads", "equipment", fileName),
+                    IsMainImage = isMainImage,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.EquipmentImages.Add(equipmentImage);
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // POST: api/Equipment
         [HttpPost]
         public async Task<ActionResult<EquipmentResponseDto>> CreateEquipment(CreateEquipmentDto createDto)
         {
+            Console.WriteLine("Creating equipment");
+            Console.WriteLine(createDto.Name);
+            Console.WriteLine(createDto.Description);
+            Console.WriteLine(createDto.Category);
+            Console.WriteLine(createDto.IsAvailable);
+            Console.WriteLine(createDto.Condition);
+            Console.WriteLine(createDto.LocationId);
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -124,6 +237,7 @@ namespace Server.Controllers
 
             var equipment = new Equipment
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = createDto.Name,
                 Description = createDto.Description,
                 Category = createDto.Category,
@@ -133,27 +247,27 @@ namespace Server.Controllers
                 IsAvailable = true,
                 CreatedAt = DateTime.UtcNow
             };
+            Console.WriteLine("Equipment created");
 
             _context.Equipment.Add(equipment);
             await _context.SaveChangesAsync();
+            Console.WriteLine("Equipment saved");
 
             // Add images if provided
-            if (createDto.ImageUrls != null && createDto.ImageUrls.Any())
+            if (createDto.Images != null && createDto.Images.Any())
             {
-                foreach (var imageUrl in createDto.ImageUrls)
+                foreach (var image in createDto.Images)
                 {
-                    var image = new EquipmentImage
+                    var equipmentImage = new EquipmentImage
                     {
                         EquipmentId = equipment.Id,
-                        ImageUrl = imageUrl,
-                        IsMainImage = createDto.ImageUrls.IndexOf(imageUrl) == 0,
+                        ImageUrl = GetRelativeImageUrl(image.ImageUrl, _configuration),
+                        IsMainImage = image.IsMainImage,
                         CreatedAt = DateTime.UtcNow
                     };
-                    _context.EquipmentImages.Add(image);
+                    _context.EquipmentImages.Add(equipmentImage);
                 }
-                await _context.SaveChangesAsync();
             }
-
             return CreatedAtAction(
                 nameof(GetEquipment),
                 new { id = equipment.Id },
@@ -168,23 +282,7 @@ namespace Server.Controllers
                     Status = "Available",
                     CreatedAt = equipment.CreatedAt,
                     UpdatedAt = equipment.UpdatedAt,
-                    Location = new LocationResponseDto
-                    {
-                        Id = equipment.Location.Id,
-                        Name = equipment.Location.Name,
-                        Description = equipment.Location.Description,
-                        StreetAddress = equipment.Location.StreetAddress,
-                        City = equipment.Location.City,
-                        State = equipment.Location.State,
-                        PostalCode = equipment.Location.PostalCode,
-                        Country = equipment.Location.Country,
-                        Latitude = equipment.Location.Latitude,
-                        Longitude = equipment.Location.Longitude,
-                        UserId = equipment.Location.UserId,
-                        CreatedAt = equipment.Location.CreatedAt,
-                        UpdatedAt = equipment.Location.UpdatedAt
-                    },
-                    ImageUrls = equipment.Images.Select(i => i.ImageUrl).ToList()
+                    LocationId = equipment.LocationId,
                 });
         }
 
@@ -216,22 +314,22 @@ namespace Server.Controllers
             equipment.UpdatedAt = DateTime.UtcNow;
 
             // Update images if provided
-            if (updateDto.ImageUrls != null)
+            if (updateDto.Images != null)
             {
                 // Remove existing images
                 _context.EquipmentImages.RemoveRange(equipment.Images);
 
                 // Add new images
-                foreach (var imageUrl in updateDto.ImageUrls)
+                foreach (var image in updateDto.Images)
                 {
-                    var image = new EquipmentImage
+                    var equipmentImage = new EquipmentImage
                     {
                         EquipmentId = equipment.Id,
-                        ImageUrl = imageUrl,
-                        IsMainImage = updateDto.ImageUrls.IndexOf(imageUrl) == 0,
+                        ImageUrl = GetRelativeImageUrl(image.ImageUrl, _configuration),
+                        IsMainImage = image.IsMainImage,
                         CreatedAt = DateTime.UtcNow
                     };
-                    _context.EquipmentImages.Add(image);
+                    _context.EquipmentImages.Add(equipmentImage);
                 }
             }
 
@@ -296,7 +394,7 @@ namespace Server.Controllers
                     Status = e.IsAvailable ? "Available" : "Unavailable",
                     CreatedAt = e.CreatedAt,
                     UpdatedAt = e.UpdatedAt,
-                    Location = new LocationResponseDto
+                    Location = new Location
                     {
                         Id = e.Location.Id,
                         Name = e.Location.Name,
@@ -312,7 +410,15 @@ namespace Server.Controllers
                         CreatedAt = e.Location.CreatedAt,
                         UpdatedAt = e.Location.UpdatedAt
                     },
-                    ImageUrls = e.Images.Select(i => i.ImageUrl).ToList()
+                    Images = e.Images.Select(i => new EquipmentImage
+                    {
+                        Id = i.Id,
+                        EquipmentId = i.EquipmentId,
+                        ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
+                        IsMainImage = i.IsMainImage,
+                        CreatedAt = i.CreatedAt,
+                        UpdatedAt = i.UpdatedAt
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -324,4 +430,4 @@ namespace Server.Controllers
             return _context.Equipment.Any(e => e.Id == id);
         }
     }
-} 
+}

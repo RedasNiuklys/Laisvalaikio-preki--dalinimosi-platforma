@@ -1,4 +1,18 @@
 {
+  "admin": {
+    "title": "Admin Panel",
+    "categories": "Categories",
+    "addCategory": "Add Category",
+    "categoryName": "Category Name",
+    "categoryDescription": "Category Description",
+    "saveCategory": "Save Category",
+    "editCategory": "Edit Category",
+    "deleteCategory": "Delete Category",
+    "edit": "Edit",
+    "delete": "Delete",
+    "parentCategory": "Parent Category",
+    "searchIcon": "Search Icon"
+  },
   "common": {
     "buttons": {
       "cancel": "Cancel",
@@ -58,7 +72,8 @@
     "profile": "Profile",
     "locations": "Locations",
     "settings": "Settings",
-    "messages": "Messages"
+    "messages": "Messages",
+    "admin": "Admin"
   },
   "settings": {
     "title": "Settings",

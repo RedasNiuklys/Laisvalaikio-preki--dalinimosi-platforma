@@ -52,13 +52,23 @@
       }
     }
   },
+  "admin": {
+    "title": "Administratoriaus sąsaja",
+    "categories": "Kategorijos",
+    "addCategory": "Pridėti kategoriją",
+    "categoryName": "Kategorijos pavadinimas",
+    "categoryDescription": "Kategorijos aprašymas",
+    "parentCategory": "Tėvinė kategorija",
+    "searchIcon": "Ieškoti paveiksliuko"
+  },
   "navigation": {
     "home": "Pradžia",
     "equipment": "Įranga",
     "profile": "Profilis",
     "locations": "Vietos",
     "settings": "Nustatymai",
-    "messages": "Pranešimai"
+    "messages": "Pranešimai",
+    "admin": "Administratorius"
   },
   "settings": {
     "title": "Nustatymai",

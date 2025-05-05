@@ -7,13 +7,15 @@ import {
   Platform,
 } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useRoute } from "@react-navigation/native";
 import { Location, LocationFormData } from "../types/Location";
 import { createLocation, updateLocation } from "../api/locationApi";
 import { showToast } from "../components/Toast";
 import LocationPicker from "../components/LocationPicker";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+
 type LocationFormScreenParams = {
   location?: Location;
   isEditing?: boolean;
@@ -25,19 +27,19 @@ type LocationFormScreenParams = {
 };
 
 const LocationFormScreen = (
-  locationformscreenparams: LocationFormScreenParams
+  params: LocationFormScreenParams
 ) => {
   const theme = useTheme();
-  const navigation = useNavigation();
+  const router = useRouter();
   const { user } = useAuth();
   const route = useRoute();
   const { t } = useTranslation();
-  const {
-    location: existingLocation,
-    isEditing,
-    onSubmitSuccess,
-    initialCoordinates,
-  } = (route.params as LocationFormScreenParams) || {};
+  // const {
+  //   location: existingLocation,
+  //   isEditing,
+  //   onSubmitSuccess,
+  //   initialCoordinates,
+  // } = (route.params as LocationFormScreenParams) || {};
 
   const [formData, setFormData] = useState<Partial<Location>>({
     userId: user?.id,
@@ -56,28 +58,25 @@ const LocationFormScreen = (
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (existingLocation) {
-      setFormData(existingLocation);
-    } else if (initialCoordinates) {
+    if (params.location) {
+      setFormData(params.location);
+    } else if (params.initialCoordinates) {
       setFormData((prev) => ({
         ...prev,
         userId: user?.id,
-        latitude: initialCoordinates.latitude,
-        longitude: initialCoordinates.longitude,
+        latitude: params.initialCoordinates?.latitude,
+        longitude: params.initialCoordinates?.longitude,
       }));
-      console.log(formData);
     } else {
       setFormData((prev) => ({
         ...prev,
         userId: user?.id,
       }));
-      console.log(formData);
     }
-  }, [existingLocation, initialCoordinates]);
+  }, [params.location, params.initialCoordinates]);
 
   const handleChange = (field: keyof LocationFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    console.log(formData);
   };
 
   const handleLocationSelected = (locationData: {
@@ -88,21 +87,31 @@ const LocationFormScreen = (
     state: string;
     country: string;
   }) => {
-    console.log(locationData);
     setFormData((prev) => ({
       ...prev,
       ...locationData,
       userId: user?.id,
     }));
-    console.log(formData);
   };
 
   const validateForm = (): boolean => {
-    if (!formData.name) {
-      setError(t("location.errors.nameRequired"));
-      showToast("error", t("location.errors.nameRequired"));
+    const requiredFields = ['name', 'streetAddress', 'city', 'country'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof LocationFormData]);
+
+    if (missingFields.length > 0) {
+      const errorMessage = t("location.errors.requiredFields", { fields: missingFields.join(', ') });
+      setError(errorMessage);
+      showToast("error", errorMessage);
       return false;
     }
+
+    if (!formData.latitude || !formData.longitude) {
+      const errorMessage = t("location.errors.locationRequired");
+      setError(errorMessage);
+      showToast("error", errorMessage);
+      return false;
+    }
+
     return true;
   };
 
@@ -115,21 +124,19 @@ const LocationFormScreen = (
       setLoading(true);
       setError(null);
 
-      if (isEditing && existingLocation?.id) {
-        await updateLocation(existingLocation.id, formData as Location);
+      if (params.isEditing && params.location?.id) {
+        await updateLocation(params.location.id, formData as Location);
         showToast("success", t("location.form.success.updated"));
       } else {
         await createLocation(formData as Location);
         showToast("success", t("location.form.success.created"));
       }
 
-      if (onSubmitSuccess) {
-        onSubmitSuccess();
+      if (params.onSubmitSuccess) {
+        params.onSubmitSuccess();
+      } else if (router) {
+        router.back();
       }
-
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1500);
     } catch (err) {
       setError(t("location.form.error.save"));
       showToast("error", t("location.form.error.save"));
@@ -155,7 +162,7 @@ const LocationFormScreen = (
           ]}
         >
           <Text variant="headlineMedium" style={styles.title}>
-            {isEditing ? t("location.form.edit") : t("location.form.addNew")}
+            {params.isEditing ? t("location.form.edit") : t("location.form.addNew")}
           </Text>
 
           {error && (
@@ -187,12 +194,26 @@ const LocationFormScreen = (
               initialLocation={
                 formData.latitude && formData.longitude
                   ? {
-                      latitude: formData.latitude,
-                      longitude: formData.longitude,
-                    }
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    name: formData.name || "",
+                    streetAddress: formData.streetAddress || "",
+                    city: formData.city || "",
+                    country: formData.country || "",
+                    userId: formData.userId || "",
+                  }
                   : undefined
               }
-              onLocationSelected={handleLocationSelected}
+              onLocationSelected={(location) => {
+                handleLocationSelected({
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  streetAddress: location.streetAddress || "",
+                  city: location.city || "",
+                  state: location.state || "",
+                  country: location.country || "",
+                });
+              }}
             />
           </View>
 
@@ -203,7 +224,7 @@ const LocationFormScreen = (
             loading={loading}
             disabled={loading}
           >
-            {isEditing ? t("location.form.edit") : t("location.form.addNew")}
+            {params.isEditing ? t("location.form.edit") : t("location.form.addNew")}
           </Button>
         </View>
       </ScrollView>

@@ -5,7 +5,6 @@ namespace Server.DataTransferObjects
 {
     public class CreateLocationDto
     {
-        public string Id { get; set; }
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
@@ -46,4 +45,4 @@ namespace Server.DataTransferObjects
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
-} 
+}

@@ -2,9 +2,13 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
 
+
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
 
     public DbSet<Location> Locations { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
@@ -60,9 +64,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<Category>()
             .HasOne(c => c.ParentCategory)
-            .WithMany(c => c.Subcategories)
+            .WithMany(p => p.Categories)
             .HasForeignKey(c => c.ParentCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure identity seed for Category
+        modelBuilder.Entity<Category>()
+            .Property(c => c.Id)
+            .UseIdentityColumn(seed: 1, increment: 1);
 
         modelBuilder.Entity<Chat>()
             .HasMany(c => c.Participants)
@@ -111,5 +120,215 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(e => e.MaintenanceHistory)
             .HasForeignKey(m => m.EquipmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // // Seed Categories
+        modelBuilder.Entity<Category>().HasData(
+            // Parent Categories
+            new Category
+            {
+                Id = 1,
+                Name = "Winter",
+                IconName = "snowflake",
+                ParentCategoryId = null,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 2,
+                Name = "Water",
+                IconName = "waves",
+                ParentCategoryId = null,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 3,
+                Name = "Summer",
+                IconName = "weather-sunny",
+                ParentCategoryId = null,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+
+            // Winter Categories
+            new Category
+            {
+                Id = 4,
+                Name = "Winter Sports",
+                IconName = "snowboard",
+                ParentCategoryId = 1,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 5,
+                Name = "Skiing",
+                IconName = "ski",
+                ParentCategoryId = 1,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 6,
+                Name = "Hockey",
+                IconName = "hockey-puck",
+                ParentCategoryId = 1,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+
+            // Water Categories
+            new Category
+            {
+                Id = 7,
+                Name = "Swimming",
+                IconName = "swim",
+                ParentCategoryId = 2,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 8,
+                Name = "Surfing",
+                IconName = "surfing",
+                ParentCategoryId = 2,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 9,
+                Name = "Kayaking",
+                IconName = "kayak",
+                ParentCategoryId = 2,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 10,
+                Name = "Fishing",
+                IconName = "fishing",
+                ParentCategoryId = 2,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+
+            // Summer Categories
+            new Category
+            {
+                Id = 11,
+                Name = "Cycling",
+                IconName = "bicycle",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 12,
+                Name = "Hiking",
+                IconName = "hiking",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 13,
+                Name = "Camping",
+                IconName = "camping",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 14,
+                Name = "BBQ",
+                IconName = "grill",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 15,
+                Name = "Tennis",
+                IconName = "tennis",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 16,
+                Name = "Basketball",
+                IconName = "basketball",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 17,
+                Name = "Soccer",
+                IconName = "soccer",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 18,
+                Name = "Volleyball",
+                IconName = "volleyball",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 19,
+                Name = "Running",
+                IconName = "run",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 20,
+                Name = "Yoga",
+                IconName = "yoga",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 21,
+                Name = "Golf",
+                IconName = "golf",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            },
+            new Category
+            {
+                Id = 22,
+                Name = "Rollerblading",
+                IconName = "roller-skate",
+                ParentCategoryId = 3,
+                CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
+            }
+        );
     }
 }
+

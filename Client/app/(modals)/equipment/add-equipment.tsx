@@ -3,6 +3,8 @@ import { View } from "react-native";
 import { useAuth } from "../../../src/context/AuthContext";
 import AddEquipmentScreen from "../../../src/pages/AddEquipmentScreen";
 import * as LocationService from "expo-location";
+import { Appbar } from "react-native-paper";
+import { router } from "expo-router";
 
 export default function AddEquipmentModal() {
   const { user } = useAuth();
@@ -36,13 +38,17 @@ export default function AddEquipmentModal() {
 
   return (
     <View style={{ flex: 1 }}>
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content title="Add Equipment" />
+      </Appbar.Header>
       <AddEquipmentScreen
         initialLocation={
           currentLocation?.coords
             ? {
-                latitude: currentLocation.coords.latitude,
-                longitude: currentLocation.coords.longitude,
-              }
+              latitude: currentLocation.coords.latitude,
+              longitude: currentLocation.coords.longitude,
+            }
             : undefined
         }
       />

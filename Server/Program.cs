@@ -10,7 +10,7 @@ using Server.Models;
 using Server.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
-var dbPath = Path.Combine(Directory.GetCurrentDirectory(),"Data", "database.db");
+var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
 
 // Use SQLite instead of SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -51,7 +51,7 @@ builder.Services.AddAuthentication(options =>
         {
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
-            
+
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
             {
                 context.Token = accessToken;
@@ -105,14 +105,14 @@ builder.Services.AddCors(options =>
         builder
             .WithOrigins(
                 "http://localhost:5000",
-                "http://localhost:19006", 
+                "http://localhost:19006",
                 "http://localhost:8081",
                 "http://localhost:19000",
-                "http://10.151.26.44:5000",
-                "http://10.151.26.44:8081",
-                "http://10.151.26.44:19006",
-                "http://10.151.26.44:19000",
-                "exp://10.151.26.44:19000",
+                "http://10.151.2.109:5000",
+                "http://10.151.2.109:8081",
+                "http://10.151.2.109:19006",
+                "http://10.151.2.109:19000",
+                "exp://10.151.2.109:19000",
                 "exp://localhost:19000",
                 "exp://localhost:8081"
             )
@@ -124,11 +124,11 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI();
+// app.UseSwagger();
+// app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

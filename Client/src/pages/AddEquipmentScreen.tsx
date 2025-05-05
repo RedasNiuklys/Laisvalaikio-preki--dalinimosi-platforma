@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
-import { router } from "expo-router";
-import { CreateEquipmentDto } from "../types/Equipment";
+import { useRouter } from "expo-router";
+import { CreateEquipmentDto, EquipmentImage } from "../types/Equipment";
 import { Location } from "../types/Location";
+import { Category } from "../types/Category";
 import { getByOwner } from "../api/locationApi";
-import { create } from "../api/equipmentApi";
+import { create, uploadImage } from "../api/equipmentApi";
+import { getCategories } from "../api/categoryApi";
 import { useAuth } from "../context/AuthContext";
 import { Picker } from "@react-native-picker/picker";
 import LocationFormScreen from "./LocationFormScreen";
+import { ImageList } from "../components/ImageList";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { v4 as uuidv4 } from "uuid";
+import Toast from "react-native-toast-message";
 
 type AddEquipmentScreenProps = {
   initialLocation?: {
@@ -22,17 +29,27 @@ export default function AddEquipmentScreen({
 }: AddEquipmentScreenProps) {
   const theme = useTheme();
   const { user } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
   const [showLocationForm, setShowLocationForm] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [equipmentImages, setEquipmentImages] = useState<EquipmentImage[]>([]);
   const [equipment, setEquipment] = useState<CreateEquipmentDto>({
     name: "",
     description: "",
     locationId: "",
     condition: "Good",
     isAvailable: true,
+    category: "",
   });
+  useEffect(() => {
+    loadCategories();
+  }, [])
+
 
   useEffect(() => {
     loadLocations();
@@ -49,13 +66,36 @@ export default function AddEquipmentScreen({
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+      console.log("Categories loaded:", data);
+      if (data.length > 0) {
+        setSelectedCategoryId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+    }
+  };
+
   const handleCreateLocation = () => {
     setShowLocationForm(true);
   };
 
-  const handleLocationCreated = () => {
+  const handleLocationCreated = async () => {
     setShowLocationForm(false);
-    loadLocations();
+    console.log("Came to handleLocationCreated");
+    const updatedLocations = await getByOwner(user?.id || "");
+    setLocations(updatedLocations);
+
+    // Select the newly created location
+    if (updatedLocations.length > 0) {
+      const lastLocation = updatedLocations[updatedLocations.length - 1];
+      if (lastLocation.id) {
+        setSelectedLocationId(lastLocation.id);
+      }
+    }
   };
 
   if (showLocationForm) {
@@ -70,116 +110,263 @@ export default function AddEquipmentScreen({
     );
   }
 
+  const handleAddImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Toast.show({
+          type: "error",
+          text1: "Permission needed",
+          text2: "Please grant permission to access your photos"
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        const newImages = await Promise.all(
+          result.assets.map(async (asset) => {
+            let imageUrl = asset.uri;
+
+            // Only handle file system operations on native platforms
+            if (Platform.OS !== 'web') {
+              const fileName = `${uuidv4()}.jpg`;
+              const filePath = `${FileSystem.cacheDirectory}${fileName}`;
+
+              // Copy the image to cache directory
+              await FileSystem.copyAsync({
+                from: asset.uri,
+                to: filePath,
+              });
+
+              imageUrl = filePath;
+            }
+
+            const newImage: EquipmentImage = {
+              id: 0, // This will be set by the server
+              equipmentId: 0, // This will be set when equipment is created
+              imageUrl: imageUrl,
+              isMainImage: equipmentImages.length === 0, // First image is main by default
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+
+            return newImage;
+          })
+        );
+
+        setEquipmentImages([...equipmentImages, ...newImages]);
+        setImageUrls([...imageUrls, ...newImages.map(img => img.imageUrl)]);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to pick image"
+      });
+    }
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    try {
+      const imageToRemove = equipmentImages[index];
+
+      // Only handle file system operations on native platforms
+      if (Platform.OS !== 'web' && imageToRemove.imageUrl.startsWith(FileSystem.cacheDirectory || "")) {
+        await FileSystem.deleteAsync(imageToRemove.imageUrl, { idempotent: true });
+      }
+
+      setEquipmentImages(equipmentImages.filter((_, i) => i !== index));
+      setImageUrls(imageUrls.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error("Error removing image:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to remove image"
+      });
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!equipment.name || !equipment.description || !selectedLocationId) {
-      Alert.alert("Error", "Please fill in all required fields");
+    if (!equipment.name || !equipment.description || !selectedLocationId || !user?.id || !selectedCategoryId) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Please fill in all required fields"
+      });
       return;
     }
 
     setLoading(true);
     try {
-      const newEquipment = {
-        ...equipment,
+      const selectedCategory = categories[selectedCategoryId - 1];
+      if (!selectedCategory) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please select a valid category"
+        });
+        return;
+      }
+
+      const newEquipment: CreateEquipmentDto = {
+        name: equipment.name,
+        description: equipment.description,
         locationId: selectedLocationId,
-        ownerId: user?.id || "",
-        images: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        category: selectedCategory.name,
+        condition: equipment.condition,
+        isAvailable: equipment.isAvailable,
       };
-      await create(newEquipment);
+
+      console.log("newEquipment", newEquipment);
+      const createdEquipment = await create(newEquipment);
+      console.log("createdEquipment", createdEquipment);
+
+      // Then upload images if any
+      if (equipmentImages.length > 0) {
+        await Promise.all(
+          equipmentImages.map(async (image, index) => {
+            await uploadImage(createdEquipment.id, image.imageUrl, index === 0);
+          })
+        );
+      }
+
       router.back();
     } catch (error) {
       console.error("Failed to create equipment:", error);
-      Alert.alert("Error", "Failed to create equipment");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to create equipment"
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Add New Equipment</Text>
+    <>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>Add New Equipment</Text>
 
-      <TextInput
-        label="Name"
-        value={equipment.name}
-        onChangeText={(text) => setEquipment({ ...equipment, name: text })}
-        style={styles.input}
-      />
+        <TextInput
+          label="Name"
+          value={equipment.name}
+          onChangeText={(text) => setEquipment({ ...equipment, name: text })}
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Description"
-        value={equipment.description}
-        onChangeText={(text) =>
-          setEquipment({ ...equipment, description: text })
-        }
-        style={styles.input}
-        multiline
-      />
-
-      <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Condition</Text>
-        <Picker
-          selectedValue={equipment.condition}
-          onValueChange={(value: string) =>
-            setEquipment({ ...equipment, condition: value })
+        <TextInput
+          label="Description"
+          value={equipment.description}
+          onChangeText={(text) =>
+            setEquipment({ ...equipment, description: text })
           }
-          style={styles.picker}
-        >
-          <Picker.Item label="Good" value="Good" />
-          <Picker.Item label="Fair" value="Fair" />
-          <Picker.Item label="Poor" value="Poor" />
-          <Picker.Item label="Needs Repair" value="Needs Repair" />
-        </Picker>
-      </View>
-
-      <View style={styles.locationSection}>
-        <Text style={styles.sectionTitle}>Location</Text>
-
-        {initialLocation && (
-          <Text style={styles.currentLocation}>
-            Current Location: {initialLocation.latitude.toFixed(6)},{" "}
-            {initialLocation.longitude.toFixed(6)}
-          </Text>
-        )}
+          style={styles.input}
+          multiline
+        />
 
         <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Select Location</Text>
+          <Text style={styles.label}>Category</Text>
           <Picker
-            selectedValue={selectedLocationId}
-            onValueChange={(value: string) => setSelectedLocationId(value)}
+            selectedValue={selectedCategoryId}
+            onValueChange={(value: number) => setSelectedCategoryId(value)}
             style={styles.picker}
           >
-            <Picker.Item label="Select a location" value="" />
-            {locations.map((location) => (
+            <Picker.Item label="Select a category" value={0} />
+            {categories.map((category) => (
               <Picker.Item
-                key={location.id}
-                label={location.name}
-                value={location.id}
+                key={category.id}
+                label={category.name}
+                value={category.id}
               />
             ))}
           </Picker>
         </View>
 
-        <Button
-          mode="outlined"
-          onPress={handleCreateLocation}
-          style={styles.createLocationButton}
-        >
-          Create New Location
-        </Button>
-      </View>
+        <View style={styles.pickerContainer}>
+          <Text style={styles.label}>Condition</Text>
+          <Picker
+            selectedValue={equipment.condition}
+            onValueChange={(value: string) =>
+              setEquipment({ ...equipment, condition: value })
+            }
+            style={styles.picker}
+          >
+            <Picker.Item label="Good" value="Good" />
+            <Picker.Item label="Fair" value="Fair" />
+            <Picker.Item label="Poor" value="Poor" />
+            <Picker.Item label="Needs Repair" value="Needs Repair" />
+          </Picker>
+        </View>
 
-      <Button
-        mode="contained"
-        onPress={handleSubmit}
-        style={styles.submitButton}
-        loading={loading}
-        disabled={loading}
-      >
-        Create Equipment
-      </Button>
-    </ScrollView>
+        <View style={styles.locationSection}>
+          <Text style={styles.sectionTitle}>Location</Text>
+
+          {initialLocation && (
+            <Text style={styles.currentLocation}>
+              Current Location: {initialLocation.latitude.toFixed(6)},{" "}
+              {initialLocation.longitude.toFixed(6)}
+            </Text>
+          )}
+
+          <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Select Location</Text>
+            <Picker
+              selectedValue={selectedLocationId}
+              onValueChange={(value: string) => setSelectedLocationId(value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select a location" value="" />
+              {locations.map((location) => (
+                <Picker.Item
+                  key={location.id}
+                  label={location.name}
+                  value={location.id}
+                />
+              ))}
+            </Picker>
+          </View>
+
+          <Button
+            mode="outlined"
+            onPress={handleCreateLocation}
+            style={styles.createLocationButton}
+          >
+            Create New Location
+          </Button>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Images</Text>
+          <ImageList
+            images={imageUrls}
+            onAddImage={handleAddImage}
+            onRemoveImage={handleRemoveImage}
+          />
+        </View>
+
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          style={styles.submitButton}
+          loading={loading}
+          disabled={loading}
+        >
+          Create Equipment
+        </Button>
+      </ScrollView>
+      <Toast />
+    </>
   );
 }
 
@@ -228,6 +415,9 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 20,
+    marginBottom: 20,
+  },
+  section: {
     marginBottom: 20,
   },
 });

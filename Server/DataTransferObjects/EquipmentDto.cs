@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Server.Models;
 
 namespace Server.DataTransferObjects
 {
     public class CreateEquipmentDto
     {
+
         [Required]
         [StringLength(100)]
         public string Name { get; set; }
@@ -21,10 +23,13 @@ namespace Server.DataTransferObjects
         [Required]
         public string Condition { get; set; }
 
-        public List<string> ImageUrls { get; set; }
+        [Required]
+        public bool IsAvailable { get; set; }
+
 
         [Required]
         public string LocationId { get; set; }
+        public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }
 
     public class UpdateEquipmentDto : CreateEquipmentDto
@@ -41,6 +46,6 @@ namespace Server.DataTransferObjects
         public DateTime? UpdatedAt { get; set; }
 
         // Include location details
-        public LocationResponseDto Location { get; set; }
+        public Location Location { get; set; }
     }
-} 
+}

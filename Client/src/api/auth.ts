@@ -83,7 +83,7 @@ export const authApi = {
 // For mobile, we'll use Expo's auth session
 export const useGoogleAuth = () => {
     const [request, response, promptAsync] = Google.useAuthRequest({
-        redirectUri: "http://10.151.26.44:8081",
+        redirectUri: "http://10.151.2.109:8081",
         scopes: ['profile', 'email']
     });
 

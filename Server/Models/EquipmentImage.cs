@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Server.Models
 {
     public class EquipmentImage
     {
+        [Key]
         public string Id { get; set; }
 
         [Required]
@@ -19,4 +21,4 @@ namespace Server.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }
-} 
+}
