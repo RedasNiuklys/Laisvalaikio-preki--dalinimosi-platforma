@@ -73,8 +73,20 @@
       "PackagePath": "staticwebassets\\uploads\\equipment\\543a0d2d-4b69-4e91-9497-9f51907d3862.jpg"
     },
     {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg",
+      "PackagePath": "staticwebassets\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg"
+    },
+    {
       "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg",
       "PackagePath": "staticwebassets\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg"
+    },
+    {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg",
+      "PackagePath": "staticwebassets\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg"
+    },
+    {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg",
+      "PackagePath": "staticwebassets\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg"
     },
     {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

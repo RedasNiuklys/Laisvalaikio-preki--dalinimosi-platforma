@@ -5,4 +5,5 @@ export interface User {
   age: number;
   avatarUrl: string;
   theme: string;
+  roles?: string[];
 }

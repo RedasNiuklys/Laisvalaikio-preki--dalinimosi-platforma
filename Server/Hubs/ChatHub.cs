@@ -20,18 +20,23 @@ public class ChatHub : Hub
     public override async Task OnConnectedAsync()
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"User connected: {userId}");
+        
         if (!string.IsNullOrEmpty(userId))
         {
             // Get all chats the user is part of
             var userChats = await _context.ChatParticipants
-                .Where(p => p.UserId == userId)
+                .Where(p => p.UserId.ToString() == userId)
                 .Select(p => p.ChatId.ToString())
                 .ToListAsync();
+
+            Console.WriteLine($"Found {userChats.Count} chats for user {userId}");
 
             // Join all chat groups
             foreach (var chatId in userChats)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
+                Console.WriteLine($"Joined chat group {chatId}");
             }
         }
         await base.OnConnectedAsync();
@@ -58,6 +63,8 @@ public class ChatHub : Hub
     public async Task SendMessage(int chatId, string content)
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"Sending message to chat {chatId} from user {userId}");
+        
         if (string.IsNullOrEmpty(userId))
         {
             throw new HubException("User not authenticated");
@@ -65,17 +72,19 @@ public class ChatHub : Hub
 
         // Verify user is participant in chat
         var isParticipant = await _context.ChatParticipants
-            .AnyAsync(p => p.ChatId == chatId && p.UserId == userId);
+            .AnyAsync(p => p.ChatId == chatId && p.UserId.ToString() == userId);
 
         if (!isParticipant)
         {
+            Console.WriteLine($"User {userId} is not a participant in chat {chatId}");
             throw new HubException("User is not a participant in this chat");
         }
 
         // Get sender information
-        var sender = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var sender = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
         if (sender == null)
         {
+            Console.WriteLine($"Sender not found for user ID {userId}");
             throw new HubException("Sender not found");
         }
 
@@ -165,20 +174,46 @@ public class ChatHub : Hub
     public async Task JoinChat(int chatId)
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"Attempting to join chat {chatId} for user {userId}");
+        
         if (string.IsNullOrEmpty(userId))
         {
+            Console.WriteLine("User ID is null or empty");
             throw new HubException("User not authenticated");
         }
 
-        var isParticipant = await _context.ChatParticipants
-            .AnyAsync(p => p.ChatId == chatId && p.UserId == userId);
+        // Get chat with participants
+        var chat = await _context.Chats
+            .Include(c => c.Participants)
+            .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        if (chat == null)
+        {
+            Console.WriteLine($"Chat {chatId} not found");
+            throw new HubException("Chat not found");
+        }
+
+        Console.WriteLine($"Found chat {chat.Id} with {chat.Participants.Count} participants");
+        
+        // Debug participant information
+        foreach (var participant in chat.Participants)
+        {
+            Console.WriteLine($"Participant ID: {participant.UserId}, Type: {participant.UserId.GetType()}");
+        }
+        Console.WriteLine($"Current user ID: {userId}, Type: {userId.GetType()}");
+
+        // Compare user IDs as strings
+        var isParticipant = chat.Participants.Any(p => p.UserId.ToString() == userId);
+        Console.WriteLine($"Is participant check result: {isParticipant}");
 
         if (!isParticipant)
         {
+            Console.WriteLine($"User {userId} is not a participant in chat {chatId}");
             throw new HubException("User is not a participant in this chat");
         }
 
         await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
+        Console.WriteLine($"Successfully joined chat {chatId}");
     }
 
     public async Task LeaveChat(int chatId)

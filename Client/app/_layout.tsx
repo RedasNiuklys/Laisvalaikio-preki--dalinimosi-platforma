@@ -12,6 +12,7 @@ function NavigationStack() {
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         headerStyle: {
           backgroundColor: theme.colors.background,
         },

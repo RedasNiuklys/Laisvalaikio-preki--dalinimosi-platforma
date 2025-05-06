@@ -109,16 +109,27 @@
       "logoutError": "Failed to log out"
     }
   },
+  "home": {
+    "title": "Home",
+    "welcome": "Welcome to the Home page",
+    "search": "Search equipment...",
+    "noResults": "No equipment found",
+    "addNew": "Add New Equipment"
+  },
   "auth": {
     "login": {
       "title": "Login",
       "email": "Email",
+      "logInWith": "Login with",
       "password": "Password",
       "welcomeBack": "Welcome back!",
       "submit": "Sign In",
       "forgotPassword": "Forgot Password?",
       "noAccount": "Don't have an account?",
-      "signUp": "Sign Up"
+      "signUp": "Sign Up",
+      "google": "Google",
+      "facebook": "Facebook",
+      "apple": "Apple"
     },
     "register": {
       "title": "Register",
@@ -144,8 +155,22 @@
       "location": "Location",
       "availability": "Availability",
       "price": "Price",
-      "contact": "Contact Owner"
-    }
+      "contact": "Contact Owner",
+      "notFound": "Equipment not found",
+      "loadError": "Failed to load equipment details",
+      "deleteSuccess": "Equipment deleted successfully",
+      "deleteError": "Failed to delete equipment",
+      "updateSuccess": "Equipment updated successfully",
+      "updateError": "Failed to update equipment",
+      "deleteConfirmTitle": "Delete Equipment",
+      "deleteConfirmMessage": "Are you sure you want to delete this equipment? This action cannot be undone.",
+      "markAvailable": "Mark as Available",
+      "markUnavailable": "Mark as Unavailable",
+      "edit": "Edit Equipment",
+      "delete": "Delete Equipment"
+    },
+    "available": "Available",
+    "unavailable": "Unavailable"
   },
   "profile": {
     "title": "Profile",

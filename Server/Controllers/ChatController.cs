@@ -159,6 +159,39 @@ public class ChatController : ControllerBase
         return Ok(messages);
     }
 
+    [HttpGet("{chatId}/participants")]
+    public async Task<ActionResult<IEnumerable<object>>> GetChatParticipants(int chatId)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var isParticipant = await _context.ChatParticipants
+            .AnyAsync(p => p.ChatId == chatId && p.UserId == userId);
+
+        if (!isParticipant)
+        {
+            return Forbid();
+        }
+
+        var participants = await _context.ChatParticipants
+            .Where(p => p.ChatId == chatId)
+            .Include(p => p.User)
+            .Select(p => new
+            {
+                p.UserId,
+                p.User.Name,
+                p.User.AvatarUrl,
+                p.IsAdmin,
+                p.JoinedAt
+            })
+            .ToListAsync();
+
+        return Ok(participants);
+    }
+
     [HttpPost("create")]
     public async Task<ActionResult<object>> CreateChat([FromBody] CreateChatRequest request)
     {
@@ -215,6 +248,16 @@ public class ChatController : ControllerBase
 
         _context.Chats.Add(chat);
         await _context.SaveChangesAsync();
+
+        // Verify participants were added
+        var savedChat = await _context.Chats
+            .Include(c => c.Participants)
+            .FirstOrDefaultAsync(c => c.Id == chat.Id);
+
+        if (savedChat == null || !savedChat.Participants.Any())
+        {
+            return BadRequest("Failed to create chat with participants");
+        }
 
         return Ok(new { ChatId = chat.Id });
     }

@@ -63,6 +63,13 @@
     "selectIcon": "Pasirinkti paveiksliuką",
     "searchIcons": "Ieškoti paveiksliukų"
   },
+  "home": {
+    "title": "Pradžia",
+    "search": "Ieškoti įrangos...",
+    "noResults": "Įrangos nerasta",
+    "addNew": "Pridėti naują įrangą",
+    "welcome": "Sveiki atvykę!"
+  },
   "navigation": {
     "home": "Pradžia",
     "equipment": "Įranga",
@@ -109,6 +116,7 @@
     "login": {
       "title": "Prisijungimas",
       "email": "El. paštas",
+      "logInWith": "Prisijungimas su",
       "welcomeback": "Sveiki atvykę!",
       "password": "Slaptažodis",
       "submit": "Prisijungti",
@@ -140,6 +148,18 @@
       "location": "Vieta",
       "availability": "Prieinamumas",
       "price": "Kaina",
+      "images": "Nuotraukos",
+      "deleteConfirmTitle": "Ištrinti įrangą",
+      "deleteConfirmMessage": "Ar tikrai norite ištrinti šią įrangą? Šis veiksmas negalimas atstatyti.",
+      "markAvailable": "Pažymėti prieinamu",
+      "markUnavailable": "Pažymėti neprieinau",
+      "edit": "Redaguoti įrangą",
+      "notFound": "Įranga nerasta",
+      "loadError": "Nepavyko įkelti įrangos duomenų",
+      "deleteSuccess": "Įranga sėkmingai ištrinta",
+      "deleteError": "Nepavyko ištrinti įrangos",
+      "updateSuccess": "Įranga sėkmingai atnaujinta",
+      "updateError": "Nepavyko atnaujinti įrangos",
       "contact": "Susisiekti su savininku"
     }
   },
