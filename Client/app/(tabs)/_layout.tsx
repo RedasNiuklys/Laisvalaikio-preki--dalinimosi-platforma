@@ -24,7 +24,7 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const theme = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -72,7 +72,8 @@ export default function TabLayout() {
               iconName = "map-marker-outline";
             else if (route.name === "chat") iconName = "chat-outline";
             else if (route.name === "equipment") iconName = "tools";
-            else if (route.name === "admin") iconName = "shield-account";
+            else if (route.name === "admin" && user?.roles?.includes("Admin"))
+              iconName = "shield-account";
             return (
               <MaterialCommunityIcons
                 name={iconName as any}
@@ -116,12 +117,14 @@ export default function TabLayout() {
             title: t("navigation.equipment"),
           }}
         />
-        <Tabs.Screen
-          name="admin"
-          options={{
-            title: t("navigation.admin"),
-          }}
-        />
+        {user?.roles?.includes("Admin") && (
+          <Tabs.Screen
+            name="admin"
+            options={{
+              title: t("navigation.admin"),
+            }}
+          />
+        )}
         <Tabs.Screen
           name="settings"
           options={{

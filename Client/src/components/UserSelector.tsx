@@ -16,12 +16,14 @@ interface UserSelectorProps {
   onUserSelect: (user: User) => void;
   selectedUsers: User[];
   isMultiSelect?: boolean;
+  excludeUsers?: string[];
 }
 
 export const UserSelector: React.FC<UserSelectorProps> = ({
   onUserSelect,
   selectedUsers,
   isMultiSelect = false,
+  excludeUsers = [],
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +38,7 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
     try {
       const token = await getAuthToken();
       console.log("Fetching users with token:", token);
-      const response = await axios.get(`${BASE_URL}/user`, {
+      const response = await axios.get(`${BASE_URL}/user/chat-users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,8 +54,9 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      !excludeUsers.includes(user.id)
   );
 
   const isUserSelected = (user: User) =>

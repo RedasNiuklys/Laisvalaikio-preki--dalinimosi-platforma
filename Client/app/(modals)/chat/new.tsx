@@ -6,6 +6,8 @@ import { Button, Text, useTheme } from "react-native-paper";
 import axios from "axios";
 import { BASE_URL } from "@/src/utils/envConfig";
 import { getAuthToken } from "@/src/utils/authUtils";
+import { useAuth } from "@/src/context/AuthContext";
+
 interface User {
   id: string;
   name: string;
@@ -18,13 +20,14 @@ export default function NewChatModal() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const theme = useTheme();
+  const { user } = useAuth();
 
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
   };
 
   const handleCreateChat = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !user) return;
 
     try {
       setLoading(true);
@@ -35,7 +38,7 @@ export default function NewChatModal() {
         {
           name: "",
           isGroupChat: false,
-          participantIds: [selectedUser.id],
+          participantIds: [selectedUser.id, user.id],
         },
         {
           headers: {
@@ -77,6 +80,7 @@ export default function NewChatModal() {
         onUserSelect={handleUserSelect}
         selectedUsers={selectedUser ? [selectedUser] : []}
         isMultiSelect={false}
+        excludeUsers={user?.id ? [user.id] : []}
       />
 
       <View style={styles.footer}>

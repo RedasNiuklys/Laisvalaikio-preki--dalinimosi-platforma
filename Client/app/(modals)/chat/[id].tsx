@@ -37,6 +37,7 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -44,12 +45,48 @@ export default function ChatScreen() {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      const userData = await loadUser();
-      if (userData) {
+      try {
+        setLoading(true);
+        const userData = await loadUser();
+        if (!userData) {
+          setError("Failed to load user data");
+          return;
+        }
+
         setUser(userData);
+
+        // First check if user is a participant
+        const token = await getAuthToken();
+        const participantsResponse = await axios.get(
+          `${BASE_URL}/chat/${id}/participants`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const isParticipant = participantsResponse.data.some(
+          (p: any) => p.userId === userData.id
+        );
+
+        if (!isParticipant) {
+          setError("You are not a participant in this chat");
+          router.back();
+          return;
+        }
+
+        // Load messages first
         await loadMessages(userData);
+
+        // Then join the chat and setup message listener
         await chatService.joinChat(id);
         setupMessageListener(userData);
+      } catch (error) {
+        console.error("Error loading chat data:", error);
+        setError("Failed to load chat");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -87,30 +124,44 @@ export default function ChatScreen() {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          take: 25,
+          take: 50,
+          skip: 0,
         },
       });
-      console.log("Messages:", response.data);
-      setMessages(
-        [...response.data].reverse().map((msg: ChatMessage) => ({
-          ...msg,
-          isMine: msg.sender.id === currentUser.id,
-        }))
-      );
+
+      if (response.data && Array.isArray(response.data)) {
+        const formattedMessages = response.data
+          .reverse()
+          .map((msg: ChatMessage) => ({
+            ...msg,
+            isMine: msg.sender.id === currentUser.id,
+          }));
+
+        setMessages(formattedMessages);
+        console.log("Loaded messages:", formattedMessages.length);
+      } else {
+        console.error("Invalid message data received:", response.data);
+        setError("Failed to load messages");
+      }
     } catch (error) {
       console.error("Error loading messages:", error);
-    } finally {
-      setLoading(false);
+      setError("Failed to load messages");
     }
   };
 
   const setupMessageListener = (currentUser: User) => {
     chatService.onMessage((message) => {
       if (message.chatId.toString() === id) {
-        setMessages((prev) => [
-          ...prev,
-          { ...message, isMine: message.sender.id === currentUser.id },
-        ]);
+        setMessages((prev) => {
+          const newMessage = {
+            ...message,
+            isMine: message.sender.id === currentUser.id,
+          };
+          if (prev.some((msg) => msg.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
         scrollToBottom();
       }
     });
@@ -186,6 +237,14 @@ export default function ChatScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={{ color: theme.colors.error }}>{error}</Text>
       </View>
     );
   }

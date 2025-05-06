@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "3J1ESzKReRomb/A4/+XpzV9Lg9JGXK71ovzSmvQY/Fc=",
+  "Hash": "SrGpC5UyqDW5JIPn+vpfWu9IzWRTHPTSPx/knXGuy/E=",
   "Source": "Server",
   "BasePath": "_content/Server",
   "Mode": "Default",
@@ -395,6 +395,27 @@
       "OriginalItemSpec": "wwwroot\\uploads\\equipment\\543a0d2d-4b69-4e91-9497-9f51907d3862.jpg"
     },
     {
+      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg",
+      "SourceId": "Server",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "BasePath": "_content/Server",
+      "RelativePath": "uploads/equipment/571f68b2-ae86-4032-acaf-7b622cb82f90#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "2vggcpqkqn",
+      "Integrity": "XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg"
+    },
+    {
       "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
@@ -414,6 +435,48 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg",
+      "SourceId": "Server",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "BasePath": "_content/Server",
+      "RelativePath": "uploads/equipment/d36a954f-6e83-4dc0-ad8e-535315d75d72#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "iz7y5oddzk",
+      "Integrity": "Eg7oeb3ftcSlx8UMBnCiOzkONxrrTaBNUiW+RR9zKGA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg",
+      "SourceId": "Server",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "BasePath": "_content/Server",
+      "RelativePath": "uploads/equipment/eca602e3-48e3-4666-babd-7ce880706e80#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "2vggcpqkqn",
+      "Integrity": "XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg"
     }
   ],
   "Endpoints": [
@@ -1894,6 +1957,88 @@
       ]
     },
     {
+      "Route": "uploads/equipment/571f68b2-ae86-4032-acaf-7b622cb82f90.2vggcpqkqn.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "42940"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:35:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "2vggcpqkqn"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/equipment/571f68b2-ae86-4032-acaf-7b622cb82f90.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/equipment/571f68b2-ae86-4032-acaf-7b622cb82f90.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\571f68b2-ae86-4032-acaf-7b622cb82f90.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "42940"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:35:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg="
+        }
+      ]
+    },
+    {
       "Route": "uploads/equipment/640a72a0-805d-4658-82df-4efc348a6a72.0hjmwdytc2.jpg",
       "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg",
       "Selectors": [],
@@ -1972,6 +2117,170 @@
         {
           "Name": "integrity",
           "Value": "sha256-7B/wTeBpxU3IJDk5maXVH05vJWqud8YR8+TeGmrEGuo="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/equipment/d36a954f-6e83-4dc0-ad8e-535315d75d72.iz7y5oddzk.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "532030"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Eg7oeb3ftcSlx8UMBnCiOzkONxrrTaBNUiW+RR9zKGA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:37:45 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "iz7y5oddzk"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/equipment/d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-Eg7oeb3ftcSlx8UMBnCiOzkONxrrTaBNUiW+RR9zKGA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/equipment/d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\d36a954f-6e83-4dc0-ad8e-535315d75d72.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "532030"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Eg7oeb3ftcSlx8UMBnCiOzkONxrrTaBNUiW+RR9zKGA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:37:45 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-Eg7oeb3ftcSlx8UMBnCiOzkONxrrTaBNUiW+RR9zKGA="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/equipment/eca602e3-48e3-4666-babd-7ce880706e80.2vggcpqkqn.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "42940"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:35:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "2vggcpqkqn"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/equipment/eca602e3-48e3-4666-babd-7ce880706e80.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/equipment/eca602e3-48e3-4666-babd-7ce880706e80.jpg",
+      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\eca602e3-48e3-4666-babd-7ce880706e80.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "42940"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 06 May 2025 00:35:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-XumDb+FcUIUQkwm4SIKvlqCOtHhF8oWqzBNYogv3EQg="
         }
       ]
     }
