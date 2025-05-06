@@ -57,51 +57,47 @@ export default function TabLayout() {
     return (
       <Tabs
         key={settings.language}
-        screenOptions={({ route }) => ({
-          tabBarStyle: { backgroundColor: theme.colors.background },
+        screenOptions={{
           tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-          headerStyle: { backgroundColor: theme.colors.background },
-          headerTintColor: theme.colors.onBackground,
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
-            if (route.name === "index") iconName = "home";
-            else if (route.name === "profile") iconName = "account";
-            else if (route.name === "settings") iconName = "wrench-outline";
-            else if (route.name === "locations")
-              iconName = "map-marker-outline";
-            else if (route.name === "chat") iconName = "chat-outline";
-            else if (route.name === "equipment") iconName = "tools";
-            else if (route.name === "admin" && user?.roles?.includes("Admin"))
-              iconName = "shield-account";
-            return (
-              <MaterialCommunityIcons
-                name={iconName as any}
-                size={size}
-                color={color}
-              />
-            );
+          tabBarInactiveTintColor: theme.colors.onSurfaceDisabled,
+          tabBarStyle: {
+            backgroundColor: theme.colors.background,
           },
-        })}
+          headerStyle: {
+            backgroundColor: theme.colors.background,
+          },
+          headerTintColor: theme.colors.onBackground,
+        }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: t("navigation.home"),
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="home" size={size} color={color} />
+            ),
           }}
         />
         <Tabs.Screen
-          name="locations"
+          name="equipment/index"
           options={{
-            title: t("navigation.locations"),
-            headerShown: false,
+            title: t("navigation.equipment"),
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="cube" size={size} color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: t("navigation.profile"),
-            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons
+                name="account"
+                size={size}
+                color={color}
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -109,26 +105,31 @@ export default function TabLayout() {
           options={{
             title: t("navigation.messages"),
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="chat" size={size} color={color} />
+            ),
           }}
         />
         <Tabs.Screen
-          name="equipment"
+          name="admin"
           options={{
-            title: t("navigation.equipment"),
+            title: t("navigation.admin"),
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons
+                name="shield-check"
+                size={size}
+                color={color}
+              />
+            ),
           }}
         />
-        {user?.roles?.includes("Admin") && (
-          <Tabs.Screen
-            name="admin"
-            options={{
-              title: t("navigation.admin"),
-            }}
-          />
-        )}
         <Tabs.Screen
           name="settings"
           options={{
             title: t("navigation.settings"),
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="cog" size={size} color={color} />
+            ),
           }}
         />
       </Tabs>

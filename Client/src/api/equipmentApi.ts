@@ -30,8 +30,10 @@ export const getById = async (id: string): Promise<Equipment> => {
 
 export const create = async (equipment: CreateEquipmentDto): Promise<Equipment> => {
     const token = await getAuthToken();
-    console.log("equipment", equipment);
-    console.log("token", token);
+    //console.log
+    ("equipment", equipment);
+    //console.log
+    ("token", token);
     const response = await axios.post(`${EQUIPMENT_ENDPOINT}`, equipment, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -113,3 +115,20 @@ export const addMaintenanceRecord = async (equipmentId: string, record: {
         headers: { Authorization: `Bearer ${token}` }
     });
 }
+
+export const addUsedDate = async (equipmentId: string, date: Date): Promise<Equipment> => {
+    const token = await getAuthToken();
+    const response = await axios.post(`${EQUIPMENT_ENDPOINT}/${equipmentId}/used-dates`, { date }, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+};
+
+export const removeUsedDate = async (equipmentId: string, date: Date): Promise<Equipment> => {
+    const token = await getAuthToken();
+    const response = await axios.delete(`${EQUIPMENT_ENDPOINT}/${equipmentId}/used-dates`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { date }
+    });
+    return response.data;
+};

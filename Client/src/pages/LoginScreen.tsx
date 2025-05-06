@@ -117,7 +117,8 @@ const LoginScreen = () => {
 
     try {
       setIsLoading(true);
-      console.log("Login started");
+      //console.log
+      ("Login started");
       await login(email, password);
       showToast("success", "Login successful!");
       // @ts-ignore - Navigation type issue

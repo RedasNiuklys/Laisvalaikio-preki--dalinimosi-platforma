@@ -32,7 +32,8 @@ export default function NewChatModal() {
     try {
       setLoading(true);
       const token = await getAuthToken();
-      console.log("Trying to create chat");
+      //console.log
+      ("Trying to create chat");
       const response = await axios.post(
         `${BASE_URL}/chat/create`,
         {
@@ -49,7 +50,8 @@ export default function NewChatModal() {
 
       // Navigate to the new chat
       router.push(`/chat/${response.data.chatId}`);
-      console.log("Chat created successfully");
+      //console.log
+      ("Chat created successfully");
     } catch (error) {
       console.error("Error creating chat:", error);
     } finally {

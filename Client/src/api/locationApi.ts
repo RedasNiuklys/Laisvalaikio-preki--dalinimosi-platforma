@@ -5,7 +5,8 @@ import axios from 'axios';
 
 export const createLocation = async (location: Location): Promise<Location> => {
     const token = await getAuthToken();
-    console.log(location);
+    //console.log
+    (location);
     const response = await axios.post(LOCATION_ENDPOINT, location, {
         headers: {
             'Content-Type': 'application/json',

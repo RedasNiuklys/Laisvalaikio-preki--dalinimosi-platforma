@@ -22,8 +22,10 @@
       "delete": "Delete",
       "logout": "Logout",
       "clear": "Clear",
-      "edit": "Edit"
+      "edit": "Edit",
+      "back": "Back"
     },
+    "all": "All",
     "status": {
       "success": "Success",
       "error": "Error",
@@ -31,6 +33,7 @@
       "info": "Info"
     }
   },
+  "equipment/index": "Equipment",
   "calendar": {
     "selectDates": "Select Dates",
     "selectEndDate": "Select end date",
@@ -47,6 +50,11 @@
   },
   "location": {
     "search": "Search location...",
+    "searchPlaceholder": "Search location...",
+    "searchNoResults": "No locations found",
+    "searchResults": "Search results",
+    "showOnMap": "Show on map",
+    "title": "Location",
     "currentLocation": "Show location",
     "openInMaps": "Open in Google Maps",
     "errors": {
@@ -64,6 +72,13 @@
       },
       "error": {
         "save": "Failed to save location"
+      },
+      "details": {
+        "name": "Name",
+        "title": "Location Details",
+        "description": "Description",
+        "address": "Address",
+        "actions": "Actions"
       }
     }
   },
@@ -74,7 +89,8 @@
     "locations": "Locations",
     "settings": "Settings",
     "messages": "Messages",
-    "admin": "Admin"
+    "admin": "Admin",
+    "equipment/index": "Equipment"
   },
   "settings": {
     "title": "Settings",
@@ -142,9 +158,30 @@
     }
   },
   "equipment": {
+    "calendar": {
+      "wish": "Wish",
+      "taken": "Taken",
+      "past": "Past",
+      "future": "Future",
+      "all": "All"
+    },
+    "index": {
+      "title": "Equipment",
+      "search": "Search equipment",
+      "wish": "Wish",
+      "taken": "Taken",
+      "past": "Past",
+      "future": "Future",
+      "all": "All"
+    },
     "list": {
       "title": "Equipment",
       "search": "Search equipment",
+      "wish": "Wish",
+      "taken": "Taken",
+      "future": "Future",
+      "all": "All",
+
       "noResults": "No equipment found",
       "addNew": "Add New Equipment"
     },
@@ -167,6 +204,9 @@
       "markAvailable": "Mark as Available",
       "markUnavailable": "Mark as Unavailable",
       "edit": "Edit Equipment",
+      "usedDates": "Used Dates",
+      "condition": "Condition",
+      "owner": "Owner",
       "delete": "Delete Equipment"
     },
     "available": "Available",

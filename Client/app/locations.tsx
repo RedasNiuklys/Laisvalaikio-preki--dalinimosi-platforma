@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import LocationListScreen from "../../src/pages/LocationListScreen";
-import LocationFormScreen from "../../src/pages/LocationFormScreen";
+import LocationListScreen from "@/src/pages/LocationListScreen";
+import LocationFormScreen from "@/src/pages/LocationFormScreen";
 import { useTheme } from "react-native-paper";
 
 const Stack = createNativeStackNavigator();

@@ -37,7 +37,8 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
   const fetchUsers = async () => {
     try {
       const token = await getAuthToken();
-      console.log("Fetching users with token:", token);
+      //console.log
+      "Fetching users with token:", token;
       const response = await axios.get(`${BASE_URL}/user/chat-users`, {
         headers: {
           Authorization: `Bearer ${token}`,

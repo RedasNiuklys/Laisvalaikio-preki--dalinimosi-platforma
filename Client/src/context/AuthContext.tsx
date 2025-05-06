@@ -57,16 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, provider?: string) => {
     try {
       if (provider === "Google") {
-        console.log("Google login started");
+        //console.log
+        ("Google login started");
         authApi.googleLogin();
-        console.log("Google login successful");
+        //console.log
+        ("Google login successful");
         return;
       } else if (provider === "Facebook") {
         authApi.facebookLogin();
         return;
       } else {
         const response = await authApi.login(email, password);
-        console.log("Token:", response.token);
+        //console.log
+        "Token:", response.token;
         setToken(response.token);
         await setAuthToken(response.token);
         setIsAuthenticated(true);
@@ -84,7 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.register(email, password);
       const { token } = response;
       setToken(token);
-      console.log("Token:", token);
+      //console.log
+      "Token:", token;
       await setAuthToken(token);
       setIsAuthenticated(true);
       setAuthProvider("User");
