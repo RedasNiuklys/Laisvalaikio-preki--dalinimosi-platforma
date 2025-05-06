@@ -5,6 +5,21 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Category } from "@/src/types/Category";
 import { deleteCategory, getCategories } from "@/src/api/categoryApi";
+import EditDeleteButtons from "@/src/components/EditDeleteButtons";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  addButton: {
+    marginTop: 16,
+  },
+});
 
 export default function AdminScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,6 +40,15 @@ export default function AdminScreen() {
       console.error("Error loading categories:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: number) => {
+    try {
+      await deleteCategory(categoryId);
+      loadCategories(); // Reload categories after deletion
+    } catch (error) {
+      console.error("Error deleting category:", error);
     }
   };
 
@@ -52,24 +76,10 @@ export default function AdminScreen() {
                 titleStyle={{ color: theme.colors.onBackground }}
                 descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
                 right={() => (
-                  <View style={styles.actions}>
-                    <Button
-                      mode="text"
-                      onPress={() =>
-                        router.push(`/(modals)/admin/${category.id}`)
-                      }
-                      textColor={theme.colors.primary}
-                    >
-                      {t("admin.edit")}
-                    </Button>
-                    <Button
-                      mode="text"
-                      onPress={() => deleteCategory(category.id)}
-                      textColor={theme.colors.error}
-                    >
-                      {t("admin.delete")}
-                    </Button>
-                  </View>
+                  <EditDeleteButtons
+                    onEdit={() => router.push(`/(modals)/admin/${category.id}`)}
+                    onDelete={() => handleDeleteCategory(category.id)}
+                  />
                 )}
               />
               <Divider />
@@ -89,21 +99,3 @@ export default function AdminScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  title: {
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  addButton: {
-    marginTop: 16,
-  },
-});

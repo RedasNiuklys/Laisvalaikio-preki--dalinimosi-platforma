@@ -18,7 +18,6 @@ import {
 } from "react-native-paper";
 import CountryFlag from "react-native-country-flag";
 
-import { useTheme as useAppTheme } from "@/src/context/ThemeContext";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showToast } from "@/src/components/Toast";
@@ -29,18 +28,22 @@ import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/src/i18n";
 
 export default function SettingsScreen() {
-  const { isDarkMode, toggleTheme } = useAppTheme();
   const theme = useTheme();
   const { logout, clearToken } = useAuth();
   const { settings, updateSettings } = useSettings();
   const { t } = useTranslation();
   const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+  const [dark, setDark] = useState(true);
 
   const handleLanguageChange = async (language: string) => {
     await changeLanguage(language);
 
     updateSettings({ ...settings, language });
+  };
+  const toggleTheme = () => {
+    const newValue = !dark;
+    AsyncStorage.setItem("isDarkMode", newValue.toString());
   };
 
   const clearCache = async () => {
@@ -175,7 +178,7 @@ export default function SettingsScreen() {
         <Text style={{ color: theme.colors.onBackground, marginRight: 10 }}>
           {t("settings.theme.darkMode")}
         </Text>
-        <Switch value={isDarkMode} onValueChange={toggleTheme} />
+        <Switch value={dark} onValueChange={toggleTheme} />
       </View>
 
       <Text

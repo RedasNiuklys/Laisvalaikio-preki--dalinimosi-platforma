@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const registerScreenStyles = StyleSheet.create({
     keyboardAvoidingView: {
         flex: 1,
     },
@@ -22,9 +22,8 @@ export const styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        textAlign: "center",
         marginBottom: 20,
-        fontWeight: "bold",
+        textAlign: "center",
     },
     input: {
         width: "100%",
@@ -42,7 +41,7 @@ export const styles = StyleSheet.create({
         marginBottom: 16,
     },
     loginLink: {
-        marginTop: 16,
+        marginTop: 20,
     },
     loginText: {
         textAlign: "center",

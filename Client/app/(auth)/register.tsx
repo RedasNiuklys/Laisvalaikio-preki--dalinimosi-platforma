@@ -14,16 +14,17 @@ import {
   useTheme as usePaperTheme,
   HelperText,
 } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext";
-import { showToast } from "../components/Toast";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/src/context/AuthContext";
+import { registerScreenStyles } from "@/src/styles/RegisterScreen.styles";
+import { showToast } from "@/src/components/Toast";
 import { useTranslation } from "react-i18next";
-import { registerScreenStyles } from "../styles/RegisterScreen.styles";
-const RegisterScreen = () => {
+
+export default function RegisterScreen() {
   const theme = usePaperTheme();
   const { t } = useTranslation();
   const { register } = useAuth();
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -65,31 +66,27 @@ const RegisterScreen = () => {
     setError(null);
 
     if (!isEmailValid) {
-      showToast("error", "Please enter a valid email address");
+      showToast("error", t("auth.register.invalidEmail"));
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast("error", "Passwords do not match");
+      showToast("error", t("auth.register.passwordsDontMatch"));
       return;
     }
 
     if (password.length < 8 || !/\d/.test(password)) {
-      showToast(
-        "error",
-        "Password must be at least 8 characters long and contain a number and a special character"
-      );
+      showToast("error", t("auth.register.passwordRequirements"));
       return;
     }
 
     try {
       setIsLoading(true);
       await register(email, password);
-      showToast("success", "Registration successful!");
-      // @ts-ignore - Navigation type issue
-      navigation.navigate("Home");
+      showToast("success", t("auth.register.success"));
+      router.replace("/");
     } catch (err) {
-      showToast("error", "Registration failed. Please try again.");
+      showToast("error", t("auth.register.error"));
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +109,7 @@ const RegisterScreen = () => {
         >
           <Surface style={registerScreenStyles.surface} elevation={4}>
             <Text
-              variant="headlineMedium"
+              variant="headlineLarge"
               style={[
                 registerScreenStyles.title,
                 { color: theme.colors.onSurface },
@@ -120,17 +117,6 @@ const RegisterScreen = () => {
             >
               {t("auth.register.title")}
             </Text>
-
-            {error && (
-              <Text
-                style={[
-                  registerScreenStyles.errorText,
-                  { color: theme.colors.error },
-                ]}
-              >
-                {error}
-              </Text>
-            )}
 
             <TextInput
               mode="outlined"
@@ -141,9 +127,6 @@ const RegisterScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
-              autoFocus
-              accessibilityRole="text"
-              accessibilityLabel={t("auth.register.email")}
               left={<TextInput.Icon icon="email" />}
               right={
                 <TextInput.Icon
@@ -162,10 +145,6 @@ const RegisterScreen = () => {
               onChangeText={setPassword}
               secureTextEntry={!isPasswordVisible}
               style={registerScreenStyles.input}
-              returnKeyType="done"
-              autoComplete="password"
-              accessibilityRole="text"
-              accessibilityLabel={t("auth.register.password")}
               left={<TextInput.Icon icon="lock" />}
               right={
                 <TextInput.Icon
@@ -175,10 +154,6 @@ const RegisterScreen = () => {
                 />
               }
             />
-            <HelperText type="info" visible={true}>
-              Password must be at least 8 characters with a number and a special
-              character
-            </HelperText>
 
             <TextInput
               mode="outlined"
@@ -187,11 +162,7 @@ const RegisterScreen = () => {
               onChangeText={setConfirmPassword}
               secureTextEntry={!isConfirmPasswordVisible}
               style={registerScreenStyles.input}
-              returnKeyType="done"
-              autoComplete="password"
-              accessibilityRole="text"
-              accessibilityLabel={t("auth.register.confirmPassword")}
-              left={<TextInput.Icon icon="lock" />}
+              left={<TextInput.Icon icon="lock-check" />}
               right={
                 <TextInput.Icon
                   icon={isConfirmPasswordVisible ? "eye-off" : "eye"}
@@ -212,10 +183,7 @@ const RegisterScreen = () => {
             </Button>
 
             <TouchableOpacity
-              onPress={() => {
-                // @ts-ignore - Navigation type issue
-                navigation.navigate("Login");
-              }}
+              onPress={() => router.push("/(auth)/login")}
               style={registerScreenStyles.loginLink}
             >
               <Text
@@ -232,6 +200,4 @@ const RegisterScreen = () => {
       </ScrollView>
     </KeyboardAvoidingView>
   );
-};
-
-export default RegisterScreen;
+}

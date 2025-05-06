@@ -8,15 +8,17 @@ import {
   Searchbar,
   Chip,
   ActivityIndicator,
+  IconButton,
 } from "react-native-paper";
 import { useAuth } from "../context/AuthContext";
 import { getByOwner } from "../api/equipmentApi";
 import { Equipment, EquipmentImage } from "../types/Equipment";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { getCategories } from "../api/categoryApi";
 import { Category } from "../types/Category";
 import { Image } from "expo-image";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function EquipmentScreen() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -27,13 +29,15 @@ export default function EquipmentScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
   const theme = useTheme();
-  const navigation = useNavigation();
+  const router = useRouter();
+  const { t } = useTranslation();
 
   const loadEquipment = async () => {
     try {
       if (user?.id) {
         const data = await getByOwner(user.id);
         setEquipment(data);
+        console.log(data);
         setFilteredEquipment(data);
       }
     } catch (error) {
@@ -108,56 +112,48 @@ export default function EquipmentScreen() {
   }, [searchQuery, selectedCategory, equipment, categories]);
 
   const getMainImage = (images: EquipmentImage[]) => {
-    return (
-      images.find((img) => img.isMainImage)?.imageUrl || images[0]?.imageUrl
-    );
+    if (!images || images.length === 0) return undefined;
+    const mainImage = images.find((img) => img.isMainImage);
+    return mainImage?.imageUrl || images[0]?.imageUrl;
   };
 
   const renderEquipmentCard = ({ item }: { item: Equipment }) => (
     <Card
-      style={styles.card}
-      onPress={() =>
-        navigation.navigate("EquipmentDetails", { equipmentId: item.id })
-      }
+      key={item.id}
+      style={styles.equipmentCard}
+      onPress={() => {
+        router.push({
+          pathname: "/(modals)/equipment/[id]",
+          params: { id: item.id },
+        });
+      }}
     >
       {item.images && item.images.length > 0 && (
         <Card.Cover
           source={{ uri: getMainImage(item.images) }}
-          style={styles.cardImage}
+          style={styles.cardCover}
+          resizeMode="cover"
         />
       )}
       <Card.Content style={styles.cardContent}>
-        <Text
-          variant="titleMedium"
-          style={[styles.cardTitle, { color: theme.colors.onSurface }]}
-        >
-          {item.name}
-        </Text>
-        <Text
-          variant="bodyMedium"
-          numberOfLines={2}
-          style={[
-            styles.cardDescription,
-            { color: theme.colors.onSurfaceVariant },
-          ]}
-        >
-          {item.description}
-        </Text>
+        <View style={styles.cardHeader}>
+          <Text variant="titleLarge" numberOfLines={1} style={styles.cardTitle}>
+            {item.name}
+          </Text>
+          <Text
+            variant="bodyMedium"
+            numberOfLines={3}
+            style={[
+              styles.cardDescription,
+              { color: theme.colors.onSurfaceVariant },
+            ]}
+          >
+            {item.description}
+          </Text>
+        </View>
         <View style={styles.cardFooter}>
           <Chip
-            style={styles.categoryChip}
-            textStyle={{ color: theme.colors.primary }}
-            icon={() => (
-              <MaterialCommunityIcons
-                name="tag"
-                size={16}
-                color={theme.colors.primary}
-              />
-            )}
-          >
-            {item.category}
-          </Chip>
-          <Chip
+            mode="outlined"
             style={[
               styles.statusChip,
               {
@@ -168,113 +164,134 @@ export default function EquipmentScreen() {
             ]}
             textStyle={{
               color: item.isAvailable
-                ? theme.colors.primary
-                : theme.colors.error,
+                ? theme.colors.onPrimaryContainer
+                : theme.colors.onErrorContainer,
             }}
-            icon={() => (
+            icon={({ size, color }) => (
               <MaterialCommunityIcons
                 name={item.isAvailable ? "check-circle" : "close-circle"}
-                size={16}
-                color={
-                  item.isAvailable ? theme.colors.primary : theme.colors.error
-                }
+                size={size}
+                color={color}
               />
             )}
           >
-            {item.isAvailable ? "Available" : "Unavailable"}
+            {item.isAvailable
+              ? t("equipment.available")
+              : t("equipment.unavailable")}
           </Chip>
+          <View style={styles.actionButtons}>
+            <IconButton
+              icon="pencil"
+              size={20}
+              onPress={() => {
+                router.push({
+                  pathname: "/(modals)/equipment/[id]",
+                  params: { id: item.id },
+                });
+              }}
+            />
+            <IconButton
+              icon="delete"
+              size={20}
+              onPress={() => {
+                // Handle delete
+              }}
+            />
+          </View>
         </View>
       </Card.Content>
     </Card>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  const renderCategoryChips = () => {
+    // Sort categories: parent categories first, then their children
+    const sortedCategories = [...categories].sort((a, b) => {
+      if (a.parentCategoryId === null && b.parentCategoryId !== null) return -1;
+      if (a.parentCategoryId !== null && b.parentCategoryId === null) return 1;
+      if (a.parentCategoryId === b.parentCategoryId)
+        return a.name.localeCompare(b.name);
+      return 0;
+    });
 
-  return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
+    return (
       <View style={styles.filtersContainer}>
-        <Searchbar
-          placeholder="Search equipment..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchBar}
-        />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesScroll}
+        <Chip
+          selected={selectedCategory === ""}
+          onPress={() => setSelectedCategory("")}
+          style={styles.categoryChip}
+          icon={() => (
+            <MaterialCommunityIcons
+              name="filter-variant"
+              size={16}
+              color={theme.colors.primary}
+            />
+          )}
         >
+          All
+        </Chip>
+        {sortedCategories.map((category) => (
           <Chip
-            selected={!selectedCategory}
-            onPress={() => setSelectedCategory("")}
-            style={styles.categoryChip}
-            textStyle={{ color: theme.colors.primary }}
+            key={category.id}
+            selected={selectedCategory === category.name}
+            onPress={() => setSelectedCategory(category.name)}
+            style={[
+              styles.categoryChip,
+              category.parentCategoryId === null && {
+                backgroundColor: theme.colors.primaryContainer,
+              },
+              selectedCategory === category.name && {
+                backgroundColor: theme.colors.primaryContainer,
+                opacity: 0.8,
+              },
+            ]}
             icon={() => (
               <MaterialCommunityIcons
-                name="apps"
+                name={category.iconName as any}
                 size={16}
                 color={theme.colors.primary}
               />
             )}
           >
-            All
+            {category.name}
           </Chip>
-          {categories.map((category) => (
-            <Chip
-              key={category.id}
-              selected={selectedCategory === category.name}
-              onPress={() => setSelectedCategory(category.name)}
-              style={[
-                styles.categoryChip,
-                category.parentCategoryId === null && {
-                  backgroundColor: theme.colors.primaryContainer,
-                },
-              ]}
-              textStyle={{
-                color:
-                  category.parentCategoryId === null
-                    ? theme.colors.primary
-                    : theme.colors.onSurface,
-              }}
-              icon={() => (
-                <MaterialCommunityIcons
-                  name={category.iconName as any}
-                  size={16}
-                  color={
-                    category.parentCategoryId === null
-                      ? theme.colors.primary
-                      : theme.colors.onSurface
-                  }
-                />
-              )}
-            >
-              {category.name}
-            </Chip>
-          ))}
-        </ScrollView>
+        ))}
       </View>
+    );
+  };
 
-      <FlatList
-        data={filteredEquipment}
-        renderItem={renderEquipmentCard}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.gridContainer}
-        showsVerticalScrollIndicator={false}
+  return (
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Searchbar
+        placeholder="Search equipment..."
+        onChangeText={setSearchQuery}
+        value={searchQuery}
+        style={styles.searchBar}
       />
 
+      {renderCategoryChips()}
+
+      {loading ? (
+        <ActivityIndicator
+          animating={true}
+          size="large"
+          style={styles.loadingIndicator}
+        />
+      ) : (
+        <FlatList
+          data={filteredEquipment}
+          renderItem={renderEquipmentCard}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.gridContainer}
+        />
+      )}
+
       <FAB
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         icon="plus"
-        onPress={() => navigation.navigate("AddEquipment")}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => router.push("/(modals)/equipment/add-equipment")}
       />
     </View>
   );
@@ -291,7 +308,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   filtersContainer: {
-    padding: 16,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    padding: 8,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
@@ -299,47 +318,59 @@ const styles = StyleSheet.create({
   searchBar: {
     marginBottom: 8,
   },
-  categoriesScroll: {
-    flexGrow: 0,
-  },
   gridContainer: {
     padding: 8,
   },
-  card: {
+  equipmentCard: {
     flex: 1,
     margin: 8,
     maxWidth: "47%",
     elevation: 2,
+    height: 400,
   },
-  cardImage: {
-    height: 120,
+  cardCover: {
+    height: 240,
   },
   cardContent: {
-    padding: 8,
+    padding: 16,
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  cardHeader: {
+    flex: 1,
   },
   cardTitle: {
-    fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: 12,
+    fontWeight: "600",
   },
   cardDescription: {
-    color: "#666",
-    marginBottom: 8,
+    lineHeight: 20,
   },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 16,
+  },
+  statusChip: {
+    flex: 1,
+    marginRight: 8,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   categoryChip: {
     marginRight: 4,
-  },
-  statusChip: {
-    marginLeft: 4,
+    marginBottom: 4,
   },
   fab: {
     position: "absolute",
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  loadingIndicator: {
+    marginTop: 16,
   },
 });

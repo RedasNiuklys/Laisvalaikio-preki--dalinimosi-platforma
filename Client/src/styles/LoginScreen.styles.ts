@@ -70,6 +70,7 @@ export const loginScreenStyles = StyleSheet.create({
     },
     title: {
         marginBottom: 20,
+        textAlign: "center",
     },
     errorText: {
         color: "red",

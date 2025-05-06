@@ -2,11 +2,15 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { CreateEquipmentDto, EquipmentImage } from "../types/Equipment";
+import {
+  CreateEquipmentDto,
+  Equipment,
+  EquipmentImage,
+} from "../types/Equipment";
 import { Location } from "../types/Location";
 import { Category } from "../types/Category";
 import { getByOwner } from "../api/locationApi";
-import { create, uploadImage } from "../api/equipmentApi";
+import { create, uploadImage, getById, update } from "../api/equipmentApi";
 import { getCategories } from "../api/categoryApi";
 import { useAuth } from "../context/AuthContext";
 import { Picker } from "@react-native-picker/picker";
@@ -14,7 +18,6 @@ import LocationFormScreen from "./LocationFormScreen";
 import { ImageList } from "../components/ImageList";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import { v4 as uuidv4 } from "uuid";
 import Toast from "react-native-toast-message";
 
 type AddEquipmentScreenProps = {
@@ -22,10 +25,12 @@ type AddEquipmentScreenProps = {
     latitude: number;
     longitude: number;
   };
+  equipmentId?: string;
 };
 
 export default function AddEquipmentScreen({
   initialLocation,
+  equipmentId,
 }: AddEquipmentScreenProps) {
   const theme = useTheme();
   const { user } = useAuth();
@@ -46,13 +51,46 @@ export default function AddEquipmentScreen({
     isAvailable: true,
     category: "",
   });
+
   useEffect(() => {
     loadCategories();
-  }, []);
+    if (equipmentId) {
+      loadEquipment();
+    }
+  }, [equipmentId]);
 
   useEffect(() => {
     loadLocations();
   }, []);
+
+  const loadEquipment = async () => {
+    try {
+      const data = await getById(equipmentId!);
+      setEquipment({
+        name: data.name,
+        description: data.description,
+        locationId: data.locationId,
+        condition: data.condition,
+        isAvailable: data.isAvailable,
+        category: data.category,
+      });
+      setSelectedLocationId(data.locationId);
+      setSelectedCategoryId(
+        categories.findIndex((c) => c.name === data.category) + 1
+      );
+      if (data.images) {
+        setEquipmentImages(data.images);
+        setImageUrls(data.images.map((img) => img.imageUrl));
+      }
+    } catch (error) {
+      console.error("Failed to load equipment:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to load equipment",
+      });
+    }
+  };
 
   const loadLocations = async () => {
     try {
@@ -69,7 +107,6 @@ export default function AddEquipmentScreen({
     try {
       const data = await getCategories();
       setCategories(data);
-      console.log("Categories loaded:", data);
       if (data.length > 0) {
         setSelectedCategoryId(data[0].id);
       }
@@ -84,7 +121,6 @@ export default function AddEquipmentScreen({
 
   const handleLocationCreated = async () => {
     setShowLocationForm(false);
-    console.log("Came to handleLocationCreated");
     const updatedLocations = await getByOwner(user?.id || "");
     setLocations(updatedLocations);
 
@@ -137,7 +173,7 @@ export default function AddEquipmentScreen({
 
             // Only handle file system operations on native platforms
             if (Platform.OS !== "web") {
-              const fileName = `${uuidv4()}.jpg`;
+              const fileName = `tempimage.jpg`;
               const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
               // Copy the image to cache directory
@@ -150,8 +186,8 @@ export default function AddEquipmentScreen({
             }
 
             const newImage: EquipmentImage = {
-              id: 0, // This will be set by the server
-              equipmentId: 0, // This will be set when equipment is created
+              id: 1, // This will be set by the server
+              equipmentId: "", // This will be set when equipment is created
               imageUrl: imageUrl,
               isMainImage: equipmentImages.length === 0, // First image is main by default
               createdAt: new Date(),
@@ -228,8 +264,8 @@ export default function AddEquipmentScreen({
         });
         return;
       }
-
-      const newEquipment: CreateEquipmentDto = {
+      console.log("Test");
+      const equipmentData: CreateEquipmentDto = {
         name: equipment.name,
         description: equipment.description,
         locationId: selectedLocationId,
@@ -238,26 +274,58 @@ export default function AddEquipmentScreen({
         isAvailable: equipment.isAvailable,
       };
 
-      console.log("newEquipment", newEquipment);
-      const createdEquipment = await create(newEquipment);
-      console.log("createdEquipment", createdEquipment);
+      console.log("Equipment data:", equipmentId);
+      if (equipmentId) {
+        // Update existing equipment
+        console.log("Updating equipment:", equipmentId);
+        console.log("Equipment data:", equipmentData);
+        console.log("Equipment images:", equipmentImages);
+        console.log("Equipment images length:", equipmentImages.length);
+        await update(equipmentId, equipmentData);
 
-      // Then upload images if any
-      if (equipmentImages.length > 0) {
-        await Promise.all(
-          equipmentImages.map(async (image, index) => {
-            await uploadImage(createdEquipment.id, image.imageUrl, index === 0);
-          })
-        );
+        // Handle image updates
+        console.log("Equipment images:", equipmentImages);
+        if (equipmentImages.length > 0) {
+          await Promise.all(
+            equipmentImages.map(async (image, index) => {
+              image.equipmentId = equipmentId;
+              console.log("Image:", image);
+              if (!image.id) {
+                // New image
+                console.log("Uploading image:", image.imageUrl);
+                await uploadImage(equipmentId, image.imageUrl, index === 0);
+              }
+            })
+          );
+        }
+      } else {
+        // Create new equipment
+        const createdEquipment = await create(equipmentData);
+
+        // Upload images for new equipment
+        if (equipmentImages.length > 0) {
+          await Promise.all(
+            equipmentImages.map(async (image, index) => {
+              console.log("Uploading image:", image.imageUrl);
+              image.equipmentId = createdEquipment.id || "";
+              console.log("Image:", image);
+              await uploadImage(
+                createdEquipment.id,
+                image.imageUrl,
+                index === 0
+              );
+            })
+          );
+        }
       }
 
       router.back();
     } catch (error) {
-      console.error("Failed to create equipment:", error);
+      console.error("Failed to save equipment:", error);
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Failed to create equipment",
+        text2: "Failed to save equipment",
       });
     } finally {
       setLoading(false);
@@ -372,7 +440,7 @@ export default function AddEquipmentScreen({
           disabled={loading}
           style={styles.submitButton}
         >
-          Add Equipment
+          {equipmentId ? "Update Equipment" : "Add Equipment"}
         </Button>
       </ScrollView>
     </View>
