@@ -1,5 +1,9 @@
 import { Stack, Tabs } from "expo-router";
-import { Ionicons, MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { Button, View, Text, Settings } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useAuth } from "@/src/context/AuthContext";
@@ -56,20 +60,25 @@ export default function TabLayout() {
         screenOptions={({ route }) => ({
           tabBarStyle: { backgroundColor: theme.colors.background },
           tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.onBackground,
+          tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
           headerStyle: { backgroundColor: theme.colors.background },
           headerTintColor: theme.colors.onBackground,
           tabBarIcon: ({ color, size }) => {
             let iconName;
-            if (route.name === "index") iconName = "home-outline";
-            else if (route.name === "profile") iconName = "account-outline";
+            if (route.name === "index") iconName = "home";
+            else if (route.name === "profile") iconName = "account";
             else if (route.name === "settings") iconName = "wrench-outline";
-            else if (route.name === "locations") iconName = "map-marker-outline";
+            else if (route.name === "locations")
+              iconName = "map-marker-outline";
             else if (route.name === "chat") iconName = "chat-outline";
-            else if (route.name === "equipment") iconName = "cube-outline";
+            else if (route.name === "equipment") iconName = "tools";
             else if (route.name === "admin") iconName = "shield-account";
             return (
-              <MaterialCommunityIcons name={iconName as any} size={size} color={color} />
+              <MaterialCommunityIcons
+                name={iconName as any}
+                size={size}
+                color={color}
+              />
             );
           },
         })}

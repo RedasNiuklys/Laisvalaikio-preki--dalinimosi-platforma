@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { CreateEquipmentDto, Equipment } from '../types/Equipment';
 import { getAuthToken } from '../utils/authUtils';
 import { EQUIPMENT_ENDPOINT } from '../utils/envConfig';
@@ -66,12 +67,22 @@ export const getByCategory = async (category: string): Promise<Equipment[]> => {
 export const uploadImage = async (equipmentId: string, imageUri: string, isMainImage: boolean = false): Promise<void> => {
     const token = await getAuthToken();
     const formData = new FormData();
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-    const file = new File([blob], "image.jpg", { type: "image/jpeg" });
-    formData.append("file", file);
 
-    console.log("formData", formData);
+    if (Platform.OS === 'web') {
+        // Web platform handling
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+        formData.append("file", file);
+    } else {
+        // Native platform handling
+        formData.append('file', {
+            uri: imageUri,
+            type: 'image/jpeg',
+            name: 'image.jpg'
+        } as any);
+    }
+
     formData.append('isMainImage', isMainImage.toString());
 
     await axios.post(`${EQUIPMENT_ENDPOINT}/${equipmentId}/images`, formData, {

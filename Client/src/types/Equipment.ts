@@ -5,7 +5,7 @@ export type EquipmentCondition = 'Good' | 'Fair' | 'Poor' | 'Needs Repair';
 
 export interface EquipmentImage {
     id: number;
-    equipmentId: number;
+    equipmentId: string;
     imageUrl: string;
     isMainImage: boolean;
     createdAt: Date;

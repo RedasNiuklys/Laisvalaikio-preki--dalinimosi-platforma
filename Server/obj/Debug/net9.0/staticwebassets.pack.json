@@ -61,8 +61,20 @@
       "PackagePath": "staticwebassets\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg"
     },
     {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg"
+    },
+    {
       "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\2bf48e3c-44b1-4b7d-83b5-a2040dd65169.jpg",
       "PackagePath": "staticwebassets\\uploads\\equipment\\2bf48e3c-44b1-4b7d-83b5-a2040dd65169.jpg"
+    },
+    {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\543a0d2d-4b69-4e91-9497-9f51907d3862.jpg",
+      "PackagePath": "staticwebassets\\uploads\\equipment\\543a0d2d-4b69-4e91-9497-9f51907d3862.jpg"
+    },
+    {
+      "Id": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg",
+      "PackagePath": "staticwebassets\\uploads\\equipment\\640a72a0-805d-4658-82df-4efc348a6a72.jpg"
     },
     {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

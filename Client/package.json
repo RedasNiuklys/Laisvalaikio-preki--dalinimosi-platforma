@@ -3,13 +3,13 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
+    "android": "npx expo run:android",
+    "ios": "npx expo run:ios",
+    "web": "npx expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "npx expo lint"
   },
   "jest": {
     "preset": "jest-expo"
@@ -24,6 +24,7 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@types/google-maps": "^3.2.6",
+    "@types/react-native-snap-carousel": "^3.8.11",
     "@types/signalr": "^2.4.3",
     "AsyncStorage": "^0.1.5",
     "axios": "^1.8.4",
@@ -31,7 +32,6 @@
     "expo": "^53.0.7",
     "expo-auth-session": "~6.1.5",
     "expo-blur": "~14.1.4",
-    "expo-cli": "^6.3.12",
     "expo-config": "^1.0.0",
     "expo-constants": "~17.1.5",
     "expo-file-system": "^18.0.12",
@@ -49,7 +49,9 @@
     "expo-symbols": "~0.4.4",
     "expo-system-ui": "~5.0.7",
     "expo-web-browser": "~14.1.6",
+    "install": "^0.13.0",
     "nanoid": "^5.1.5",
+    "npm": "^11.3.0",
     "pigeon-maps": "^0.22.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -67,6 +69,7 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
+    "react-native-snap-carousel": "^3.9.1",
     "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",

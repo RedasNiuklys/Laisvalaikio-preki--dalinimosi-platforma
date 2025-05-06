@@ -30,6 +30,8 @@ namespace Server.Controllers
 
             var localIP = configuration["AppSettings:LocalIP"];
             var apiPort = configuration["AppSettings:ApiPort"];
+            Console.WriteLine(relativeUrl);
+            relativeUrl = relativeUrl.Replace("\\", "/");
             return $"http://{localIP}:{apiPort}/{relativeUrl}";
         }
 
@@ -40,7 +42,9 @@ namespace Server.Controllers
             var localIP = configuration["AppSettings:LocalIP"];
             var apiPort = configuration["AppSettings:ApiPort"];
             var baseUrl = $"http://{localIP}:{apiPort}/";
-
+            Console.WriteLine(fullUrl);
+            Console.WriteLine(baseUrl);
+            fullUrl = fullUrl.Replace("\\", "/");
             return fullUrl.StartsWith(baseUrl)
                 ? fullUrl.Substring(baseUrl.Length)
                 : fullUrl;
@@ -156,7 +160,7 @@ namespace Server.Controllers
         }
         // POST: api/Equipment/{id}/images
         [HttpPost("{id}/images")]
-        public async Task<ActionResult> AddEquipmentImage(string id, [FromForm] IFormFile file, [FromForm] bool isMainImage = false)
+        public async Task<ActionResult> AddEquipmentImage([FromRoute] string id, [FromForm] IFormFile file, [FromForm] bool isMainImage = false)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -165,16 +169,16 @@ namespace Server.Controllers
                 return Unauthorized();
             }
 
-            var equipment = await _context.Equipment.FindAsync(id);
-            if (equipment == null)
-            {
-                return NotFound();
-            }
+            // var equipment = await _context.Equipment.FindAsync(id);
+            // if (equipment == null)
+            // {
+            //     return NotFound();
+            // }
 
-            if (equipment.OwnerId != userId)
-            {
-                return Forbid();
-            }
+            // if (equipment.OwnerId != userId)
+            // {
+            //     return Forbid();
+            // }
 
             if (file == null || file.Length == 0)
             {
@@ -200,7 +204,7 @@ namespace Server.Controllers
                 var equipmentImage = new EquipmentImage
                 {
                     Id = Guid.NewGuid().ToString(),
-                    EquipmentId = equipment.Id,
+                    EquipmentId = id,
                     ImageUrl = Path.Combine("uploads", "equipment", fileName),
                     IsMainImage = isMainImage,
                     CreatedAt = DateTime.UtcNow,

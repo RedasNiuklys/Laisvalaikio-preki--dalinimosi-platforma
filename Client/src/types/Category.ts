@@ -8,4 +8,12 @@ export interface Category {
     subcategories?: Category[];
     createdAt?: string;
     updatedAt?: string;
-} 
+}
+export interface CategoryEdit {
+    name: string;
+    description: string;
+    iconName: string;
+    parentCategoryId?: number;
+    parentCategory?: Category;
+    subcategories?: Category[];
+}
