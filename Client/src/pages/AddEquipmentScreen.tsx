@@ -6,6 +6,7 @@ import {
   CreateEquipmentDto,
   Equipment,
   EquipmentImage,
+  UpdateEquipmentDto,
 } from "../types/Equipment";
 import { Location } from "../types/Location";
 import { Category } from "../types/Category";
@@ -43,13 +44,13 @@ export default function AddEquipmentScreen({
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [equipmentImages, setEquipmentImages] = useState<EquipmentImage[]>([]);
-  const [equipment, setEquipment] = useState<CreateEquipmentDto>({
+  const [equipment, setEquipment] = useState<UpdateEquipmentDto>({
     name: "",
     description: "",
     locationId: "",
     condition: "Good",
-    isAvailable: true,
     category: "",
+    status: "Available",
   });
 
   useEffect(() => {
@@ -71,8 +72,8 @@ export default function AddEquipmentScreen({
         description: data.description,
         locationId: data.locationId,
         condition: data.condition,
-        isAvailable: data.isAvailable,
         category: data.category,
+        status: "Available",
       });
       setSelectedLocationId(data.locationId);
       setSelectedCategoryId(
@@ -264,35 +265,41 @@ export default function AddEquipmentScreen({
         });
         return;
       }
-      console.log("Test");
-      const equipmentData: CreateEquipmentDto = {
+      //console.log
+      const equipmentData: UpdateEquipmentDto = {
         name: equipment.name,
         description: equipment.description,
         locationId: selectedLocationId,
         category: selectedCategory.name,
+        status: equipment.status,
         condition: equipment.condition,
-        isAvailable: equipment.isAvailable,
       };
 
-      console.log("Equipment data:", equipmentId);
+      //console.log
+      // "Equipment data:", equipmentId;
       if (equipmentId) {
-        // Update existing equipment
-        console.log("Updating equipment:", equipmentId);
-        console.log("Equipment data:", equipmentData);
-        console.log("Equipment images:", equipmentImages);
-        console.log("Equipment images length:", equipmentImages.length);
+        // // Update existing equipment
+        // //console.log
+        // "Updating equipment:", equipmentId;
+        // //console.log
+        // "Equipment data:", equipmentData;
+        // //console.log
+        // "Equipment images:", equipmentImages;
+        // //console.log
+        // "Equipment images length:", equipmentImages.length;
         await update(equipmentId, equipmentData);
 
         // Handle image updates
-        console.log("Equipment images:", equipmentImages);
+        //console.log
+        // "Equipment images:", equipmentImages;
         if (equipmentImages.length > 0) {
           await Promise.all(
             equipmentImages.map(async (image, index) => {
               image.equipmentId = equipmentId;
-              console.log("Image:", image);
+              //console.log
               if (!image.id) {
                 // New image
-                console.log("Uploading image:", image.imageUrl);
+                //console.log
                 await uploadImage(equipmentId, image.imageUrl, index === 0);
               }
             })
@@ -306,9 +313,9 @@ export default function AddEquipmentScreen({
         if (equipmentImages.length > 0) {
           await Promise.all(
             equipmentImages.map(async (image, index) => {
-              console.log("Uploading image:", image.imageUrl);
+              //console.log
               image.equipmentId = createdEquipment.id || "";
-              console.log("Image:", image);
+              //console.log
               await uploadImage(
                 createdEquipment.id,
                 image.imageUrl,

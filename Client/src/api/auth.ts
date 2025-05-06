@@ -10,7 +10,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 export const authApi = {
     login: async (email: string, password: string) => {
-        console.log("Login started");
+        //console.log
+        ("Login started");
         const response = await axios.post(`${LOGIN_ENDPOINT}/login`, { email, password });
         return response.data;
     },
@@ -21,7 +22,8 @@ export const authApi = {
             Linking.openURL(`${LOGIN_ENDPOINT}/google-login`);
         } else {
             try {
-                console.log("Google login started");
+                //console.log
+                ("Google login started");
                 const { request, response, promptAsync } = useGoogleAuth();
                 const result = await promptAsync();
 
@@ -70,7 +72,8 @@ export const authApi = {
 
     getUser: async () => {
         const token = await AsyncStorage.getItem('token');
-        console.log("token", token);
+        //console.log
+        ("token", token);
         const response = await axios.get(`${USER_ENDPOINT}/profile`, {
             headers: {
                 Authorization: `Bearer ${token}`

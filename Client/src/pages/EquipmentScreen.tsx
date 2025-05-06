@@ -37,7 +37,8 @@ export default function EquipmentScreen() {
       if (user?.id) {
         const data = await getByOwner(user.id);
         setEquipment(data);
-        console.log(data);
+        //console.log
+        data;
         setFilteredEquipment(data);
       }
     } catch (error) {

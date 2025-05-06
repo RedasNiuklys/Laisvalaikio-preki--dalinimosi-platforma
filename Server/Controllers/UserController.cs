@@ -86,14 +86,15 @@ public class UserController : ControllerBase
     }
 
     // GET: api/user/{id}
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")] // For development purposes
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(string id)
     {
         try
         {
+            Console.WriteLine(id);
             var user = await _userManager.FindByIdAsync(id);
-
+            Console.WriteLine(user);
             if (user == null)
                 return NotFound($"User with ID {id} not found");
 

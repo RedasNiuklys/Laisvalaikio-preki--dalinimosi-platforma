@@ -61,6 +61,9 @@ export default function DateSelector({
       userId: "",
       startDate: start,
       endDate: today,
+      type: "Taken",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     setPastDates([pastDateRange]);
@@ -378,7 +381,8 @@ export default function DateSelector({
 
   const handleDayPress = (day: DateData) => {
     const selectedDate = new Date(day.dateString);
-    console.log(theme.colors.background);
+    //console.log
+    theme.colors.background;
 
     // Check if date is blocked or in past
     if (markedDates[day.dateString]?.disabled) {
@@ -394,6 +398,9 @@ export default function DateSelector({
         userId: "",
         startDate: selectedDate,
         endDate: selectedDate,
+        type: "Wish",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       setCurrentSelection(newSelection);
       updateCalendarMarks(
@@ -541,11 +548,9 @@ export default function DateSelector({
         theme={{
           backgroundColor: theme.colors.background,
           calendarBackground: theme.colors.background,
-
           // Text colors
-          textColor: theme.colors.onBackground,
-          monthTextColor: theme.colors.onBackground,
           dayTextColor: theme.colors.onBackground,
+          monthTextColor: theme.colors.onBackground,
           textSectionTitleColor: theme.colors.onBackground,
 
           // Disabled states

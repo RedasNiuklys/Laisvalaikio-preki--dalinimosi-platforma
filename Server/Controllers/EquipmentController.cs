@@ -63,7 +63,7 @@ namespace Server.Controllers
             var equipment = await _context.Equipment
                 .Include(e => e.Location)
                 .Include(e => e.Images)
-                .Where(e => e.OwnerId == userId)
+                // .Where(e => e.OwnerId == userId)
                 .Select(e => new EquipmentResponseDto
                 {
                     Id = e.Id,

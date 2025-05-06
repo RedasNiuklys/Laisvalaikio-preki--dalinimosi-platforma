@@ -93,11 +93,13 @@ class ChatService {
 
             // Handle reconnection
             this.hubConnection.onreconnecting(() => {
-                console.log('Attempting to reconnect to chat hub...');
+                //console.log
+                ('Attempting to reconnect to chat hub...');
             });
 
             this.hubConnection.onreconnected(() => {
-                console.log('Reconnected to chat hub');
+                //console.log
+                ('Reconnected to chat hub');
                 this.reconnectAttempts = 0;
             });
 
@@ -112,7 +114,8 @@ class ChatService {
         try {
             if (this.hubConnection && this.hubConnection.state === 'Disconnected') {
                 await this.hubConnection.start();
-                console.log('Connected to chat hub');
+                //console.log
+                ('Connected to chat hub');
                 this.reconnectAttempts = 0;
             }
         } catch (error) {

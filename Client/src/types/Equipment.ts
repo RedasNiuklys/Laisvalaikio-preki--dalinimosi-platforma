@@ -33,8 +33,19 @@ export interface EquipmentResponseDto extends CreateEquipmentDto {
     location: Location;
 }
 
-export interface Equipment extends EquipmentResponseDto {
-    images: EquipmentImage[];
+export interface Equipment {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    condition: string;
+    locationId: string;
+    location: Location;
+    images?: EquipmentImage[];
+    usedDates?: UsedDates[];
+    ownerId: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface CreateEquipmentDto {
@@ -42,7 +53,6 @@ export interface CreateEquipmentDto {
     description: string;
     category: string;
     condition: string;
-    isAvailable: boolean;
     locationId: string;
     images?: EquipmentImage[];
 }
