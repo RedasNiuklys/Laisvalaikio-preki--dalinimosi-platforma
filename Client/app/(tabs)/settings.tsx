@@ -42,7 +42,8 @@ export default function SettingsScreen() {
     updateSettings({ ...settings, language });
   };
   const toggleTheme = () => {
-    const newValue = !dark;
+    const newValue= !dark;
+    setDark(!dark);
     AsyncStorage.setItem("isDarkMode", newValue.toString());
   };
 

@@ -31,9 +31,7 @@ export const getById = async (id: string): Promise<Equipment> => {
 export const create = async (equipment: CreateEquipmentDto): Promise<Equipment> => {
     const token = await getAuthToken();
     //console.log
-    ("equipment", equipment);
-    //console.log
-    ("token", token);
+
     const response = await axios.post(`${EQUIPMENT_ENDPOINT}`, equipment, {
         headers: {
             Authorization: `Bearer ${token}`,

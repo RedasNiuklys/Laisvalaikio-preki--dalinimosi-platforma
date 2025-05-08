@@ -1,7 +1,7 @@
 export type UsedDateType = 'Taken' | 'Planning' | 'Wish';
 
 export interface UsedDates {
-    id?: string;
+    id?: number;
     equipmentId: string;
     userId: string;
     startDate: Date;

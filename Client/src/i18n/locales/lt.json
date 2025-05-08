@@ -7,6 +7,7 @@
       "delete": "Ištrinti",
       "logout": "Atsijungti",
       "clear": "Išvalyti",
+      "back": "Atgal",
       "edit": "Redaguoti"
     },
     "status": {
@@ -32,6 +33,7 @@
   },
   "location": {
     "search": "Ieškoti vietos...",
+    "title": "Vieta",
     "currentLocation": "Rodyti vietą",
     "openInMaps": "Rodyti Google Maps",
     "errors": {
@@ -62,6 +64,25 @@
     "searchIcon": "Ieškoti paveiksliuko",
     "selectIcon": "Pasirinkti paveiksliuką",
     "searchIcons": "Ieškoti paveiksliukų"
+  },
+  "usedDates": {
+    "title": "Naudojamos datas",
+    "add": "Pridėti naudojamas datas",
+    "actions": {
+      "add": "Pridėti",
+      "post": "Registruoti",
+      "delete": "Ištrinti",
+      "postAll": "Registruoti visus"
+    },
+    "errors": {
+      "postFailed": "Nepavyko pranešti naudojamas datas",
+      "postAll": "Nepavyko pranešti visų naudojamas datas"
+    },
+    "success": {
+      "postAll": "Naudojamos datos sėkmingai pridėtos"
+    },
+
+    "currentSelections": "Dabartiniai pasirinkimai"
   },
   "home": {
     "title": "Pradžia",
@@ -157,6 +178,7 @@
       "notFound": "Įranga nerasta",
       "loadError": "Nepavyko įkelti įrangos duomenų",
       "deleteSuccess": "Įranga sėkmingai ištrinta",
+      "usedDates": "Naudojamos datas",
       "deleteError": "Nepavyko ištrinti įrangos",
       "updateSuccess": "Įranga sėkmingai atnaujinta",
       "updateError": "Nepavyko atnaujinti įrangos",
