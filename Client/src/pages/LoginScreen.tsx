@@ -239,13 +239,13 @@ const LoginScreen = () => {
                 {t("auth.login.submit")}
               </Button>
 
-              <View style={loginScreenStyles.dividerContainer}>
+              {/* <View style={loginScreenStyles.dividerContainer}>
                 <Divider style={loginScreenStyles.divider} />
                 <Text style={loginScreenStyles.orText}>OR</Text>
                 <Divider style={loginScreenStyles.divider} />
-              </View>
+              </View> */}
 
-              <Text style={loginScreenStyles.socialLoginText}>
+              {/* <Text style={loginScreenStyles.socialLoginText}>
                 {t("auth.login.logInWith")}
               </Text>
 
@@ -273,7 +273,7 @@ const LoginScreen = () => {
                     Facebook
                   </Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
 
               <TouchableOpacity
                 onPress={() => navigation.navigate("Register")}

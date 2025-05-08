@@ -212,6 +212,25 @@
     "available": "Available",
     "unavailable": "Unavailable"
   },
+  "usedDates": {
+    "title": "Used Dates",
+    "add": "Add Used Date",
+    "actions": {
+      "add": "Add",
+      "post": "Post",
+      "delete": "Delete",
+      "postAll": "Post All"
+    },
+    "errors": {
+      "postFailed": "Failed to post used dates",
+      "postAll": "Failed to post all used dates"
+    },
+    "success": {
+      "postAll": "Used dates posted successfully"
+    },
+
+    "currentSelections": "Current Selections"
+  },
   "profile": {
     "title": "Profile",
     "personalInfo": "Personal Information",

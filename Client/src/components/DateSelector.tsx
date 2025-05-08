@@ -3,12 +3,13 @@ import { View, StyleSheet, Platform, Pressable } from "react-native";
 import { Text, useTheme, Button, List } from "react-native-paper";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import Toast from "react-native-toast-message";
-import { getUsedDatesForEquipment } from "../api/usedDatesApi";
+import { getUsedDatesForEquipment, addUsedDate } from "../api/usedDatesApi";
 import { UsedDates } from "../types/UsedDates";
 import { IconButton } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../context/SettingsContext";
 import { ltLocale, enLocale } from "../locales/calendarLocales";
+import { useAuth } from "../context/AuthContext";
 
 interface DateSelectorProps {
   equipmentId: string;
@@ -41,6 +42,7 @@ export default function DateSelector({
   const theme = useTheme();
   const { t } = useTranslation();
   const { settings } = useSettings();
+  const { user,loadUser } = useAuth();
   const [blockedDates, setBlockedDates] = useState<UsedDates[]>([]); // Dates from server
   const [pastDates, setPastDates] = useState<UsedDates[]>([]); // Past dates as UsedDates
   const [sessionSelections, setSessionSelections] = useState<UsedDates[]>([]); // Current session selections
@@ -53,10 +55,10 @@ export default function DateSelector({
   useEffect(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    loadUser();
     const start = new Date(2020, 0, 1);
     const pastDateRange: UsedDates = {
-      id: "past_dates",
+      id: 0,
       equipmentId,
       userId: "",
       startDate: start,
@@ -337,18 +339,21 @@ export default function DateSelector({
       const startString = start.toISOString().split("T")[0];
       const endString = end.toISOString().split("T")[0];
 
+      // Mark start date
       marked[startString] = {
         selected: true,
         startingDay: true,
         color: theme.colors.primary,
       };
 
+      // Mark end date
       marked[endString] = {
         selected: true,
         endingDay: true,
         color: theme.colors.primary,
       };
 
+      // Mark days in between
       for (
         let date = new Date(start);
         date <= end;
@@ -366,14 +371,39 @@ export default function DateSelector({
 
     // Mark current selection if exists
     if (current) {
-      const startString = new Date(current.startDate)
-        .toISOString()
-        .split("T")[0];
+      const start = new Date(current.startDate);
+      const end = new Date(current.endDate);
+      const startString = start.toISOString().split("T")[0];
+      const endString = end.toISOString().split("T")[0];
+
+      // Mark start date
       marked[startString] = {
         selected: true,
         startingDay: true,
         color: theme.colors.primary,
       };
+
+      // Mark end date
+      marked[endString] = {
+        selected: true,
+        endingDay: true,
+        color: theme.colors.primary,
+      };
+
+      // Mark days in between
+      for (
+        let date = new Date(start);
+        date <= end;
+        date.setDate(date.getDate() + 1)
+      ) {
+        const dateString = date.toISOString().split("T")[0];
+        if (dateString !== startString && dateString !== endString) {
+          marked[dateString] = {
+            selected: true,
+            color: theme.colors.primaryContainer,
+          };
+        }
+      }
     }
 
     setMarkedDates(marked);
@@ -393,7 +423,7 @@ export default function DateSelector({
     if (!currentSelection) {
       // Start new selection
       const newSelection: UsedDates = {
-        id: `temp_${sessionIdCounter.current}`,
+        id: sessionIdCounter.current + 10000000,
         equipmentId,
         userId: "",
         startDate: selectedDate,
@@ -437,7 +467,7 @@ export default function DateSelector({
       // Complete the selection
       const completedSelection: UsedDates = {
         ...currentSelection,
-        id: `temp_${sessionIdCounter.current++}`,
+        id: sessionIdCounter.current + 10000001,
         endDate: selectedDate,
       };
 
@@ -449,7 +479,7 @@ export default function DateSelector({
     }
   };
 
-  const clearSelection = (selectionId?: string) => {
+  const clearSelection = (selectionId?: number) => {
     if (selectionId) {
       // Remove specific selection
       const newSelections = sessionSelections.filter(
@@ -524,102 +554,181 @@ export default function DateSelector({
     });
   };
 
+  const handlePostDates = async () => {
+    if (!currentSelection || !user?.id) {
+      Toast.show({
+        type: "error",
+        text1: t("usedDates.errors.noSelection"),
+        text2: t("usedDates.errors.pleaseSelectDates"),
+      });
+      return;
+    }
+
+    try {
+      const newUsedDate: UsedDates = {
+        ...currentSelection,
+        userId: user.id,
+        type: "Taken",
+      };
+      newUsedDate.id = undefined;
+      await addUsedDate(equipmentId, newUsedDate);
+
+      // Add to blocked dates and clear current selection
+      setBlockedDates([...blockedDates, newUsedDate]);
+      setCurrentSelection(null);
+      setSessionSelections([]);
+
+      // Refresh the calendar
+      updateCalendarMarks(pastDates, [...blockedDates, newUsedDate], [], null);
+
+      Toast.show({
+        type: "success",
+        text1: t("usedDates.success.title"),
+        text2: t("usedDates.success.datesAdded"),
+      });
+    } catch (error) {
+      console.error("Error posting dates:", error);
+      Toast.show({
+        type: "error",
+        text1: t("usedDates.errors.postFailed"),
+        text2: t("usedDates.errors.tryAgain"),
+      });
+    }
+  };
+
+  const handlePostAllSelections = async () => {
+    console.log(user);
+    if (!user?.id || sessionSelections.length === 0) {
+      Toast.show({
+        type: "error",
+        text1: t("usedDates.errors.noSelections"),
+        text2: t("usedDates.errors.pleaseSelectDates"),
+      });
+      return;
+    }
+
+    const userId = user.id; // Store user ID to satisfy TypeScript
+
+    try {
+      // Post each selection
+      const postedDates = await Promise.all(
+        sessionSelections.map(async (selection) => {
+          const newUsedDate: UsedDates = {
+            ...selection,
+            userId,
+            equipmentId,
+            type: "Taken",
+          };
+          newUsedDate.id = undefined;
+          return await addUsedDate(equipmentId, newUsedDate);
+        })
+      );
+
+      // Add to blocked dates and clear selections
+      setBlockedDates([...blockedDates, ...postedDates]);
+      setSessionSelections([]);
+      setCurrentSelection(null);
+
+      // Refresh the calendar
+      updateCalendarMarks(
+        pastDates,
+        [...blockedDates, ...postedDates],
+        [],
+        null
+      );
+
+      Toast.show({
+        type: "success",
+        text1: t("usedDates.success.title"),
+        text2: t("usedDates.success.allDatesAdded"),
+      });
+    } catch (error) {
+      console.error("Error posting dates:", error);
+      Toast.show({
+        type: "error",
+        text1: t("usedDates.errors.postFailed"),
+        text2: t("usedDates.errors.tryAgain"),
+      });
+    }
+  };
+
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <Text
-        variant="titleMedium"
-        style={[styles.title, { color: theme.colors.onBackground }]}
-      >
-        {t("calendar.selectDates")}
-      </Text>
+    <View style={styles.container}>
       <Calendar
-        key={`${theme.dark ? "dark" : "light"}-${settings.language}-${
-          settings.startWeekOnMonday ? "monday" : "sunday"
-        }-${Date.now()}`}
+        key={settings.language}
         onDayPress={handleDayPress}
-        onDayLongPress={handleDayLongPress}
+        onDayLongPress={Platform.OS === "web" ? undefined : handleDayPress}
         markedDates={markedDates}
         markingType="period"
-        firstDay={settings.startWeekOnMonday ? 1 : 0}
+        firstDay={1}
         minDate={new Date().toISOString().split("T")[0]}
-        locale={settings.language}
         theme={{
           backgroundColor: theme.colors.background,
           calendarBackground: theme.colors.background,
-          // Text colors
-          dayTextColor: theme.colors.onBackground,
-          monthTextColor: theme.colors.onBackground,
           textSectionTitleColor: theme.colors.onBackground,
-
-          // Disabled states
-          textDisabledColor: theme.colors.onSurfaceDisabled,
-          disabledArrowColor: theme.colors.onSurfaceDisabled,
-
-          // Selected states
           selectedDayBackgroundColor: theme.colors.primary,
           selectedDayTextColor: theme.colors.onPrimary,
-
-          // Today
           todayTextColor: theme.colors.primary,
-          todayBackgroundColor: theme.colors.primaryContainer,
-
-          // Arrows and indicators
-          arrowColor: theme.colors.primary,
+          dayTextColor: theme.colors.onBackground,
+          textDisabledColor: theme.colors.onSurfaceDisabled,
           dotColor: theme.colors.primary,
-
-          // Font styling
-          textMonthFontFamily: theme.fonts.titleMedium.fontFamily,
-          textDayFontFamily: theme.fonts.bodyMedium.fontFamily,
-          textDayHeaderFontFamily: theme.fonts.bodyMedium.fontFamily,
-          textMonthFontWeight: theme.fonts.titleMedium.fontWeight,
-          textDayFontWeight: theme.fonts.bodyMedium.fontWeight,
-          textDayHeaderFontWeight: theme.fonts.bodyMedium.fontWeight,
+          selectedDotColor: theme.colors.onPrimary,
+          arrowColor: theme.colors.primary,
+          monthTextColor: theme.colors.onBackground,
+          indicatorColor: theme.colors.primary,
         }}
       />
+
       {currentSelection && (
-        <Text style={[styles.hint, { color: theme.colors.onBackground }]}>
-          {Platform.OS === "web"
-            ? t("calendar.selectEndDate")
-            : t("calendar.selectEndDateMobile")}
-        </Text>
-      )}
-      {Platform.OS === "web" &&
-        sessionSelections.length > 0 &&
-        !currentSelection && (
-          <View style={styles.buttonContainer}>
-            <Button
-              mode="outlined"
-              onPress={() => clearSelection()}
-              icon="close"
-              style={styles.clearButton}
-              textColor={theme.colors.primary}
+        <View
+          style={[
+            styles.selectionContainer,
+            { backgroundColor: theme.colors.surfaceVariant },
+          ]}
+        >
+          <Text variant="bodyMedium">{formatDateRange(currentSelection)}</Text>
+          <View style={styles.selectionActions}>
+            {/* <Button
+              mode="contained"
+              onPress={handlePostDates}
+              style={styles.postButton}
             >
-              {t("calendar.clearLastSelection")}
-            </Button>
+              {t("usedDates.actions.post")}
+            </Button> */}
+            <IconButton
+              icon="close"
+              size={20}
+              onPress={() => clearSelection()}
+            />
           </View>
-        )}
+        </View>
+      )}
+
       {sessionSelections.length > 0 && (
         <List.Section>
-          <List.Subheader style={{ color: theme.colors.onBackground }}>
-            {t("calendar.selectedPeriods")}
-          </List.Subheader>
+          <List.Subheader>{t("usedDates.currentSelections")}</List.Subheader>
           {sessionSelections.map((selection) => (
             <List.Item
               key={selection.id}
               title={formatDateRange(selection)}
-              titleStyle={{ color: theme.colors.onBackground }}
-              right={(props) => (
+              right={() => (
                 <IconButton
-                  {...props}
                   icon="close"
-                  iconColor={theme.colors.primary}
+                  size={20}
                   onPress={() => clearSelection(selection.id)}
                 />
               )}
             />
           ))}
+          <View style={styles.postAllContainer}>
+            <Button
+              mode="contained"
+              onPress={handlePostAllSelections}
+              style={styles.postAllButton}
+            >
+              {t("usedDates.actions.postAll")}
+            </Button>
+          </View>
         </List.Section>
       )}
     </View>
@@ -628,21 +737,28 @@ export default function DateSelector({
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  selectionContainer: {
     padding: 16,
+    borderRadius: 8,
+    marginTop: 8,
   },
-  title: {
-    marginBottom: 16,
+  selectionActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
   },
-  buttonContainer: {
-    marginTop: 16,
+  postButton: {
+    flex: 1,
+    marginRight: 8,
+  },
+  postAllContainer: {
+    padding: 16,
     alignItems: "center",
   },
-  clearButton: {
-    minWidth: 200,
-  },
-  hint: {
-    marginTop: 8,
-    textAlign: "center",
-    fontStyle: "italic",
+  postAllButton: {
+    width: "100%",
   },
 });

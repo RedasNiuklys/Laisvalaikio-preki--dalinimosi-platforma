@@ -135,7 +135,7 @@ export default function EquipmentScreen() {
       // TODO: Implement getEquipment API call
       const data = await equipmentApi.getAll();
       setEquipment(data);
-
+      console.log("equipment", data);
       // Extract unique locations from equipment
       const uniqueLocations = Array.from(
         new Set(data.map((item) => item.locationId))
@@ -152,8 +152,8 @@ export default function EquipmentScreen() {
           userId: item?.location.userId || "",
         };
       });
-
-      setLocations(uniqueLocations);
+      console.log("uniqueLocations", uniqueLocations);
+      setLocations(data.map((item) => item.location));
     } catch (error) {
       console.error("Error fetching equipment:", error);
       showToast("error", t("equipment.errors.fetchFailed"));

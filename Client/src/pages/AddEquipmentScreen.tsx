@@ -239,6 +239,7 @@ export default function AddEquipmentScreen({
   };
 
   const handleSubmit = async () => {
+    console.log("handleSubmit");
     if (
       !equipment.name ||
       !equipment.description ||
@@ -257,6 +258,7 @@ export default function AddEquipmentScreen({
     setLoading(true);
     try {
       const selectedCategory = categories[selectedCategoryId - 1];
+      console.log("selectedCategory", selectedCategory);
       if (!selectedCategory) {
         Toast.show({
           type: "error",
@@ -274,6 +276,9 @@ export default function AddEquipmentScreen({
         status: equipment.status,
         condition: equipment.condition,
       };
+      console.log("equipmentData", equipmentData);
+      console.log("equipmentImages", equipmentImages);
+      console.log("equipmentId", equipmentId);
 
       //console.log
       // "Equipment data:", equipmentId;
@@ -296,10 +301,11 @@ export default function AddEquipmentScreen({
           await Promise.all(
             equipmentImages.map(async (image, index) => {
               image.equipmentId = equipmentId;
+              console.log("image", image);
               //console.log
-              if (!image.id) {
+              if (image.id > 0) {
                 // New image
-                //console.log
+                console.log("New image");
                 await uploadImage(equipmentId, image.imageUrl, index === 0);
               }
             })

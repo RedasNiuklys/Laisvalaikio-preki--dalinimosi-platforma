@@ -58,4 +58,13 @@ export const checkAvailability = async (equipmentId: string, startDate: Date, en
         headers: { Authorization: `Bearer ${token}` }
     });
     return response.data.available;
+};
+
+export const addUsedDate = async (equipmentId: string, usedDate: Omit<UsedDates, 'id'>): Promise<UsedDates> => {
+    const token = await getAuthToken();
+    console.log("addUsedDate", usedDate);
+    const response = await axios.post<UsedDates>(`${BASE_URL}/useddates/equipment/${equipmentId}`, usedDate, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
 }; 

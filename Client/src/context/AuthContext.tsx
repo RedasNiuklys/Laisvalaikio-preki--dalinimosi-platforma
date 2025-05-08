@@ -68,8 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       } else {
         const response = await authApi.login(email, password);
-        //console.log
-        "Token:", response.token;
         setToken(response.token);
         await setAuthToken(response.token);
         setIsAuthenticated(true);
