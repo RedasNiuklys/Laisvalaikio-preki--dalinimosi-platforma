@@ -1,9 +1,9 @@
 // Default values (will be overridden by server config)
-const LOCAL_IP = '10.151.26.44';
-const API_PORT = '5000';
+const LOCAL_IP = '10.151.2.109';
+const API_PORT = '5001';
 
 const getBaseUrl = () => {
-    return `http://${LOCAL_IP}:${API_PORT}/api`;
+    return `https://${LOCAL_IP}:${API_PORT}/api`;
 };
 
 const getWebSocketUrl = () => {

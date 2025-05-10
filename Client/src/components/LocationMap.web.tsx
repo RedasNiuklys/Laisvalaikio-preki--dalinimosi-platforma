@@ -15,7 +15,7 @@ const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
       selectedLocation = null,
       onLocationSelect,
       locations = [],
-      onLocationClick = () => {},
+      onLocationClick = () => { },
       isAddingLocation = false,
     },
     ref

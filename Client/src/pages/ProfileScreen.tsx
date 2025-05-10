@@ -14,7 +14,7 @@ import {
 } from "react-native-paper";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
-import { getProfile } from "../api/users";
+import { getProfile } from "../api/userApi";
 import { User } from "../types/User";
 import { styles } from "../styles/ProfileScreen.styles";
 import * as ImagePicker from "expo-image-picker";
@@ -63,7 +63,7 @@ const ProfileScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       fetchUser();
-      return () => {};
+      return () => { };
     }, [])
   );
 
@@ -153,9 +153,8 @@ const ProfileScreen = () => {
         formData.append("file", file);
       } else {
         // For mobile (Expo), save to temporary file and send
-        const tempFileUri = `${
-          FileSystem.cacheDirectory
-        }avatar_${Date.now()}.jpg`;
+        const tempFileUri = `${FileSystem.cacheDirectory
+          }avatar_${Date.now()}.jpg`;
         await FileSystem.copyAsync({
           from: manipulatedImage.uri,
           to: tempFileUri,
@@ -191,9 +190,8 @@ const ProfileScreen = () => {
 
       // Clean up temporary file on mobile
       if (Platform.OS !== "web") {
-        const tempFileUri = `${
-          FileSystem.cacheDirectory
-        }avatar_${Date.now()}.jpg`;
+        const tempFileUri = `${FileSystem.cacheDirectory
+          }avatar_${Date.now()}.jpg`;
         await FileSystem.deleteAsync(tempFileUri, { idempotent: true });
       }
 

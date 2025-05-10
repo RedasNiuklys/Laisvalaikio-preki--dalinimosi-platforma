@@ -1,5 +1,8 @@
 /.env
 *.pem
 *.ppk
-Server/bin/*
-node_modules/*
+Server/bin/
+Server/obj/
+**/bin/
+**/obj/
+node_modules/

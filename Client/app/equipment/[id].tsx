@@ -17,7 +17,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Equipment } from "@/src/types/Equipment";
 import * as equipmentApi from "@/src/api/equipmentApi";
-import * as userApi from "@/src/api/users";
+import * as userApi from "@/src/api/userApi";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import DateSelector from "@/src/components/DateSelector";

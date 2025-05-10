@@ -34,7 +34,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // Configure URLs
-builder.WebHost.UseUrls("http://10.151.26.44:5000");
+builder.WebHost.UseUrls("https://10.151.2.109:5001", "http://10.151.2.109:5000");
+
+// Configure HTTPS
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5001, listenOptions =>
+    {
+        listenOptions.UseHttps("certs/localhost.pfx", "YourPassword");
+    });
+    serverOptions.ListenAnyIP(5000); // HTTP port
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -126,15 +136,17 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", builder =>
         builder
             .WithOrigins(
-                "http://10.151.26.44:5000",    // Server
-                "http://10.151.26.44:8081",    // Client web
-                "http://10.151.26.44:19000",   // Expo dev client
-                "http://10.151.26.44:19006",   // Expo web
-                "http://localhost:8081",        // Local client web
-                "http://localhost:19000",       // Local Expo dev client
-                "http://localhost:19006",       // Local Expo web
-                "exp://10.151.26.44:19000",    // Expo dev client
-                "exp://10.151.26.44:8081",     // Expo web
+                "https://10.151.2.109:5001",   // Server HTTPS
+                "http://10.151.2.109:5000",    // Server HTTP
+                "https://10.151.2.109:8081",   // Client web HTTPS
+                "https://10.151.2.109:8081",    // Client web HTTP
+                "https://10.151.2.109:19000",   // Expo dev client
+                "https://10.151.2.109:19006",   // Expo web
+                "https://localhost:8081",        // Local client web
+                "https://localhost:19000",       // Local Expo dev client
+                "https://localhost:19006",       // Local Expo web
+                "exp://10.151.2.109:19000",    // Expo dev client
+                "exp://10.151.2.109:8081",     // Expo web
                 "exp://localhost:19000",        // Local Expo dev client
                 "exp://localhost:8081"          // Local Expo web
             )
@@ -154,8 +166,8 @@ System.Console.WriteLine("Building app done");
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Disable HTTPS redirection
-// app.UseHttpsRedirection();
+// Enable HTTPS redirection
+app.UseHttpsRedirection();
 
 // Enable static file serving
 app.UseStaticFiles();
