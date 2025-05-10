@@ -1,63 +1,71 @@
-import { Stack } from "expo-router";
-import { useTheme, PaperProvider } from "react-native-paper";
-import { ThemeProvider } from "@/src/context/ThemeContext";
+import { Stack, useSegments, useRouter, Slot } from "expo-router";
+import { PaperProvider } from "react-native-paper";
+import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
 import { SettingsProvider } from "@/src/context/SettingsContext";
-import { AuthProvider } from "@/src/context/AuthContext";
+import { AuthProvider, useAuth } from "@/src/context/AuthContext";
 import { ToastContainer } from "@/src/components/Toast";
-import { useProtectedRoute } from "@/src/hooks/useProtectedRoute";
+import GlobalHeader from "@/src/components/GlobalHeader";
+import { View } from "react-native";
+import { useEffect, useState } from "react";
+import ThemeToggle from "@/src/components/ThemeToggle";
 
 function NavigationStack() {
-  const theme = useTheme();
+  const { theme } = useTheme();
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
+
+  useEffect(() => {
+    // Set navigation as ready after initial render
+    setIsNavigationReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isNavigationReady || isLoading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // Redirect to login if not authenticated and not in auth group
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && inAuthGroup) {
+      // Redirect to home if authenticated and in auth group
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, segments, isNavigationReady, isLoading]);
+
+  // Don't show header in auth screens
+  const showHeader = segments[0] !== "(auth)";
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: theme.colors.background,
-        },
-        headerTintColor: theme.colors.onBackground,
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
-      }}
-    >
-      <Stack.Screen
-        name="(tabs)"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="(modals)"
-        options={{
-          presentation: "modal",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="+not-found"
-        options={{
-          title: "Not Found",
-        }}
-      />
-    </Stack>
+    <View style={{ flex: 1 }}>
+      {showHeader && <GlobalHeader />}
+      {!showHeader && <ThemeToggle />}
+      <Slot />
+    </View>
   );
-}
-
-function ProtectedRoute() {
-  // useProtectedRoute();
-  return <NavigationStack />;
 }
 
 export default function RootLayout() {
   return (
-    <PaperProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <RootLayoutNav />
+      </ThemeProvider>
+    </AuthProvider>
+
+  );
+}
+
+function RootLayoutNav() {
+  const { theme } = useTheme();
+
+  return (
+    <PaperProvider theme={theme}>
       <SettingsProvider>
-        <AuthProvider>
-          <ProtectedRoute />
-          <ToastContainer />
-        </AuthProvider>
+        <NavigationStack />
+        <ToastContainer />
       </SettingsProvider>
     </PaperProvider>
   );

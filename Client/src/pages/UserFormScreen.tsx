@@ -8,7 +8,7 @@ import {
   getUserById,
   getUsers,
   updateUser,
-} from "../api/users"; // Adjust API path
+} from "../api/userApi"; // Adjust API path
 import { User } from "../types/User";
 import axios from "axios";
 

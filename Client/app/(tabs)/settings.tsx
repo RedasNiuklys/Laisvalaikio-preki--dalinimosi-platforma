@@ -26,38 +26,35 @@ import { router } from "expo-router";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/src/i18n";
+import { useRouter } from "expo-router";
+import { globalStyles } from "@/src/styles/globalStyles";
+import { authApi } from "@/src/api/auth";
 
 export default function SettingsScreen() {
-  const theme = useTheme();
-  const { logout, clearToken } = useAuth();
-  const { settings, updateSettings } = useSettings();
   const { t } = useTranslation();
+  const { user, logout } = useAuth();
+  const { settings, updateSettings } = useSettings();
+  const theme = useTheme();
+  const router = useRouter();
   const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
-  const [dark, setDark] = useState(true);
 
   const handleLanguageChange = async (language: string) => {
     await changeLanguage(language);
 
     updateSettings({ ...settings, language });
   };
-  const toggleTheme = () => {
-    const newValue= !dark;
-    setDark(!dark);
-    AsyncStorage.setItem("isDarkMode", newValue.toString());
-  };
 
   const clearCache = async () => {
     try {
+      await logout();
       let allItems = await AsyncStorage.getAllKeys();
       await AsyncStorage.clear();
-      await clearToken();
 
       showToast("success", t("settings.toast.cacheCleared"));
 
-      setTimeout(() => {
-        router.replace("/");
-      }, 1000);
+      // Sign out after clearing cache
+      router.replace("/(auth)/login");
     } catch (error) {
       console.error("Error clearing cache:", error);
       showToast("error", t("settings.toast.cacheClearError"));
@@ -66,15 +63,14 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     try {
       await logout();
-      showToast("success", t("settings.toast.logoutSuccess"));
-    } catch (error) {
-      console.error("Error logging out:", error);
-      showToast("error", t("settings.toast.logoutError"));
-    } finally {
       setLogoutDialogVisible(false);
+      router.replace("/(auth)/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      showToast("error", t("settings.toast.logoutError"));
     }
   };
 
@@ -172,20 +168,6 @@ export default function SettingsScreen() {
         variant="bodyLarge"
         style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
       >
-        {t("settings.theme.title")}
-      </Text>
-
-      <View style={styles.settingRow}>
-        <Text style={{ color: theme.colors.onBackground, marginRight: 10 }}>
-          {t("settings.theme.darkMode")}
-        </Text>
-        <Switch value={dark} onValueChange={toggleTheme} />
-      </View>
-
-      <Text
-        variant="bodyLarge"
-        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
-      >
         {t("settings.appData.title")}
       </Text>
 
@@ -250,7 +232,7 @@ export default function SettingsScreen() {
             <Button onPress={() => setLogoutDialogVisible(false)}>
               {t("common.buttons.cancel")}
             </Button>
-            <Button onPress={handleLogout} textColor={theme.colors.error}>
+            <Button onPress={handleSignOut} textColor={theme.colors.error}>
               {t("common.buttons.logout")}
             </Button>
           </Dialog.Actions>
@@ -279,5 +261,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 20,
+  },
+  versionContainer: {
+    padding: 16,
+    alignItems: "center",
+  },
+  versionText: {
+    fontSize: 12,
+    opacity: 0.7,
   },
 });

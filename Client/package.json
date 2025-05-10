@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx expo start",
+    "start": "set HTTPS=true&&npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
@@ -42,6 +42,7 @@
     "expo-image-picker": "~16.1.4",
     "expo-linking": "~7.1.4",
     "expo-location": "^18.1.4",
+    "expo-media-library": "^17.1.6",
     "expo-random": "^14.0.1",
     "expo-router": "~5.0.5",
     "expo-splash-screen": "~0.30.8",

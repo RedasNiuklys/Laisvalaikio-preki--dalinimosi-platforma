@@ -257,6 +257,35 @@ public class UserController : ControllerBase
             return StatusCode(500, "Internal server error occurred while updating profile");
         }
     }
+    // PATCH: api/user/{id}/theme-preference
+    [HttpPatch("{id}/theme-preference")]
+    public async Task<IActionResult> UpdateUserThemePreference([FromRoute] string id, [FromBody] string themePreference)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+                return NotFound($"User with ID {id} not found");
+
+            user.Theme = themePreference;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok(new
+            {
+                user.Id,
+                user.Theme
+            });
+        }
+        catch (Exception ex)
+        {
+            // _logger.LogError(ex, "Error updating theme preference for user {UserId}", id);
+            return StatusCode(500, "Internal server error occurred while updating theme preference");
+        }
+    }
 
     // DELETE: api/user/{id}
     [Authorize(Roles = "Admin")]

@@ -1,4 +1,5 @@
 bin/*
 *.pem
+obj/*
 *.ppk
 node_modules/*

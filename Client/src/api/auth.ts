@@ -72,8 +72,7 @@ export const authApi = {
 
     getUser: async () => {
         const token = await AsyncStorage.getItem('token');
-        //console.log
-        ("token", token);
+
         const response = await axios.get(`${USER_ENDPOINT}/profile`, {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -86,7 +85,7 @@ export const authApi = {
 // For mobile, we'll use Expo's auth session
 export const useGoogleAuth = () => {
     const [request, response, promptAsync] = Google.useAuthRequest({
-        redirectUri: "http://10.151.26.44:8081",
+        redirectUri: "https://10.151.2.109:8081",
         scopes: ['profile', 'email']
     });
 

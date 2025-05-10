@@ -4,11 +4,10 @@ import {
   MaterialIcons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { Button, View, Text, Settings } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useAuth } from "@/src/context/AuthContext";
-import LoginScreen from "@/src/pages/LoginScreen";
-import RegisterScreen from "@/src/pages/RegisterScreen";
+import LoginScreen from "@/src/pages/auth/LoginPage";
+import RegisterScreen from "@/src/pages/auth/RegisterPage";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
   NavigationContainer,
@@ -18,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AuthLayout from "../(auth)/_layout";
 
 export default function TabLayout() {
   const Stack = createNativeStackNavigator();
@@ -44,14 +44,7 @@ export default function TabLayout() {
 
   if (!isAuthenticated) {
     return (
-      <NavigationIndependentTree>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </NavigationIndependentTree>
+      <AuthLayout />
     );
   } else {
     return (
@@ -63,6 +56,7 @@ export default function TabLayout() {
           tabBarStyle: {
             backgroundColor: theme.colors.background,
           },
+          headerShown: false,
           headerStyle: {
             backgroundColor: theme.colors.background,
           },
