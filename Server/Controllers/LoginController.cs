@@ -42,9 +42,9 @@ public class LoginController : ControllerBase
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         Console.WriteLine("Registering user {0} {1} {2} {3} {4}", dto.Email, dto.UserName, dto.Name, dto.Theme, dto.Password);
-        var user = new ApplicationUser 
-        { 
-            Email = dto.Email, 
+        var user = new ApplicationUser
+        {
+            Email = dto.Email,
             UserName = dto.UserName ?? dto.Email,
             Name = dto.Name ?? "John Doe",
             Theme = dto.Theme ?? "Light",
@@ -56,7 +56,7 @@ public class LoginController : ControllerBase
         Console.WriteLine("User: {0}", user.AvatarUrl);
         var result = await _userManager.CreateAsync(user, dto.Password);
         Console.WriteLine("User created: {0}", result.Succeeded);
-        
+
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
@@ -79,7 +79,7 @@ public class LoginController : ControllerBase
                 Console.WriteLine("Admin role does not exist, creating it");
                 await _roleManager.CreateAsync(new IdentityRole("Admin"));
             }
-            
+
             // Add user to Admin role
             await _userManager.AddToRoleAsync(user, "Admin");
             Console.WriteLine("User added to Admin role");
@@ -93,11 +93,12 @@ public class LoginController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        Console.WriteLine("Login started");
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null) return Unauthorized("Invalid credentials");
         Console.WriteLine("User found: {0}", user.Email);
         var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-        if (!result.Succeeded)  return Unauthorized("Invalid credentials");
+        if (!result.Succeeded) return Unauthorized("Invalid credentials");
 
         var token = await _tokenService.CreateTokenAsync(user);
         return Ok(new { token });
@@ -121,8 +122,8 @@ public class LoginController : ControllerBase
 
         if (user == null)
         {
-            user = new ApplicationUser 
-            { 
+            user = new ApplicationUser
+            {
                 UserName = email,
                 Email = email,
                 Name = info.Principal.FindFirstValue(ClaimTypes.Name)
@@ -141,18 +142,18 @@ public class LoginController : ControllerBase
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings()
             {
-                Audience = new[] { 
+                Audience = new[] {
                     _configuration["Authentication:Google:ExpoClientId"]
                 }
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
-            
+
             var user = await _userManager.FindByEmailAsync(payload.Email);
             if (user == null)
             {
-                user = new ApplicationUser 
-                { 
+                user = new ApplicationUser
+                {
                     UserName = payload.Email,
                     Email = payload.Email,
                     Name = payload.Name
@@ -187,8 +188,8 @@ public class LoginController : ControllerBase
 
         if (user == null)
         {
-            user = new ApplicationUser 
-            { 
+            user = new ApplicationUser
+            {
                 UserName = email,
                 Email = email,
                 Name = info.Principal.FindFirstValue(ClaimTypes.Name)
@@ -208,15 +209,16 @@ public class LoginController : ControllerBase
         {
             var userId = User.FindFirstValue("uid");
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
                 return NotFound("User not found");
 
             var token = await _tokenService.CreateTokenAsync(user);
-            
+
             await _signInManager.SignOutAsync();
-            
-            return Ok(new { 
+
+            return Ok(new
+            {
                 message = "Logged out successfully",
                 token = token
             });
