@@ -257,7 +257,6 @@ public class UserController : ControllerBase
             return StatusCode(500, "Internal server error occurred while updating profile");
         }
     }
-    // PATCH: api/user/{id}/theme-preference
     [HttpPatch("{id}/theme-preference")]
     public async Task<IActionResult> UpdateUserThemePreference([FromRoute] string id, [FromBody] string themePreference)
     {
@@ -431,6 +430,45 @@ public class UserController : ControllerBase
         {
             // _logger.LogError(ex, "Error retrieving users for chat");
             return StatusCode(500, "Internal server error occurred while retrieving users");
+        }
+    }
+    // GET: api/user/search
+    [Authorize]
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchUsers([FromQuery] string searchQuery)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(searchQuery))
+            {
+                return BadRequest("Search query cannot be empty");
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            searchQuery = searchQuery.ToLower().Trim();
+
+            var users = await _userManager.Users
+                .Where(u => u.Id != currentUserId && (
+                    u.Email.ToLower().Contains(searchQuery) ||
+                    u.UserName.ToLower().Contains(searchQuery) ||
+                    u.Name.ToLower().Contains(searchQuery)
+                ))
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Email,
+                    u.UserName,
+                    u.Name,
+                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            // _logger.LogError(ex, "Error searching users with query: {SearchQuery}", searchQuery);
+            return StatusCode(500, "Internal server error occurred while searching users");
         }
     }
 }

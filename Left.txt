@@ -6,3 +6,22 @@ Back end ASP.NET with EF and front react-native with react-native-web lib. So it
 
 
 Conflicts between bookings, insta chats with links, chat groups, locations per user group
+
+
+Next Steps:
+Client-side Components:
+Friends list screen
+Friend requests screen
+User search component
+Friend profile view
+Integration with existing chat system
+Real-time Features:
+Friend request notifications
+Online status indicators
+Typing indicators in chats
+Read receipts
+Group Features:
+Create groups
+Group invitations
+Group roles and permissions
+Group chat enhancements

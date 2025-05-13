@@ -10,11 +10,11 @@
         "projectUniqueName": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj",
         "projectName": "Server",
         "projectPath": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj",
-        "packagesPath": "C:\\Users\\r.niuk\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\redniu\\.nuget\\packages\\",
         "outputPath": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\r.niuk\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\redniu\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"

@@ -88,7 +88,7 @@ export default function NewChatModal() {
       <View style={styles.footer}>
         <Button
           mode="outlined"
-          onPress={() => router.push("/chat/list")}
+          onPress={() => router.push("/chat")}
           style={styles.button}
         >
           Cancel

@@ -120,4 +120,149 @@ export const globalStyles = StyleSheet.create({
         fontSize: 14,
         marginTop: spacing.xs,
     },
+    // Map Modal Styles
+    mapContainer: {
+        height: '50%',
+    },
+    listContainer: {
+        flex: 1,
+        backgroundColor: colors.white,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        padding: spacing.sm,
+        backgroundColor: colors.gray6,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.gray4,
+    },
+    tableRow: {
+        flexDirection: 'row',
+        padding: spacing.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.gray4,
+        minHeight: 40,
+    },
+    headerCell: {
+        fontWeight: 'bold',
+        fontSize: typography.small.fontSize,
+    },
+    tableCell: {
+        fontSize: typography.small.fontSize,
+    },
+    nameCell: {
+        flex: 2,
+        paddingRight: spacing.sm,
+    },
+    categoryCell: {
+        flex: 1,
+        paddingRight: spacing.sm,
+    },
+    addressCell: {
+        flex: 2,
+        paddingRight: spacing.sm,
+    },
+    distanceCell: {
+        flex: 1,
+        textAlign: 'right',
+    },
+    backButton: {
+        position: 'absolute',
+        top: spacing.md,
+        left: spacing.md,
+        zIndex: 1,
+    },
+    categoryContainer: {
+        position: 'absolute',
+        top: spacing.md,
+        left: spacing.xxl,
+        right: spacing.md,
+        padding: spacing.sm,
+        borderRadius: 8,
+        zIndex: 1,
+    },
+    categoryText: {
+        fontSize: typography.caption.fontSize,
+        textAlign: 'center',
+    },
+    // Social Feature Styles
+    listContent: {
+        padding: spacing.md,
+    },
+    listItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.sm,
+        marginBottom: spacing.sm,
+        borderRadius: 12,
+        elevation: 2,
+    },
+    avatar: {
+        marginRight: spacing.md,
+    },
+    itemInfo: {
+        flex: 1,
+    },
+    itemName: {
+        fontSize: typography.body.fontSize,
+        fontWeight: '600',
+        marginBottom: spacing.xs,
+    },
+    itemEmail: {
+        fontSize: typography.caption.fontSize,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: spacing.xl,
+    },
+    emptyText: {
+        fontSize: typography.h3.fontSize,
+        fontWeight: '600',
+        marginBottom: spacing.sm,
+        textAlign: 'center',
+    },
+    emptySubtext: {
+        fontSize: typography.caption.fontSize,
+        textAlign: 'center',
+    },
+    fab: {
+        position: 'absolute',
+        right: spacing.md,
+        bottom: spacing.md,
+    },
+    header: {
+        padding: spacing.md,
+        paddingBottom: spacing.sm,
+    },
+    title: {
+        fontSize: typography.h2.fontSize,
+        fontWeight: 'bold',
+        marginBottom: spacing.sm,
+    },
+    subtitle: {
+        fontSize: typography.caption.fontSize,
+    },
+    actions: {
+        padding: spacing.md,
+        gap: spacing.sm,
+    },
+    chatButton: {
+        marginBottom: spacing.sm,
+    },
+    removeButton: {
+        borderColor: colors.danger,
+    },
+    infoSection: {
+        padding: spacing.md,
+        paddingTop: 0,
+    },
+    sectionTitle: {
+        fontSize: typography.h3.fontSize,
+        fontWeight: '600',
+        marginBottom: spacing.sm,
+    },
+    sectionContent: {
+        fontSize: typography.body.fontSize,
+    },
 }); 
