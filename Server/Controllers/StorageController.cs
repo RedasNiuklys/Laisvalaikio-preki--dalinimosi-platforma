@@ -27,7 +27,7 @@ namespace Server.Controllers
         private readonly HttpClient _httpClient;
 
         public StorageController(
-            IWebHostEnvironment environment, 
+            IWebHostEnvironment environment,
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager)
         {
@@ -37,7 +37,7 @@ namespace Server.Controllers
             _baseUploadPath = Path.Combine(_environment.WebRootPath, "uploads");
             _baseUrl = $"{_configuration["AppSettings:LocalIP"]}:{_configuration["AppSettings:ApiPort"]}";
             _httpClient = new HttpClient();
-            
+
             // Ensure upload directory exists
             if (!Directory.Exists(_baseUploadPath))
             {
@@ -65,6 +65,10 @@ namespace Server.Controllers
                     if (!allowedExtensions.Contains(extension))
                         return BadRequest("Invalid file type. Allowed types: JPG, JPEG, PNG");
 
+                    // Check file size (100MB limit)
+                    if (file.Length > 100 * 1024 * 1024)
+                        return BadRequest("File size exceeds the maximum allowed size of 100MB");
+
                     using (var ms = new MemoryStream())
                     {
                         await file.CopyToAsync(ms);
@@ -79,8 +83,13 @@ namespace Server.Controllers
                         return BadRequest("Failed to download file from URI");
 
                     fileBytes = await response.Content.ReadAsByteArrayAsync();
+
+                    // Check file size for URI downloads (100MB limit)
+                    if (fileBytes.Length > 100 * 1024 * 1024)
+                        return BadRequest("File size exceeds the maximum allowed size of 100MB");
+
                     var contentType = response.Content.Headers.ContentType?.MediaType;
-                    
+
                     extension = contentType switch
                     {
                         "image/jpeg" => ".jpg",
@@ -111,7 +120,8 @@ namespace Server.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
-                return Ok(new { avatarUrl = fullUrl });
+                // return Ok(new { avatarUrl = fullUrl });
+                return Ok(fullUrl);
             }
             catch (Exception ex)
             {
@@ -126,7 +136,7 @@ namespace Server.Controllers
             try
             {
                 var filePath = Path.Combine(_baseUploadPath, "avatars", userId, fileName);
-                
+
                 if (!System.IO.File.Exists(filePath))
                     return NotFound("Avatar not found");
 
@@ -145,7 +155,7 @@ namespace Server.Controllers
             try
             {
                 var filePath = Path.Combine(_baseUploadPath, "avatars", userId, fileName);
-                
+
                 if (!System.IO.File.Exists(filePath))
                     return NotFound("Avatar not found");
 
@@ -158,4 +168,4 @@ namespace Server.Controllers
             }
         }
     }
-} 
+}

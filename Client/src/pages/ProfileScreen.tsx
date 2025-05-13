@@ -49,8 +49,7 @@ const ProfileScreen = () => {
       setLoading(true);
       const response = await getProfile(); // Uses current user ID from auth token
       setUser(response);
-      //console.log
-      "response", response;
+
       setProfile(response);
     } catch (err) {
       console.error("Error fetching profile:", err);

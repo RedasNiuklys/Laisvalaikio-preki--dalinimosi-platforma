@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, Animated, Platform } from 'react-native';
 import { IconButton, useTheme } from 'react-native-paper';
 import { useTheme as useAppTheme } from '@/src/context/ThemeContext';
@@ -11,6 +11,7 @@ export default function ThemeToggle() {
     const theme = useTheme();
     const { user, loadUser } = useAuth();
     const spinValue = new Animated.Value(0);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         Animated.timing(spinValue, {
@@ -28,24 +29,39 @@ export default function ThemeToggle() {
     });
 
     const handleThemeToggle = async () => {
-        const newTheme = !isDarkMode;
-        toggleTheme();
+        if (isUpdating) return; // Prevent multiple simultaneous updates
 
-        // if (Platform.OS !== "web") {
         try {
-            // Save theme preference to AsyncStorage
+            setIsUpdating(true);
+            const newTheme = !isDarkMode;
+
+            // First update local state
+            toggleTheme();
+
+            // Save to AsyncStorage
             await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
 
             // If user is logged in, update their theme preference in the backend
-            loadUser()
-            if (user) {
-                // TODO: Add API call to update user's theme preference
-                await updateUserThemePreference(user.id as string, newTheme ? "dark" : "light");
+            if (user?.id) {
+                try {
+                    await updateUserThemePreference(user.id, newTheme ? "dark" : "light");
+                    // Reload user data to ensure sync
+                    await loadUser();
+                } catch (error) {
+                    console.error("Error updating theme in backend:", error);
+                    // Revert local changes if backend update fails
+                    toggleTheme();
+                    await AsyncStorage.setItem("theme", isDarkMode ? "dark" : "light");
+                }
             }
         } catch (error) {
             console.error("Error saving theme preference:", error);
+            // Revert local changes if anything fails
+            toggleTheme();
+            await AsyncStorage.setItem("theme", isDarkMode ? "dark" : "light");
+        } finally {
+            setIsUpdating(false);
         }
-        // }
     };
 
     return (
@@ -57,12 +73,13 @@ export default function ThemeToggle() {
                 zIndex: 1,
             }}
             onPress={handleThemeToggle}
+            disabled={isUpdating}
         >
             <Animated.View style={{ transform: [{ rotate: spin }] }}>
                 <IconButton
                     icon={isDarkMode ? 'weather-night' : 'weather-sunny'}
                     size={24}
-                    iconColor={theme.colors.onSurface}
+                    iconColor={theme.colors.primary}
                 />
             </Animated.View>
         </TouchableOpacity>

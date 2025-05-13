@@ -26,13 +26,13 @@ namespace Server.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             Console.WriteLine($"Current User ID: {userId}");
-
+            List<LocationResponseDto> locations = new List<LocationResponseDto>();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var locations = await _context.Locations
+            locations = await _context.Locations
                 .Where(l => l.UserId == userId)
                 .Select(l => new LocationResponseDto
                 {
@@ -53,7 +53,7 @@ namespace Server.Controllers
                 .ToListAsync();
 
             Console.WriteLine($"Found {locations.Count} locations for user {userId}");
-            return locations;
+            return Ok(locations);
         }
 
         // GET: api/Location/5
@@ -86,13 +86,58 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            return location;
+            return Ok(location);
         }
 
         // POST: api/Location
         [HttpPost]
         public async Task<ActionResult<LocationResponseDto>> CreateLocation(CreateLocationDto createLocationDto)
         {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(createLocationDto.Name))
+            {
+                return BadRequest("Name is required");
+            }
+            else if (createLocationDto.Name.Length > 100)
+            {
+                return BadRequest("Name must be less than 100 characters");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.StreetAddress))
+            {
+                return BadRequest("Street address is required");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.City))
+            {
+                return BadRequest("City is required");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.Country))
+            {
+                return BadRequest("Country is required");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.Description))
+            {
+                return BadRequest("Description is required");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.State))
+            {
+                return BadRequest("State is required");
+            }
+            if (string.IsNullOrWhiteSpace(createLocationDto.PostalCode))
+            {
+                return BadRequest("Postal code is required");
+            }
+
+            // Validate coordinates
+            if (createLocationDto.Latitude.HasValue && (createLocationDto.Latitude < -90 || createLocationDto.Latitude > 90))
+            {
+                return BadRequest("Latitude must be between -90 and 90 degrees");
+            }
+
+            if (createLocationDto.Longitude.HasValue && (createLocationDto.Longitude < -180 || createLocationDto.Longitude > 180))
+            {
+                return BadRequest("Longitude must be between -180 and 180 degrees");
+            }
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             System.Console.WriteLine("Came to CreateLocation");
 
@@ -140,6 +185,39 @@ namespace Server.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateLocation(string id, UpdateLocationDto updateLocationDto)
         {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(updateLocationDto.Name))
+            {
+                return BadRequest("Name is required");
+            }
+            else if (updateLocationDto.Name.Length > 100)
+            {
+                return BadRequest("Name must be less than 100 characters");
+            }
+            if (string.IsNullOrWhiteSpace(updateLocationDto.StreetAddress))
+            {
+                return BadRequest("Street address is required");
+            }
+            if (string.IsNullOrWhiteSpace(updateLocationDto.City))
+            {
+                return BadRequest("City is required");
+            }
+            if (string.IsNullOrWhiteSpace(updateLocationDto.Country))
+            {
+                return BadRequest("Country is required");
+            }
+
+            // Validate coordinates
+            if (updateLocationDto.Latitude.HasValue && (updateLocationDto.Latitude < -90 || updateLocationDto.Latitude > 90))
+            {
+                return BadRequest("Latitude must be between -90 and 90 degrees");
+            }
+
+            if (updateLocationDto.Longitude.HasValue && (updateLocationDto.Longitude < -180 || updateLocationDto.Longitude > 180))
+            {
+                return BadRequest("Longitude must be between -180 and 180 degrees");
+            }
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var location = await _context.Locations
                 .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);

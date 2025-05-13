@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
+using Server.DataTransferObjects;
+using System.Security.Claims;
 
 namespace Server.Controllers;
 
@@ -20,7 +22,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<object>>> GetUserChats()
+    public async Task<ActionResult<IEnumerable<ChatResponseDto>>> GetUserChats()
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -34,35 +36,35 @@ public class ChatController : ControllerBase
                 .ThenInclude(c => c.Participants)
                     .ThenInclude(p => p.User)
             .Include(p => p.Chat.Messages)
-            .Select(p => new
+            .Select(p => new ChatResponseDto
             {
-                p.Chat.Id,
-                p.Chat.Name,
-                p.Chat.IsGroupChat,
-                p.Chat.CreatedAt,
+                Id = p.Chat.Id,
+                Name = p.Chat.Name,
+                IsGroupChat = p.Chat.IsGroupChat,
+                CreatedAt = p.Chat.CreatedAt,
                 LastMessage = p.Chat.Messages
                     .OrderByDescending(m => m.SentAt)
-                    .Select(m => new
+                    .Select(m => new MessageDto
                     {
-                        m.Id,
-                        m.Content,
-                        m.SentAt,
-                        Sender = new
+                        Id = m.Id,
+                        Content = m.Content,
+                        SentAt = m.SentAt,
+                        Sender = new UserDto
                         {
-                            m.Sender.Id,
-                            m.Sender.Name,
-                            m.Sender.AvatarUrl
+                            Id = m.Sender.Id,
+                            Name = m.Sender.Name,
+                            AvatarUrl = m.Sender.AvatarUrl
                         }
                     })
                     .FirstOrDefault(),
-                Participants = p.Chat.Participants.Select(part => new
+                Participants = p.Chat.Participants.Select(part => new ParticipantDto
                 {
-                    part.User.Id,
-                    part.User.Name,
-                    part.User.AvatarUrl,
-                    part.IsAdmin,
-                    part.JoinedAt
-                })
+                    Id = part.User.Id,
+                    Name = part.User.Name,
+                    AvatarUrl = part.User.AvatarUrl,
+                    IsAdmin = part.IsAdmin,
+                    JoinedAt = part.JoinedAt
+                }).ToList()
             })
             .ToListAsync();
 
@@ -70,7 +72,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpGet("{chatId}")]
-    public async Task<ActionResult<object>> GetChat(int chatId)
+    public async Task<ActionResult<ChatResponseDto>> GetChat(int chatId)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -94,27 +96,27 @@ public class ChatController : ControllerBase
             return Forbid();
         }
 
-        return Ok(new
+        return Ok(new ChatResponseDto
         {
-            chat.Id,
-            chat.Name,
-            chat.IsGroupChat,
-            chat.CreatedAt,
-            Participants = chat.Participants.Select(p => new
+            Id = chat.Id,
+            Name = chat.Name,
+            IsGroupChat = chat.IsGroupChat,
+            CreatedAt = chat.CreatedAt,
+            Participants = chat.Participants.Select(p => new ParticipantDto
             {
-                p.User.Id,
-                p.User.Name,
-                p.User.AvatarUrl,
-                p.IsAdmin,
-                p.JoinedAt
-            })
+                Id = p.User.Id,
+                Name = p.User.Name,
+                AvatarUrl = p.User.AvatarUrl,
+                IsAdmin = p.IsAdmin,
+                JoinedAt = p.JoinedAt
+            }).ToList()
         });
     }
 
     [HttpGet("{chatId}/messages")]
-    public async Task<ActionResult<IEnumerable<object>>> GetMessages(int chatId, [FromQuery] int skip = 0, [FromQuery] int take = 50)
+    public async Task<ActionResult<IEnumerable<MessageResponseDto>>> GetMessages(int chatId, [FromQuery] int skip = 0, [FromQuery] int take = 50)
     {
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -136,23 +138,23 @@ public class ChatController : ControllerBase
             .Include(m => m.Sender)
             .Include(m => m.ReadReceipts)
                 .ThenInclude(r => r.User)
-            .Select(m => new
+            .Select(m => new MessageResponseDto
             {
-                m.Id,
-                m.Content,
+                Id = m.Id,
+                Content = m.Content,
                 SentAt = m.SentAt.ToString("O"),
-                Sender = new
+                Sender = new UserDto
                 {
-                    m.Sender.Id,
-                    m.Sender.Name,
-                    m.Sender.AvatarUrl
+                    Id = m.Sender.Id,
+                    Name = m.Sender.Name,
+                    AvatarUrl = m.Sender.AvatarUrl
                 },
-                ReadBy = m.ReadReceipts.Select(r => new
+                ReadBy = m.ReadReceipts.Select(r => new ReadReceiptDto
                 {
-                    r.User.Id,
-                    r.User.Name,
-                    r.ReadAt
-                })
+                    Id = r.User.Id,
+                    Name = r.User.Name,
+                    ReadAt = r.ReadAt
+                }).ToList()
             })
             .ToListAsync();
 
@@ -193,7 +195,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<object>> CreateChat([FromBody] CreateChatRequest request)
+    public async Task<ActionResult<int>> CreateChat([FromBody] CreateChatRequest request)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -213,7 +215,7 @@ public class ChatController : ControllerBase
 
             if (existingChat != null)
             {
-                return Ok(new { ChatId = existingChat.Id });
+                return Ok(existingChat.Id);
             }
         }
 
@@ -259,7 +261,7 @@ public class ChatController : ControllerBase
             return BadRequest("Failed to create chat with participants");
         }
 
-        return Ok(new { ChatId = chat.Id });
+        return Ok(chat.Id);
     }
 
     [HttpPut("{chatId}/participants")]
@@ -330,4 +332,4 @@ public class UpdateParticipantsRequest
 {
     public List<string>? ParticipantsToAdd { get; set; }
     public List<string>? ParticipantsToRemove { get; set; }
-} 
+}

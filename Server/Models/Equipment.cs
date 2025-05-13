@@ -22,8 +22,9 @@ namespace Server.Models
         public string OwnerId { get; set; }
         public ApplicationUser Owner { get; set; }
 
+        public Category Category { get; set; }
         [Required]
-        public string Category { get; set; }
+        public int CategoryId { get; set; }
 
         public List<string> Tags { get; set; } = new List<string>();
 

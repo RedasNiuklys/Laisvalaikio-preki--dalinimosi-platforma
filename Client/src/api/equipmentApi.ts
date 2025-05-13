@@ -9,6 +9,7 @@ export const getAll = async (): Promise<Equipment[]> => {
     const response = await axios.get(EQUIPMENT_ENDPOINT, {
         headers: { Authorization: `Bearer ${token}` }
     });
+    console.log("response", response.data);
     return response.data;
 }
 
