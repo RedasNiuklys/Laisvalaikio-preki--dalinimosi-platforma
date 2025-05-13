@@ -132,7 +132,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", builder =>
     {
         builder
-            .SetIsOriginAllowed(origin => true)
+            .SetIsOriginAllowed(origin =>
+                origin == "http://localhost:5000" ||
+                origin == "http://localhost:8081" ||
+                origin == "http://10.151.2.109:8081" ||
+                origin == "http://10.151.2.109:5000" ||
+                origin == "exp://10.151.2.109:8081" ||
+                origin == "exp://10.151.2.109:19000")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()

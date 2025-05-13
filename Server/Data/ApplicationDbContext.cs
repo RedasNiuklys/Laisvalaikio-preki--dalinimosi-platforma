@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<MessageRead> MessageReads { get; set; }
     public DbSet<EquipmentImage> EquipmentImages { get; set; }
     public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
+    public DbSet<Friendship> Friendships { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -120,6 +121,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(e => e.MaintenanceHistory)
             .HasForeignKey(m => m.EquipmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Friendship>()
+            .HasOne(f => f.Requester)
+            .WithMany()
+            .HasForeignKey(f => f.RequesterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Friendship>()
+            .HasOne(f => f.Addressee)
+            .WithMany()
+            .HasForeignKey(f => f.AddresseeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // // Seed Categories
         modelBuilder.Entity<Category>().HasData(

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, FlatList, Platform, Image, useWindowDimensions } from "react-native";
 import {
     Text,
@@ -11,8 +11,6 @@ import {
     Chip,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import * as Location from "expo-location";
-import LocationMap, { LocationMapRef } from "@/src/components/LocationMap";
 import * as equipmentApi from "@/src/api/equipmentApi";
 import * as categoryApi from "@/src/api/categoryApi";
 import { Location as LocationType } from "@/src/types/Location";
@@ -31,11 +29,7 @@ export default function EquipmentListPage() {
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
-    const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
-    const [currentLocation, setCurrentLocation] = useState<LocationType | null>(null);
-    const [isMapExpanded, setIsMapExpanded] = useState(true);
     const theme = useTheme();
-    const mapRef = useRef<LocationMapRef>(null);
     const { t } = useTranslation();
     const { user } = useAuth();
     const router = useRouter();
@@ -45,7 +39,6 @@ export default function EquipmentListPage() {
     useEffect(() => {
         fetchEquipment();
         fetchCategories();
-        getCurrentLocation();
     }, []);
 
     useEffect(() => {
@@ -92,61 +85,18 @@ export default function EquipmentListPage() {
         setFilteredEquipment(filtered);
     };
 
-    const getCurrentLocation = async () => {
-        try {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                showToast("error", t("location.errors.permissionDenied"));
-                return;
-            }
-
-            const location = await Location.getCurrentPositionAsync({});
-            const currentLoc: LocationType = {
-                id: "current",
-                name: t("location.currentLocation"),
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                streetAddress: "",
-                city: "",
-                country: "",
-                userId: user?.id || "",
-            };
-            setCurrentLocation(currentLoc);
-            setSelectedLocation(currentLoc);
-            mapRef.current?.animateToLocation(currentLoc);
-        } catch (error) {
-            console.error("Error getting current location:", error);
-            showToast("error", t("location.errors.locationFetchFailed"));
-        }
-    };
-
     const fetchEquipment = async () => {
         try {
             setLoading(true);
             const data = await equipmentApi.getAll();
             setEquipment(data);
-            setLocations(data.map((item) => item.location));
+            // setLocations(data.map((item) => item.location));
         } catch (error) {
             console.error("Error fetching equipment:", error);
             showToast("error", t("equipment.errors.fetchFailed"));
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleLocationSelect = (location: LocationType) => {
-        setSelectedLocation(location);
-        mapRef.current?.animateToLocation(location);
-    };
-
-    const handleLocationClick = (location: LocationType) => {
-        if (location.latitude && location.longitude) {
-            mapRef.current?.animateToLocation(location);
-        }
-    };
-
-    const toggleMap = () => {
-        setIsMapExpanded(!isMapExpanded);
     };
 
     const renderCategoryChips = () => {
@@ -228,13 +178,14 @@ export default function EquipmentListPage() {
     const { numColumns, cardWidth } = calculateGridLayout();
 
     const renderEquipmentItem = ({ item }: { item: Equipment }) => {
+        const mainImage = item.images?.find(img => img.isMainImage)?.imageUrl || item.images?.[0]?.imageUrl;
         return (
             <Card
                 style={[styles.equipmentCard, { width: cardWidth }]}
                 onPress={() => router.push(`/equipment/${item.id}`)}
             >
                 <Card.Cover
-                    source={{ uri: item.imageUrl }}
+                    source={{ uri: mainImage }}
                     style={styles.cardImage}
                 />
                 <Card.Title
@@ -265,19 +216,20 @@ export default function EquipmentListPage() {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={[styles.mapContainer, isMapExpanded ? styles.mapExpanded : styles.mapCollapsed]}>
-                <LocationMap
-                    ref={mapRef}
-                    locations={locations}
-                    selectedLocation={selectedLocation}
-                    onLocationSelect={handleLocationSelect}
-                    onLocationClick={handleLocationClick}
-                />
-                <IconButton
-                    icon={isMapExpanded ? "chevron-down" : "chevron-up"}
-                    onPress={toggleMap}
-                    style={[styles.mapToggle, { backgroundColor: theme.colors.surface }]}
-                />
+            <View style={styles.mapButtonContainer}>
+                <Button
+                    mode="contained"
+                    icon="map"
+                    onPress={() => router.push({
+                        pathname: "/(modals)/map-modal",
+                        params: {
+                            category: selectedCategory
+                        }
+                    })}
+                    style={styles.mapButton}
+                >
+                    {t("location.showMap")}
+                </Button>
             </View>
 
             {renderCategoryChips()}
@@ -310,20 +262,11 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    mapContainer: {
-        position: "relative",
-        overflow: "hidden",
+    mapButtonContainer: {
+        padding: 16,
     },
-    mapExpanded: {
-        height: 300,
-    },
-    mapCollapsed: {
-        height: 100,
-    },
-    mapToggle: {
-        position: "absolute",
-        top: 8,
-        right: 8,
+    mapButton: {
+        width: '100%',
     },
     filtersContainer: {
         flexDirection: "row",

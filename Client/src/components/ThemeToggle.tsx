@@ -9,7 +9,7 @@ import { updateUserThemePreference } from '../api/userApi';
 export default function ThemeToggle() {
     const { isDarkMode, toggleTheme } = useAppTheme();
     const theme = useTheme();
-    const { user } = useAuth();
+    const { user, loadUser } = useAuth();
     const spinValue = new Animated.Value(0);
 
     useEffect(() => {
@@ -31,20 +31,21 @@ export default function ThemeToggle() {
         const newTheme = !isDarkMode;
         toggleTheme();
 
-        if (Platform.OS !== "web") {
-            try {
-                // Save theme preference to AsyncStorage
-                await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
+        // if (Platform.OS !== "web") {
+        try {
+            // Save theme preference to AsyncStorage
+            await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
 
-                // If user is logged in, update their theme preference in the backend
-                if (user) {
-                    // TODO: Add API call to update user's theme preference
-                    await updateUserThemePreference(user.id as string, newTheme ? "dark" : "light");
-                }
-            } catch (error) {
-                console.error("Error saving theme preference:", error);
+            // If user is logged in, update their theme preference in the backend
+            loadUser()
+            if (user) {
+                // TODO: Add API call to update user's theme preference
+                await updateUserThemePreference(user.id as string, newTheme ? "dark" : "light");
             }
+        } catch (error) {
+            console.error("Error saving theme preference:", error);
         }
+        // }
     };
 
     return (
