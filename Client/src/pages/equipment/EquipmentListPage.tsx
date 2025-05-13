@@ -57,7 +57,7 @@ export default function EquipmentListPage() {
 
     const filterEquipment = () => {
         let filtered = equipment;
-
+        console.log("selectedCategory", equipment);
         if (selectedCategory) {
             const selectedCategoryObj = categories.find(
                 (c) => c.name === selectedCategory
@@ -81,6 +81,7 @@ export default function EquipmentListPage() {
                 }
             }
         }
+        console.log("filtered", filtered);
 
         setFilteredEquipment(filtered);
     };
@@ -90,6 +91,7 @@ export default function EquipmentListPage() {
             setLoading(true);
             const data = await equipmentApi.getAll();
             setEquipment(data);
+            console.log("equipment", equipment);
             // setLocations(data.map((item) => item.location));
         } catch (error) {
             console.error("Error fetching equipment:", error);

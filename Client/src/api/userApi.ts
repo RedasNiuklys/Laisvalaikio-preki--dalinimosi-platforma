@@ -67,11 +67,13 @@ export const updateUser = async (userData: User) => {
 export const updateUserThemePreference = async (userId: string, themePreference: string) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await axios.patch(`${apiUrl}/${userId}/theme-preference`, themePreference, {
+    const response = await axios.patch(`${apiUrl}/${userId}/theme-preference`, {
+      themePreference: themePreference
+    }, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
-      }
+      },
     });
     return response.data;  // Returns the updated user data
   } catch (error) {

@@ -51,6 +51,7 @@ namespace Server.Controllers
         }
 
         // GET: api/Equipment
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipment()
         {
@@ -59,6 +60,8 @@ namespace Server.Controllers
             {
                 return Unauthorized();
             }
+            var allEquipment = await _context.Equipment.ToListAsync();
+            System.Console.WriteLine("allEquipment", allEquipment);
 
             var equipment = await _context.Equipment
                 .Include(e => e.Location)
@@ -102,8 +105,8 @@ namespace Server.Controllers
                     }).ToList()
                 })
                 .ToListAsync();
-
-            return equipment;
+            System.Console.WriteLine("equipment", equipment);
+            return Ok(equipment);
         }
 
         // GET: api/Equipment/5

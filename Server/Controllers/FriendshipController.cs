@@ -54,7 +54,7 @@ public class FriendshipController : ControllerBase
     }
 
     [HttpGet("pending")]
-    public async Task<ActionResult<IEnumerable<object>>> GetPendingInvitations()
+    public async Task<ActionResult<IEnumerable<Friendship>>> GetPendingInvitations()
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))

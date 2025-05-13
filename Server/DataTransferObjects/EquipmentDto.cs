@@ -17,8 +17,8 @@ namespace Server.DataTransferObjects
         public string Description { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string Category { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
 
         [Required]
         public string Condition { get; set; }
