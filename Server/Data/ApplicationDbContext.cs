@@ -12,7 +12,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Location> Locations { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
-    public DbSet<UsedDates> UsedDates { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Chat> Chats { get; set; }
     public DbSet<ChatParticipant> ChatParticipants { get; set; }
@@ -21,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<EquipmentImage> EquipmentImages { get; set; }
     public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
     public DbSet<Friendship> Friendships { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,20 +48,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .Property(e => e.Condition)
             .HasConversion<string>();
 
-        modelBuilder.Entity<UsedDates>()
-            .HasOne(u => u.Equipment)
-            .WithMany(e => e.UsedDates)
-            .HasForeignKey(u => u.EquipmentId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<UsedDates>()
-            .HasOne(u => u.User)
-            .WithMany()
-            .HasForeignKey(u => u.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<UsedDates>()
-            .ToTable(tb => tb.HasCheckConstraint("CK_UsedDates_EndDate", "EndDate > StartDate"));
 
         modelBuilder.Entity<Category>()
             .HasOne(c => c.ParentCategory)

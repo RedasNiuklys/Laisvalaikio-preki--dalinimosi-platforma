@@ -36,13 +36,15 @@ public class FriendshipController : ControllerBase
                 Friend = f.RequesterId == userId ? new
                 {
                     f.Addressee.Id,
-                    f.Addressee.Name,
+                    f.Addressee.FirstName,
+                    f.Addressee.LastName,
                     f.Addressee.AvatarUrl,
                     f.Addressee.Email
                 } : new
                 {
                     f.Requester.Id,
-                    f.Requester.Name,
+                    f.Requester.FirstName,
+                    f.Requester.LastName,
                     f.Requester.AvatarUrl,
                     f.Requester.Email
                 },
@@ -71,7 +73,8 @@ public class FriendshipController : ControllerBase
                 Requester = new
                 {
                     f.Requester.Id,
-                    f.Requester.Name,
+                    f.Requester.FirstName,
+                    f.Requester.LastName,
                     f.Requester.AvatarUrl,
                     f.Requester.Email
                 },
@@ -101,7 +104,8 @@ public class FriendshipController : ControllerBase
                     Requester = new
                     {
                         f.Requester.Id,
-                        f.Requester.Name,
+                        f.Requester.FirstName,
+                        f.Requester.LastName,
                         f.Requester.AvatarUrl,
                         f.Requester.Email
                     },
@@ -123,7 +127,8 @@ public class FriendshipController : ControllerBase
                     Requester = new
                     {
                         f.Requester.Id,
-                        f.Requester.Name,
+                        f.Requester.FirstName,
+                        f.Requester.LastName,
                         f.Requester.AvatarUrl,
                         f.Requester.Email
                     },

@@ -52,7 +52,8 @@ public class ChatController : ControllerBase
                         Sender = new UserDto
                         {
                             Id = m.Sender.Id,
-                            Name = m.Sender.Name,
+                            FirstName = m.Sender.FirstName,
+                            LastName = m.Sender.LastName,
                             AvatarUrl = m.Sender.AvatarUrl
                         }
                     })
@@ -60,7 +61,8 @@ public class ChatController : ControllerBase
                 Participants = p.Chat.Participants.Select(part => new ParticipantDto
                 {
                     Id = part.User.Id,
-                    Name = part.User.Name,
+                    FirstName = part.User.FirstName,
+                    LastName = part.User.LastName,
                     AvatarUrl = part.User.AvatarUrl,
                     IsAdmin = part.IsAdmin,
                     JoinedAt = part.JoinedAt
@@ -105,7 +107,8 @@ public class ChatController : ControllerBase
             Participants = chat.Participants.Select(p => new ParticipantDto
             {
                 Id = p.User.Id,
-                Name = p.User.Name,
+                FirstName = p.User.FirstName,
+                LastName = p.User.LastName,
                 AvatarUrl = p.User.AvatarUrl,
                 IsAdmin = p.IsAdmin,
                 JoinedAt = p.JoinedAt
@@ -146,13 +149,15 @@ public class ChatController : ControllerBase
                 Sender = new UserDto
                 {
                     Id = m.Sender.Id,
-                    Name = m.Sender.Name,
+                    FirstName = m.Sender.FirstName,
+                    LastName = m.Sender.LastName,
                     AvatarUrl = m.Sender.AvatarUrl
                 },
                 ReadBy = m.ReadReceipts.Select(r => new ReadReceiptDto
                 {
                     Id = r.User.Id,
-                    Name = r.User.Name,
+                    FirstName = r.User.FirstName,
+                    LastName = r.User.LastName,
                     ReadAt = r.ReadAt
                 }).ToList()
             })
@@ -184,7 +189,8 @@ public class ChatController : ControllerBase
             .Select(p => new
             {
                 p.UserId,
-                p.User.Name,
+                p.User.FirstName,
+                p.User.LastName,
                 p.User.AvatarUrl,
                 p.IsAdmin,
                 p.JoinedAt

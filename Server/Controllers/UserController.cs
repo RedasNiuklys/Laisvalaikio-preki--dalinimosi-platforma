@@ -72,7 +72,8 @@ public class UserController : ControllerBase
                 Id = u.Id,
                 Email = u.Email,
                 UserName = u.UserName,
-                Name = u.Name,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
                 Theme = u.Theme,
                 AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
             }).ToListAsync();
@@ -104,7 +105,8 @@ public class UserController : ControllerBase
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Theme = user.Theme,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
@@ -137,7 +139,8 @@ public class UserController : ControllerBase
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Theme = user.Theme,
                 Roles = roles
@@ -171,7 +174,8 @@ public class UserController : ControllerBase
             }
         }
 
-        user.Name = updateDto.Name;
+        user.FirstName = updateDto.FirstName;
+        user.LastName = updateDto.LastName;
         user.Theme = updateDto.Theme;
 
         var updateResult = await _userManager.UpdateAsync(user);
@@ -186,7 +190,8 @@ public class UserController : ControllerBase
             Id = user.Id,
             Email = user.Email,
             UserName = user.UserName,
-            Name = user.Name,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             Theme = user.Theme,
             AvatarUrl = user.AvatarUrl,
             Roles = roles.ToList()
@@ -206,8 +211,11 @@ public class UserController : ControllerBase
             if (user == null)
                 return NotFound("User not found");
 
-            if (!string.IsNullOrEmpty(updateDto.Name))
-                user.Name = updateDto.Name;
+            if (!string.IsNullOrEmpty(updateDto.FirstName))
+                user.FirstName = updateDto.FirstName;
+
+            if (!string.IsNullOrEmpty(updateDto.LastName))
+                user.LastName = updateDto.LastName;
 
             if (!string.IsNullOrEmpty(updateDto.Theme))
                 user.Theme = updateDto.Theme;
@@ -235,7 +243,8 @@ public class UserController : ControllerBase
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Theme = user.Theme,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
@@ -282,7 +291,8 @@ public class UserController : ControllerBase
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.UserName,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Theme = user.Theme,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
                 Roles = roles
@@ -424,7 +434,8 @@ public class UserController : ControllerBase
                 .Select(u => new UserSearchResultDto
                 {
                     Id = u.Id,
-                    Name = u.Name,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
                     UserName = u.UserName,
                     AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
                 })
@@ -458,14 +469,16 @@ public class UserController : ControllerBase
                 .Where(u => u.Id != currentUserId && (
                     u.Email.ToLower().Contains(searchQuery) ||
                     u.UserName.ToLower().Contains(searchQuery) ||
-                    u.Name.ToLower().Contains(searchQuery)
+                    u.FirstName.ToLower().Contains(searchQuery) ||
+                    u.LastName.ToLower().Contains(searchQuery)
                 ))
                 .Select(u => new UserSearchResultDto
                 {
                     Id = u.Id,
                     Email = u.Email,
                     UserName = u.UserName,
-                    Name = u.Name,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
                     AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
                 })
                 .ToArrayAsync();
