@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { User } from '../types/User';
+import { User, UpdateUserDto } from '../types/User';
+import { getAuthToken } from '../utils/authUtils';
 import { USER_ENDPOINT } from '../utils/envConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const apiUrl = USER_ENDPOINT;
 
@@ -50,20 +52,19 @@ export const createUser = async (userData: User) => {
   }
 };
 
-export const updateUser = async (userData: User) => {
+export const updateUser = async (id: string, userData: UpdateUserDto): Promise<User> => {
   try {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.put(`${apiUrl}/${userData.id}`, userData, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const token = await getAuthToken();
+    const response = await axios.put(`${USER_ENDPOINT}/${id}`, userData, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-    return response.data;  // Returns the updated user data
+    return response.data;
   } catch (error) {
-    console.error(`Error updating user with ID ${userData.id}:`, error);
+    console.error(`Error updating user with ID ${id}:`, error);
     throw error;
   }
 };
+
 export const updateUserThemePreference = async (userId: string, themePreference: string) => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -81,8 +82,6 @@ export const updateUserThemePreference = async (userId: string, themePreference:
     throw error;
   }
 };
-
-
 
 export const deleteUser = async (userId: number) => {
   try {
@@ -112,4 +111,30 @@ export const getProfile = async () => {
     console.error('Error fetching profile:', error);
     throw error;
   }
+};
+
+export const uploadProfileImage = async (id: string, imageUri: string): Promise<User> => {
+  const token = await getAuthToken();
+  const formData = new FormData();
+
+  if (Platform.OS === 'web') {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
+    formData.append("file", file);
+  } else {
+    formData.append('file', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: 'profile.jpg'
+    } as any);
+  }
+
+  const response = await axios.post(`${USER_ENDPOINT}/${id}/profile-image`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data;
 };

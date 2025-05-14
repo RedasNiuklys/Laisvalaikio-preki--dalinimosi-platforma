@@ -100,7 +100,8 @@ namespace Server.Tests.Controllers
                 Id = userId,
                 UserName = "testuser@example.com",
                 Email = "testuser@example.com",
-                Name = "Test User",
+                FirstName = "Test",
+                LastName = "User",
                 Theme = "light"
             };
 
@@ -118,7 +119,7 @@ namespace Server.Tests.Controllers
             Assert.Equal(userId, returnValue.Id);
             Assert.Equal(user.Email, returnValue.Email);
             Assert.Equal(user.UserName, returnValue.UserName);
-            Assert.Equal(user.Name, returnValue.Name);
+            Assert.Equal(user.FirstName, returnValue.FirstName);
             Assert.Equal(user.Theme, returnValue.Theme);
             Assert.Single(returnValue.Roles);
             Assert.Equal("User", returnValue.Roles[0]);
@@ -149,7 +150,8 @@ namespace Server.Tests.Controllers
                 Id = userId,
                 UserName = "testuser@example.com",
                 Email = "testuser@example.com",
-                Name = "Test User",
+                FirstName = "Test",
+                LastName = "User",
                 Theme = "light"
             };
 
@@ -179,7 +181,8 @@ namespace Server.Tests.Controllers
             Assert.Equal(userId, returnValue.Id);
             Assert.Equal(user.Email, returnValue.Email);
             Assert.Equal(user.UserName, returnValue.UserName);
-            Assert.Equal(user.Name, returnValue.Name);
+            Assert.Equal(user.FirstName, returnValue.FirstName);
+            Assert.Equal(user.LastName, returnValue.LastName);
             Assert.Equal(user.Theme, returnValue.Theme);
             Assert.Single(returnValue.Roles);
             Assert.Equal("User", returnValue.Roles[0]);
@@ -195,13 +198,15 @@ namespace Server.Tests.Controllers
                 Id = userId,
                 UserName = "testuser@example.com",
                 Email = "testuser@example.com",
-                Name = "Test User",
+                FirstName = "Test",
+                LastName = "User",
                 Theme = "light"
             };
 
             var updateDto = new UpdateUserDto
             {
-                Name = "Updated Name",
+                FirstName = "Updated",
+                LastName = "Name",
                 Email = "updated@example.com",
                 Theme = "dark"
             };
@@ -224,7 +229,8 @@ namespace Server.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var returnValue = Assert.IsType<UserDto>(okResult.Value);
-            Assert.Equal(updateDto.Name, returnValue.Name);
+            Assert.Equal(updateDto.FirstName, returnValue.FirstName);
+            Assert.Equal(updateDto.LastName, returnValue.LastName);
             // Assert.Equal(updateDto.Email, returnValue.Email);
             Assert.Equal(updateDto.Theme, returnValue.Theme);
             Assert.Single(returnValue.Roles);
@@ -286,13 +292,15 @@ namespace Server.Tests.Controllers
                 Id = userId,
                 UserName = "testuser@example.com",
                 Email = "testuser@example.com",
-                Name = "Test User",
+                FirstName = "Test",
+                LastName = "User",
                 Theme = "light"
             };
 
             var updateDto = new UpdateUserDto
             {
-                Name = "Updated Name",
+                FirstName = "Updated",
+                LastName = "Name",
                 Email = "updated@example.com",
                 Theme = "dark"
             };
@@ -326,7 +334,8 @@ namespace Server.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var returnValue = Assert.IsType<UserDto>(okResult.Value);
-            Assert.Equal(updateDto.Name, returnValue.Name);
+            Assert.Equal(updateDto.FirstName, returnValue.FirstName);
+            Assert.Equal(updateDto.LastName, returnValue.LastName);
             Assert.Equal(updateDto.Theme, returnValue.Theme);
         }
 
@@ -340,7 +349,8 @@ namespace Server.Tests.Controllers
                 Id = userId,
                 UserName = "testuser@example.com",
                 Email = "testuser@example.com",
-                Name = "Test User",
+                FirstName = "Test",
+                LastName = "User",
                 Theme = "light"
             };
 
@@ -352,7 +362,7 @@ namespace Server.Tests.Controllers
                 .ReturnsAsync(new List<string> { "User" });
 
             // Act
-            var result = await _controller.UpdateUserThemePreference(userId, "dark");
+            var result = await _controller.UpdateUserThemePreference(userId, new ThemePreferenceDto { ThemePreference = "dark" });
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);

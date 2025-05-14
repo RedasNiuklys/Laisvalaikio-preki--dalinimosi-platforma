@@ -41,7 +41,7 @@ namespace Server.Models
         public DateTime? UpdatedAt { get; set; }
 
         // Navigation properties
-        public List<UsedDates> UsedDates { get; set; } = new List<UsedDates>();
+        public List<Booking> Bookings { get; set; } = new List<Booking>();
         public List<MaintenanceRecord> MaintenanceHistory { get; set; } = new List<MaintenanceRecord>();
         public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }

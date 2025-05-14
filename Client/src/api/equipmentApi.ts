@@ -1,24 +1,35 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
-import { CreateEquipmentDto, Equipment } from '../types/Equipment';
+import { CreateEquipmentDto, Equipment, UpdateEquipmentDto } from '../types/Equipment';
 import { getAuthToken } from '../utils/authUtils';
 import { EQUIPMENT_ENDPOINT } from '../utils/envConfig';
 
 export const getAll = async (): Promise<Equipment[]> => {
-    const token = await getAuthToken();
-    const response = await axios.get(EQUIPMENT_ENDPOINT, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    console.log("response", response.data);
-    return response.data;
-}
+    try {
+        console.log("Fetching equipment from API...");
+        const token = await getAuthToken();
+        console.log("Auth token obtained");
 
-export const getByOwner = async (ownerId: string): Promise<Equipment[]> => {
-    const token = await getAuthToken();
-    const response = await axios.get(`${EQUIPMENT_ENDPOINT}/owner/${ownerId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    return response.data;
+        const response = await axios.get(EQUIPMENT_ENDPOINT, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log("API Response:", response.status, response.statusText);
+        console.log("Response data:", response.data);
+
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching equipment:", error);
+        if (axios.isAxiosError(error)) {
+            console.error("Response data:", error.response?.data);
+            console.error("Response status:", error.response?.status);
+            console.error("Response headers:", error.response?.headers);
+        }
+        throw error;
+    }
 }
 
 export const getById = async (id: string): Promise<Equipment> => {
@@ -26,14 +37,13 @@ export const getById = async (id: string): Promise<Equipment> => {
     const response = await axios.get(`${EQUIPMENT_ENDPOINT}/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
+    console.log("Equipment:", response.data);
     return response.data;
 }
 
 export const create = async (equipment: CreateEquipmentDto): Promise<Equipment> => {
     const token = await getAuthToken();
-    //console.log
-
-    const response = await axios.post(`${EQUIPMENT_ENDPOINT}`, equipment, {
+    const response = await axios.post(EQUIPMENT_ENDPOINT, equipment, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
@@ -41,19 +51,30 @@ export const create = async (equipment: CreateEquipmentDto): Promise<Equipment> 
     return response.data;
 }
 
-export const update = async (id: string, equipment: Partial<Equipment>): Promise<Equipment> => {
+export const update = async (id: string, equipment: UpdateEquipmentDto): Promise<void> => {
     const token = await getAuthToken();
-    const response = await axios.put(`${EQUIPMENT_ENDPOINT}/${id}`, equipment, {
+    await axios.put(`${EQUIPMENT_ENDPOINT}/${id}`, equipment, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+}
+
+export const remove = async (id: string): Promise<void> => {
+    const token = await getAuthToken();
+    await axios.delete(`${EQUIPMENT_ENDPOINT}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+}
+
+export const getByOwner = async (userId: string): Promise<Equipment[]> => {
+    const token = await getAuthToken();
+    const response = await axios.get(`${EQUIPMENT_ENDPOINT}/owner/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
-}
-
-export const deleteEquipment = async (id: string): Promise<void> => {
-    const token = await getAuthToken();
-    await axios.delete(`${EQUIPMENT_ENDPOINT}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
 }
 
 export const getByCategory = async (category: string): Promise<Equipment[]> => {
@@ -130,4 +151,21 @@ export const removeUsedDate = async (equipmentId: string, date: Date): Promise<E
         data: { date }
     });
     return response.data;
+};
+
+export const getEquipment = async (id: string): Promise<Equipment> => {
+    const response = await axios.get(`${EQUIPMENT_ENDPOINT}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`
+        }
+    });
+    return response.data;
+};
+
+export const deleteEquipment = async (id: string): Promise<void> => {
+    await axios.delete(`${EQUIPMENT_ENDPOINT}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`
+        }
+    });
 };

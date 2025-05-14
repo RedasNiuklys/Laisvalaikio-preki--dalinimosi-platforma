@@ -181,7 +181,6 @@
       "taken": "Taken",
       "future": "Future",
       "all": "All",
-
       "noResults": "No equipment found",
       "addNew": "Add New Equipment"
     },
@@ -212,6 +211,28 @@
     "available": "Available",
     "unavailable": "Unavailable"
   },
+  "booking": {
+    "title": "Bookings",
+    "new": "New Booking",
+    "create": "Book Equipment",
+    "startDateTime": "Start Date & Time",
+    "endDateTime": "End Date & Time",
+    "submit": "Create Booking",
+    "success": "Booking created successfully",
+    "error": "Failed to create booking",
+    "noBookings": "No bookings yet",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "notes": "Notes",
+    "notesPlaceholder": "Add any additional information about your booking...",
+    "status": {
+      "title": "Status",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    }
+  },
   "usedDates": {
     "title": "Used Dates",
     "add": "Add Used Date",
@@ -228,23 +249,26 @@
     "success": {
       "postAll": "Used dates posted successfully"
     },
-
     "currentSelections": "Current Selections"
   },
   "profile": {
     "title": "Profile",
+    "userName": "Username",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
     "personalInfo": "Personal Information",
     "myEquipment": "My Equipment",
     "myBookings": "My Bookings",
     "settings": "Settings",
     "logout": "Logout",
-    "name": "Name",
-    "email": "Email",
     "image": {
       "choose": "Choose Image",
       "take": "Take Photo",
       "noData": "No data available",
       "success": "Image uploaded successfully"
-    }
+    },
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile"
   }
 }

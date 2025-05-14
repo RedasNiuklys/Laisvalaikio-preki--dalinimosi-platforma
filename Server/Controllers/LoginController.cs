@@ -41,17 +41,19 @@ public class LoginController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        Console.WriteLine("Registering user {0} {1} {2} {3} {4}", dto.Email, dto.UserName, dto.Name, dto.Theme, dto.Password);
+        Console.WriteLine("Registering user {0} {1} {2} {3} {4}", dto.Email, dto.UserName, dto.FirstName, dto.LastName, dto.Theme, dto.Password);
         var user = new ApplicationUser
         {
             Email = dto.Email,
             UserName = dto.UserName ?? dto.Email,
-            Name = dto.Name ?? "John Doe",
+            FirstName = dto.FirstName ?? "John",
+            LastName = dto.LastName ?? "Doe",
             Theme = dto.Theme ?? "Light",
         };
         Console.WriteLine("User: {0}", user.Email);
         Console.WriteLine("User: {0}", user.UserName);
-        Console.WriteLine("User: {0}", user.Name);
+        Console.WriteLine("User: {0}", user.FirstName);
+        Console.WriteLine("User: {0}", user.LastName);
         Console.WriteLine("User: {0}", user.Theme);
         Console.WriteLine("User: {0}", user.AvatarUrl);
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -126,7 +128,8 @@ public class LoginController : ControllerBase
             {
                 UserName = email,
                 Email = email,
-                Name = info.Principal.FindFirstValue(ClaimTypes.Name)
+                FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName),
+                LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)
             };
             await _userManager.CreateAsync(user);
         }
@@ -156,7 +159,8 @@ public class LoginController : ControllerBase
                 {
                     UserName = payload.Email,
                     Email = payload.Email,
-                    Name = payload.Name
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName
                 };
                 await _userManager.CreateAsync(user);
             }
@@ -192,7 +196,8 @@ public class LoginController : ControllerBase
             {
                 UserName = email,
                 Email = email,
-                Name = info.Principal.FindFirstValue(ClaimTypes.Name)
+                FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName),
+                LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)
             };
             await _userManager.CreateAsync(user);
         }
