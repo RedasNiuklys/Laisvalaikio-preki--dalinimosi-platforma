@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
 using Server.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Cors;
 
 namespace Server.Controllers
 {
@@ -51,62 +52,80 @@ namespace Server.Controllers
         }
 
         // GET: api/Equipment
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipment()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            try
             {
-                return Unauthorized();
-            }
-            var allEquipment = await _context.Equipment.ToListAsync();
-            System.Console.WriteLine("allEquipment", allEquipment);
+                System.Console.WriteLine("GetEquipment method called");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                System.Console.WriteLine($"User ID from token: {userId}");
 
-            var equipment = await _context.Equipment
-                .Include(e => e.Location)
-                .Include(e => e.Images)
-                // .Where(e => e.OwnerId == userId)
-                .Select(e => new EquipmentResponseDto
+                if (string.IsNullOrEmpty(userId))
                 {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Description = e.Description,
-                    Category = e.Category,
-                    Condition = e.Condition,
-                    OwnerId = e.OwnerId,
-                    Status = e.IsAvailable ? "Available" : "Unavailable",
-                    CreatedAt = e.CreatedAt,
-                    UpdatedAt = e.UpdatedAt,
-                    Location = new Location
+                    System.Console.WriteLine("User ID is null or empty, returning Unauthorized");
+                    return Unauthorized();
+                }
+
+                System.Console.WriteLine("Fetching equipment from database");
+                var equipment = await _context.Equipment
+                    .Include(e => e.Location)
+                    .Include(e => e.Images)
+                    .Include(e => e.Category)
+                    .Select(e => new EquipmentResponseDto
                     {
-                        Id = e.Location.Id,
-                        Name = e.Location.Name,
-                        Description = e.Location.Description,
-                        StreetAddress = e.Location.StreetAddress,
-                        City = e.Location.City,
-                        State = e.Location.State,
-                        PostalCode = e.Location.PostalCode,
-                        Country = e.Location.Country,
-                        Latitude = e.Location.Latitude,
-                        Longitude = e.Location.Longitude,
-                        UserId = e.Location.UserId,
-                        CreatedAt = e.Location.CreatedAt,
-                        UpdatedAt = e.Location.UpdatedAt
-                    },
-                    Images = e.Images.Select(i => new EquipmentImage
-                    {
-                        Id = i.Id,
-                        EquipmentId = i.EquipmentId,
-                        ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
-                        IsMainImage = i.IsMainImage,
-                        CreatedAt = i.CreatedAt,
-                        UpdatedAt = i.UpdatedAt
-                    }).ToList()
-                })
-                .ToListAsync();
-            System.Console.WriteLine("equipment", equipment);
-            return Ok(equipment);
+                        Id = e.Id,
+                        Name = e.Name,
+                        Description = e.Description,
+                        Category = new CategoryDto
+                        {
+                            Id = e.Category.Id,
+                            Name = e.Category.Name,
+                            IconName = e.Category.IconName,
+                            ParentCategoryId = e.Category.ParentCategoryId
+                        },
+                        Condition = e.Condition,
+                        OwnerId = e.OwnerId,
+                        IsAvailable = e.IsAvailable,
+                        CreatedAt = e.CreatedAt,
+                        UpdatedAt = e.UpdatedAt,
+                        Location = new LocationDto
+                        {
+                            Id = e.Location.Id,
+                            Name = e.Location.Name,
+                            Description = e.Location.Description,
+                            StreetAddress = e.Location.StreetAddress,
+                            City = e.Location.City,
+                            State = e.Location.State,
+                            PostalCode = e.Location.PostalCode,
+                            Country = e.Location.Country,
+                            Latitude = e.Location.Latitude,
+                            Longitude = e.Location.Longitude,
+                            UserId = e.Location.UserId,
+                            CreatedAt = e.Location.CreatedAt,
+                            UpdatedAt = e.Location.UpdatedAt
+                        },
+                        Images = e.Images.Select(i => new EquipmentImageDto
+                        {
+                            Id = i.Id,
+                            EquipmentId = i.EquipmentId,
+                            ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
+                            IsMainImage = i.IsMainImage,
+                            CreatedAt = i.CreatedAt,
+                            UpdatedAt = i.UpdatedAt
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
+                System.Console.WriteLine($"Found {equipment.Count} equipment items");
+                return Ok(equipment);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error in GetEquipment: {ex.Message}");
+                System.Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, "An error occurred while retrieving equipment");
+            }
         }
 
         // GET: api/Equipment/5
@@ -116,6 +135,8 @@ namespace Server.Controllers
             var equipment = await _context.Equipment
                 .Include(e => e.Location)
                 .Include(e => e.Images)
+                .Include(e => e.Category)
+                .Include(e => e.Bookings)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (equipment == null)
@@ -128,13 +149,19 @@ namespace Server.Controllers
                 Id = equipment.Id,
                 Name = equipment.Name,
                 Description = equipment.Description,
-                Category = equipment.Category,
+                Category = new CategoryDto
+                {
+                    Id = equipment.Category.Id,
+                    Name = equipment.Category.Name,
+                    IconName = equipment.Category.IconName,
+                    ParentCategoryId = equipment.Category.ParentCategoryId
+                },
                 Condition = equipment.Condition,
                 OwnerId = equipment.OwnerId,
-                Status = equipment.IsAvailable ? "Available" : "Unavailable",
+                IsAvailable = equipment.IsAvailable,
                 CreatedAt = equipment.CreatedAt,
                 UpdatedAt = equipment.UpdatedAt,
-                Location = new Location
+                Location = new LocationDto
                 {
                     Id = equipment.Location.Id,
                     Name = equipment.Location.Name,
@@ -150,7 +177,7 @@ namespace Server.Controllers
                     CreatedAt = equipment.Location.CreatedAt,
                     UpdatedAt = equipment.Location.UpdatedAt
                 },
-                Images = equipment.Images.Select(i => new EquipmentImage
+                Images = equipment.Images.Select(i => new EquipmentImageDto
                 {
                     Id = i.Id,
                     EquipmentId = i.EquipmentId,
@@ -158,6 +185,18 @@ namespace Server.Controllers
                     IsMainImage = i.IsMainImage,
                     CreatedAt = i.CreatedAt,
                     UpdatedAt = i.UpdatedAt
+                }).ToList(),
+                Bookings = equipment.Bookings.Select(b => new BookingDto
+                {
+                    Id = b.Id,
+                    EquipmentId = b.EquipmentId,
+                    UserId = b.UserId,
+                    StartDateTime = b.StartDateTime,
+                    EndDateTime = b.EndDateTime,
+                    Status = b.Status.ToString(),
+                    Notes = b.Notes,
+                    CreatedAt = b.CreatedAt,
+                    UpdatedAt = b.UpdatedAt
                 }).ToList()
             };
         }
@@ -283,13 +322,34 @@ namespace Server.Controllers
                     Id = equipment.Id,
                     Name = equipment.Name,
                     Description = equipment.Description,
-                    Category = equipment.Category,
+                    Category = new CategoryDto
+                    {
+                        Id = equipment.Category.Id,
+                        Name = equipment.Category.Name,
+                        IconName = equipment.Category.IconName,
+                        ParentCategoryId = equipment.Category.ParentCategoryId
+                    },
                     Condition = equipment.Condition,
                     OwnerId = equipment.OwnerId,
-                    Status = "Available",
+                    IsAvailable = equipment.IsAvailable,
                     CreatedAt = equipment.CreatedAt,
                     UpdatedAt = equipment.UpdatedAt,
-                    LocationId = equipment.LocationId,
+                    Location = new LocationDto
+                    {
+                        Id = equipment.Location.Id,
+                        Name = equipment.Location.Name,
+                        Description = equipment.Location.Description,
+                        StreetAddress = equipment.Location.StreetAddress,
+                        City = equipment.Location.City,
+                        State = equipment.Location.State,
+                        PostalCode = equipment.Location.PostalCode,
+                        Country = equipment.Location.Country,
+                        Latitude = equipment.Location.Latitude,
+                        Longitude = equipment.Location.Longitude,
+                        UserId = equipment.Location.UserId,
+                        CreatedAt = equipment.Location.CreatedAt,
+                        UpdatedAt = equipment.Location.UpdatedAt
+                    }
                 });
         }
 
@@ -395,13 +455,19 @@ namespace Server.Controllers
                     Id = e.Id,
                     Name = e.Name,
                     Description = e.Description,
-                    Category = e.Category,
+                    Category = new CategoryDto
+                    {
+                        Id = e.Category.Id,
+                        Name = e.Category.Name,
+                        IconName = e.Category.IconName,
+                        ParentCategoryId = e.Category.ParentCategoryId
+                    },
                     Condition = e.Condition,
                     OwnerId = e.OwnerId,
-                    Status = e.IsAvailable ? "Available" : "Unavailable",
+                    IsAvailable = e.IsAvailable,
                     CreatedAt = e.CreatedAt,
                     UpdatedAt = e.UpdatedAt,
-                    Location = new Location
+                    Location = new LocationDto
                     {
                         Id = e.Location.Id,
                         Name = e.Location.Name,
@@ -417,7 +483,7 @@ namespace Server.Controllers
                         CreatedAt = e.Location.CreatedAt,
                         UpdatedAt = e.Location.UpdatedAt
                     },
-                    Images = e.Images.Select(i => new EquipmentImage
+                    Images = e.Images.Select(i => new EquipmentImageDto
                     {
                         Id = i.Id,
                         EquipmentId = i.EquipmentId,

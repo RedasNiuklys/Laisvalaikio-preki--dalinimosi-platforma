@@ -49,7 +49,7 @@ export default function AddEquipmentScreen({
     description: "",
     locationId: "",
     condition: "Good",
-    category: "",
+    category: { id: 0, name: "", iconName: "", categoryId: 0 },
     status: "Available",
   });
 
@@ -77,7 +77,7 @@ export default function AddEquipmentScreen({
       });
       setSelectedLocationId(data.locationId);
       setSelectedCategoryId(
-        categories.findIndex((c) => c.name === data.category) + 1
+        categories.findIndex((c) => c.name === data.category.name) + 1
       );
       if (data.images) {
         setEquipmentImages(data.images);
@@ -187,7 +187,7 @@ export default function AddEquipmentScreen({
             }
 
             const newImage: EquipmentImage = {
-              id: 1, // This will be set by the server
+              id: "", // This will be set by the server
               equipmentId: "", // This will be set when equipment is created
               imageUrl: imageUrl,
               isMainImage: equipmentImages.length === 0, // First image is main by default
@@ -272,7 +272,7 @@ export default function AddEquipmentScreen({
         name: equipment.name,
         description: equipment.description,
         locationId: selectedLocationId,
-        category: selectedCategory.name,
+        category: selectedCategory,
         status: equipment.status,
         condition: equipment.condition,
       };
@@ -303,7 +303,7 @@ export default function AddEquipmentScreen({
               image.equipmentId = equipmentId;
               console.log("image", image);
               //console.log
-              if (image.id > 0) {
+              if (image.id.length > 0) {
                 // New image
                 console.log("New image");
                 await uploadImage(equipmentId, image.imageUrl, index === 0);
@@ -383,7 +383,7 @@ export default function AddEquipmentScreen({
               setSelectedCategoryId(value);
               const selectedCategory = categories.find((c) => c.id === value);
               if (selectedCategory) {
-                setEquipment({ ...equipment, category: selectedCategory.name });
+                setEquipment({ ...equipment, category: selectedCategory });
               }
             }}
             style={[styles.picker, { color: theme.colors.onSurface }]}

@@ -11,6 +11,7 @@ export const getCategories = async (): Promise<Category[]> => {
     const response = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` }
     });
+    console.log("response", response.data);
     return response.data;
 };
 

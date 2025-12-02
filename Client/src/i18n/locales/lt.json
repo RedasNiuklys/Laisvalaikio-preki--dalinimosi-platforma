@@ -65,24 +65,38 @@
     "selectIcon": "Pasirinkti paveiksliuką",
     "searchIcons": "Ieškoti paveiksliukų"
   },
-  "usedDates": {
-    "title": "Naudojamos datas",
-    "add": "Pridėti naudojamas datas",
+  "booking": {
+    "title": "Rezervuoti įrangą",
+    "startDate": "Pradžios data",
+    "startTime": "Pradžios laikas",
+    "endDate": "Pabaigos data",
+    "endTime": "Pabaigos laikas",
+    "status": {
+      "wish": "Noras",
+      "pending": "Laukiama",
+      "inUse": "Naudojama"
+    },
+    "notes": "Pastabos",
     "actions": {
-      "add": "Pridėti",
-      "post": "Registruoti",
-      "delete": "Ištrinti",
-      "postAll": "Registruoti visus"
+      "book": "Rezervuoti",
+      "update": "Atnaujinti",
+      "cancel": "Atšaukti",
+      "delete": "Ištrinti"
     },
     "errors": {
-      "postFailed": "Nepavyko pranešti naudojamas datas",
-      "postAll": "Nepavyko pranešti visų naudojamas datas"
+      "noSelection": "Nėra pasirinkimo",
+      "pleaseSelectDates": "Prašome pasirinkti datas",
+      "postFailed": "Nepavyko sukurti rezervacijos",
+      "tryAgain": "Prašome bandyti dar kartą",
+      "noSelections": "Nėra pasirinkimų",
+      "pleaseSelectDates": "Prašome pasirinkti datas"
     },
     "success": {
-      "postAll": "Naudojamos datos sėkmingai pridėtos"
-    },
-
-    "currentSelections": "Dabartiniai pasirinkimai"
+      "title": "Sėkmė",
+      "bookingCreated": "Rezervacija sėkmingai sukurta",
+      "bookingUpdated": "Rezervacija sėkmingai atnaujinta",
+      "bookingDeleted": "Rezervacija sėkmingai ištrinta"
+    }
   },
   "home": {
     "title": "Pradžia",
@@ -187,18 +201,22 @@
   },
   "profile": {
     "title": "Profilis",
-    "logout": "Atsijungti",
-    "name": "Vardas",
+    "userName": "Vartotojo vardas",
+    "firstName": "Vardas",
+    "lastName": "Pavardė",
     "email": "El. paštas",
-    "image": {
-      "choose": "Pasirinkti nuotrauką",
-      "take": "Nuotraukos pažymėjimas",
-      "noData": "Nera duomenų",
-      "success": "Nuotrauka sėkmingai įkelta"
-    },
     "personalInfo": "Asmeninė informacija",
     "myEquipment": "Mano įranga",
-    "myBookings": "Mano rezervacijos",
-    "settings": "Nustatymai"
+    "myBookings": "Mano užsakymai",
+    "settings": "Nustatymai",
+    "logout": "Atsijungti",
+    "image": {
+      "choose": "Pasirinkti nuotrauką",
+      "take": "Padaryti nuotrauką",
+      "noData": "Nėra duomenų",
+      "success": "Nuotrauka sėkmingai įkelta"
+    },
+    "updateSuccess": "Profilis sėkmingai atnaujintas",
+    "updateError": "Nepavyko atnaujinti profilio"
   }
 }

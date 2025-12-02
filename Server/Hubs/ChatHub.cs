@@ -21,7 +21,7 @@ public class ChatHub : Hub
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Console.WriteLine($"User connected: {userId}");
-        
+
         if (!string.IsNullOrEmpty(userId))
         {
             // Get all chats the user is part of
@@ -64,7 +64,7 @@ public class ChatHub : Hub
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Console.WriteLine($"Sending message to chat {chatId} from user {userId}");
-        
+
         if (string.IsNullOrEmpty(userId))
         {
             throw new HubException("User not authenticated");
@@ -112,7 +112,8 @@ public class ChatHub : Hub
             Sender = new
             {
                 Id = sender.Id,
-                Name = sender.Name,
+                FirstName = sender.FirstName,
+                LastName = sender.LastName,
                 AvatarUrl = sender.AvatarUrl
             },
             ReadBy = new object[] { }
@@ -175,7 +176,7 @@ public class ChatHub : Hub
     {
         var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         Console.WriteLine($"Attempting to join chat {chatId} for user {userId}");
-        
+
         if (string.IsNullOrEmpty(userId))
         {
             Console.WriteLine("User ID is null or empty");
@@ -194,7 +195,7 @@ public class ChatHub : Hub
         }
 
         Console.WriteLine($"Found chat {chat.Id} with {chat.Participants.Count} participants");
-        
+
         // Debug participant information
         foreach (var participant in chat.Participants)
         {
@@ -220,4 +221,4 @@ public class ChatHub : Hub
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
     }
-} 
+}

@@ -37,17 +37,18 @@ export default function EquipmentListPage() {
     const isNarrowScreen = width < 420;
 
     useEffect(() => {
-        fetchEquipment();
         fetchCategories();
+        fetchEquipment();
     }, []);
 
     useEffect(() => {
         filterEquipment();
-    }, [selectedCategory, equipment]);
+    }, [selectedCategory, equipment, categories]);
 
     const fetchCategories = async () => {
         try {
             const data = await categoryApi.getCategories();
+            console.log("data", data);
             setCategories(data);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -57,31 +58,31 @@ export default function EquipmentListPage() {
 
     const filterEquipment = () => {
         let filtered = equipment;
-        console.log("selectedCategory", equipment);
-        if (selectedCategory) {
+        console.log("selectedCategory", selectedCategory);
+        if (selectedCategory !== "") {
             const selectedCategoryObj = categories.find(
                 (c) => c.name === selectedCategory
             );
             if (selectedCategoryObj) {
-                if (selectedCategoryObj.parentCategoryId === null) {
+                if (selectedCategoryObj.categoryId === null) {
                     // If parent category is selected, show all its children
                     const childCategories = categories
-                        .filter((c) => c.parentCategoryId === selectedCategoryObj.id)
+                        .filter((c) => c.categoryId === selectedCategoryObj.id)
                         .map((c) => c.name);
                     filtered = filtered.filter(
                         (item) =>
-                            childCategories.includes(item.category) ||
-                            item.category === selectedCategory
+                            childCategories.includes(item.category.name) ||
+                            item.category.name === selectedCategory
                     );
                 } else {
                     // If child category is selected, show only that category
                     filtered = filtered.filter(
-                        (item) => item.category === selectedCategory
+                        (item) => item.category.name === selectedCategory
                     );
                 }
             }
         }
-        console.log("filtered", filtered);
+        console.log("filtered", filtered.length);
 
         setFilteredEquipment(filtered);
     };
@@ -127,7 +128,7 @@ export default function EquipmentListPage() {
                             onPress={() => setSelectedCategory(category.name)}
                             style={[
                                 styles.categoryChip,
-                                category.parentCategoryId === null && {
+                                category.categoryId === null && {
                                     backgroundColor: theme.colors.primaryContainer,
                                 },
                                 selectedCategory === category.name && {
@@ -192,7 +193,7 @@ export default function EquipmentListPage() {
                 />
                 <Card.Title
                     title={item.name}
-                    subtitle={item.category}
+                    subtitle={item.category.name}
                     titleStyle={styles.cardTitle}
                     subtitleStyle={styles.cardSubtitle}
                     right={(props) => (
@@ -237,7 +238,7 @@ export default function EquipmentListPage() {
             {renderCategoryChips()}
 
             <FlatList
-                key={width.toString()}
+                key={width.toString() + filteredEquipment.length.toString()}
                 data={filteredEquipment}
                 renderItem={renderEquipmentItem}
                 keyExtractor={(item) => item.id}
