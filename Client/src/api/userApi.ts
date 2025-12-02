@@ -65,10 +65,10 @@ export const updateUser = async (id: string, userData: UpdateUserDto): Promise<U
   }
 };
 
-export const updateUserThemePreference = async (userId: string, themePreference: string) => {
+export const updateUserThemePreference = async (themePreference: string) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await axios.patch(`${apiUrl}/${userId}/theme-preference`, {
+    const response = await axios.patch(`${apiUrl}/theme-preference`, {
       themePreference: themePreference
     }, {
       headers: {
@@ -78,7 +78,7 @@ export const updateUserThemePreference = async (userId: string, themePreference:
     });
     return response.data;  // Returns the updated user data
   } catch (error) {
-    console.error(`Error updating user theme preference for user with ID ${userId}:`, error);
+    console.error(`Error updating user theme preference for user:`, error);
     throw error;
   }
 };

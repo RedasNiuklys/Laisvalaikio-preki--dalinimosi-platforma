@@ -35,10 +35,16 @@
     "search": "Ieškoti vietos...",
     "title": "Vieta",
     "currentLocation": "Rodyti vietą",
+    "showOnMapDesc": "Rodyti vietą žemėlapyje",
+    "showMap": "Rodyti žemėlapyje",
     "openInMaps": "Rodyti Google Maps",
     "errors": {
       "addressFetchFailed": "Nepavyko gauti adreso informacijos",
-      "nameRequired": "Pavadinimas yra privalomas"
+      "nameRequired": "Pavadinimas yra privalomas",
+      "requiredFields": "Šie laukai yra privalomi: {{fields}}",
+      "locationRequired": "Pasirinkite vietą žemėlapyje",
+      "permissionDenied": "Vietos leidimas nesuteiktas",
+      "locationFetchFailed": "Nepavyko gauti vietos"
     },
     "form": {
       "addNew": "Pridėti naują vietą",
@@ -52,7 +58,9 @@
       "error": {
         "save": "Nepavyko išsaugoti vietos"
       }
-    }
+    },
+    "address": "Adresas",
+    "distance": "Atstumas"
   },
   "admin": {
     "title": "Administratoriaus sąsaja",
@@ -67,6 +75,13 @@
   },
   "booking": {
     "title": "Rezervuoti įrangą",
+    "listTitle": "Visos rezervacijos",
+    "new": "Nauja rezervacija",
+    "create": "Rezervuoti įrangą",
+    "viewAll": "Peržiūrėti visą",
+    "startDateTime": "Pradžios data ir laikas",
+    "endDateTime": "Pabaigos data ir laikas",
+    "submit": "Rezervuoti",
     "startDate": "Pradžios data",
     "startTime": "Pradžios laikas",
     "endDate": "Pabaigos data",
@@ -157,7 +172,10 @@
       "submit": "Prisijungti",
       "forgotPassword": "Pamiršote slaptažodį?",
       "noAccount": "Neturite paskyros?",
-      "signUp": "Registruotis"
+      "signUp": "Registruotis",
+      "invalidEmail": "Įveskite teisingą el. pašto adresą",
+      "success": "Prisijungimas sėkmingas",
+      "error": "Prisijungimas nepavyko"
     },
     "register": {
       "title": "Registracija",
@@ -166,7 +184,11 @@
       "confirmPassword": "Pakartokite slaptažodį",
       "submit": "Sukurti paskyrą",
       "haveAccount": "Jau turite paskyrą?",
-      "signIn": "Prisijungti"
+      "signIn": "Prisijungti",
+      "invalidEmail": "Įveskite teisingą el. pašto adresą",
+      "passwordsDoNotMatch": "Slaptažodžiai nesutampa",
+      "success": "Registracija sėkminga",
+      "error": "Registracija nepavyko. Bandykite dar kartą"
     }
   },
   "equipment": {
@@ -196,13 +218,50 @@
       "deleteError": "Nepavyko ištrinti įrangos",
       "updateSuccess": "Įranga sėkmingai atnaujinta",
       "updateError": "Nepavyko atnaujinti įrangos",
-      "contact": "Susisiekti su savininku"
+      "contact": "Susisiekti su savininku",
+      "info": "Įrangos informacija"
+    },
+    "errors": {
+      "fetchFailed": "Nepavyko gauti įrangos",
+      "notFound": "Įranga nerasta"
+    },
+    "actions": {
+      "edit": "Redaguoti įrangą",
+      "delete": "Ištrinti įrangą"
+    },
+    "name": "Įrangos pavadinimas",
+    "category": "Kategorija",
+    "form": {
+      "title": "Pridėti įrangą",
+      "titleEdit": "Atnaujinti įrangą",
+      "name": "Pavadinimas",
+      "description": "Aprašymas",
+      "category": "Kategorija",
+      "location": "Vieta",
+      "images": "Nuotraukos",
+      "selectLocation": "Pasirinkite vietą",
+      "createLocation": "Sukurti naują vietą",
+      "submit": {
+        "add": "Pridėti įrangą",
+        "update": "Atnaujinti įrangą"
+      },
+      "errors": {
+        "permissionNeeded": "Reikalingas leidimas",
+        "photoPermission": "Prašome suteikti prieigą prie nuotraukų",
+        "pickImage": "Nepavyko pasirinkti nuotraukos",
+        "removeImage": "Nepavyko pašalinti nuotraukos",
+        "requiredFields": "Prašome užpildyti visus privalomus laukus",
+        "invalidCategory": "Prašome pasirinkti tinkamą kategoriją",
+        "saveFailed": "Nepavyko išsaugoti įrangos",
+        "loadFailed": "Nepavyko įkelti įrangos"
+      }
     }
   },
   "profile": {
     "title": "Profilis",
     "userName": "Vartotojo vardas",
     "firstName": "Vardas",
+    "name": "Vardas",
     "lastName": "Pavardė",
     "email": "El. paštas",
     "personalInfo": "Asmeninė informacija",
@@ -214,9 +273,36 @@
       "choose": "Pasirinkti nuotrauką",
       "take": "Padaryti nuotrauką",
       "noData": "Nėra duomenų",
-      "success": "Nuotrauka sėkmingai įkelta"
+      "success": "Nuotrauka sėkmingai įkelta",
+      "uploadError": "Nepavyko įkelti nuotraukos",
+      "pickError": "Nepavyko pasirinkti nuotraukos",
+      "takeError": "Nepavyko padaryti nuotraukos"
     },
     "updateSuccess": "Profilis sėkmingai atnaujintas",
-    "updateError": "Nepavyko atnaujinti profilio"
+    "updateError": "Nepavyko atnaujinti profilio",
+    "permissions": {
+      "title": "Reikalingi leidimai",
+      "message": "Prašome suteikti prieigą"
+    },
+    "noData": "Nėra duomenų"
+  },
+  "category": {
+    "name": "Kategorijos pavadinimas",
+    "parentCategory": "Tėvinė kategorija",
+    "icon": "Kategorijos piktograma",
+    "noParent": "Be tėvinės kategorijos",
+    "errors": {
+      "fetchFailed": "Nepavyko gauti kategorijų"
+    },
+    "loadError": "Nepavyko įkelti kategorijų",
+    "nameRequired": "Kategorijos pavadinimas yra privalomas",
+    "updateSuccess": "Kategorija sėkmingai atnaujinta",
+    "createSuccess": "Kategorija sėkmingai sukurta"
+  },
+  "chat": {
+    "newChat": "Naujas pokalbis",
+    "groupChat": "Grupės pokalbis",
+    "groupName": "Grupės pavadinimas",
+    "create": "Sukurti pokalbį"
   }
 }

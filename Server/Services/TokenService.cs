@@ -21,6 +21,11 @@ namespace Server.Services
 
         public string GenerateToken(ApplicationUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
@@ -43,6 +48,11 @@ namespace Server.Services
 
         public async Task<string> CreateTokenAsync(ApplicationUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
 

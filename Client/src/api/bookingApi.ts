@@ -1,7 +1,16 @@
 import axios from 'axios';
-import { Booking, CreateBookingDto, UpdateBookingDto } from '../types/Booking';
+import {
+    Booking,
+    CreateBookingDto,
+    UpdateBookingDto,
+    BookingStatus,
+    bookingStatusToNumeric,
+    numericToBookingStatus,
+    BookingStatusNumeric
+} from '../types/Booking';
 import { getAuthToken } from '../utils/authUtils';
 import { BOOKING_ENDPOINT } from '../utils/envConfig';
+import { coolDownAsync } from 'expo-web-browser';
 
 export const getBookingsForEquipment = async (equipmentId: string): Promise<Booking[]> => {
     const token = await getAuthToken();
@@ -11,8 +20,15 @@ export const getBookingsForEquipment = async (equipmentId: string): Promise<Book
             Authorization: `Bearer ${token}`
         }
     });
-    console.log("Bookings for equipment:", response.data);
-    return response.data;
+
+    // Convert numeric status to string enum
+    const bookings = response.data.map((booking: any) => ({
+        ...booking,
+        status: numericToBookingStatus(booking.status as BookingStatusNumeric)
+    }));
+
+    console.log("Bookings for equipment:", bookings);
+    return bookings;
 };
 
 export const getBookingsForUser = async (userId: string): Promise<Booking[]> => {
@@ -23,29 +39,73 @@ export const getBookingsForUser = async (userId: string): Promise<Booking[]> => 
             Authorization: `Bearer ${token}`
         }
     });
-    return response.data;
+
+    // Convert numeric status to string enum
+    return response.data.map((booking: any) => ({
+        ...booking,
+        status: numericToBookingStatus(booking.status as BookingStatusNumeric)
+    }));
 };
 
 export const createBooking = async (booking: CreateBookingDto): Promise<Booking> => {
     const token = await getAuthToken();
 
-    const response = await axios.post(`${BOOKING_ENDPOINT}`, booking, {
+    const response = await axios.post(`${BOOKING_ENDPOINT}`, {
+        ...booking,
+        status: booking.status ? bookingStatusToNumeric(booking.status as BookingStatus) : undefined
+    }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
-    return response.data;
+
+    // Convert numeric status to string enum in response
+    return {
+        ...response.data,
+        status: numericToBookingStatus(response.data.status as BookingStatusNumeric)
+    };
 };
 
-export const updateBooking = async (id: string, booking: UpdateBookingDto): Promise<Booking> => {
+export const updateBookingStatus = async (id: string, status: BookingStatus): Promise<void> => {
     const token = await getAuthToken();
 
-    const response = await axios.put(`${BOOKING_ENDPOINT}/${id}`, booking, {
+    await axios.patch(`${BOOKING_ENDPOINT}/${id}/status`,
+        status.toString(),
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+};
+
+export const updateBooking = async (id: string, booking: UpdateBookingDto): Promise<Booking | void> => {
+    // If only status is being updated, use the dedicated endpoint
+    console.log('Booking:', Object.keys(booking).length);
+    console.log('Booking:', booking);
+
+    if (Object.keys(booking).length === 1 && booking.status) {
+        await updateBookingStatus(id, booking.status);
+        return;
+    }
+
+    const token = await getAuthToken();
+
+    const response = await axios.put(`${BOOKING_ENDPOINT}/${id}`, {
+        ...booking,
+        status: booking.status ? bookingStatusToNumeric(booking.status as BookingStatus) : undefined
+    }, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
-    return response.data;
+
+    // Convert numeric status to string enum in response
+    return {
+        ...response.data,
+        status: numericToBookingStatus(response.data.status as BookingStatusNumeric)
+    };
 };
 
 export const deleteBooking = async (id: string): Promise<void> => {

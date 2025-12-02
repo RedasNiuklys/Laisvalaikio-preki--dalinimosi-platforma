@@ -354,6 +354,19 @@ namespace Server.Tests.Controllers
                 Theme = "light"
             };
 
+            // Setup user claims for authorization
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
             _userManagerMock.Setup(x => x.FindByIdAsync(userId))
                 .ReturnsAsync(user);
             _userManagerMock.Setup(x => x.UpdateAsync(user))
@@ -362,7 +375,7 @@ namespace Server.Tests.Controllers
                 .ReturnsAsync(new List<string> { "User" });
 
             // Act
-            var result = await _controller.UpdateUserThemePreference(userId, new ThemePreferenceDto { ThemePreference = "dark" });
+            var result = await _controller.UpdateUserThemePreference(new ThemePreferenceDto { ThemePreference = "dark" });
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);

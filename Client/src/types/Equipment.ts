@@ -35,7 +35,7 @@ export interface Equipment {
     categoryId: number;
     tags: string[];
     condition: string;
-    isAvailable: boolean;
+    IsAvailable: boolean;
     locationId: string;
     location: Location;
     createdAt: string;
@@ -64,5 +64,5 @@ export interface CreateEquipmentDto {
 }
 
 export interface UpdateEquipmentDto extends CreateEquipmentDto {
-    isAvailable?: boolean;
+    IsAvailable?: boolean;
 } 

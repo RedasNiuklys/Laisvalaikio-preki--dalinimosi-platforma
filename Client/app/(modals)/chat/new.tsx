@@ -10,7 +10,9 @@ import { useAuth } from "@/src/context/AuthContext";
 
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   email: string;
   avatar?: string;
 }
@@ -32,12 +34,11 @@ export default function NewChatModal() {
     try {
       setLoading(true);
       const token = await getAuthToken();
-      //console.log
-      ("Trying to create chat");
       const response = await axios.post(
         `${BASE_URL}/chat/create`,
         {
-          name: "",
+          firstName: selectedUser.firstName,
+          lastName: selectedUser.lastName,
           isGroupChat: false,
           participantIds: [selectedUser.id, user.id],
         },

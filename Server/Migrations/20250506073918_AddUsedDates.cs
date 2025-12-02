@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-
+using System.Diagnostics.CodeAnalysis;
 #nullable disable
 
 namespace Server.Migrations
 {
     /// <inheritdoc />
+    [ExcludeFromCodeCoverage]
     public partial class AddUsedDates : Migration
     {
         /// <inheritdoc />

@@ -50,8 +50,14 @@ export const authApi = {
         Linking.openURL(`${LOGIN_ENDPOINT}/facebook-login`);
     },
 
-    register: async (email: string, password: string) => {
-        const response = await axios.post(`${LOGIN_ENDPOINT}/register`, { email, password });
+    register: async (email: string, password: string, firstName: string, lastName: string, theme: string = "light") => {
+        const response = await axios.post(`${LOGIN_ENDPOINT}/register`, {
+            email,
+            password,
+            firstName,
+            lastName,
+            theme
+        });
         return response.data;
     },
 

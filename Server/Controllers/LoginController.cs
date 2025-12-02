@@ -65,8 +65,8 @@ public class LoginController : ControllerBase
             {
                 Console.WriteLine($"Error: {error.Code} - {error.Description}");
             }
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            return BadRequest(new { errors });
+            List<string> errors = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(errors);
         }
 
         // Check if this is the first user and make them an admin
@@ -89,7 +89,7 @@ public class LoginController : ControllerBase
         }
 
         var token = await _tokenService.CreateTokenAsync(user);
-        return Ok(new { token });
+        return Ok(token);
     }
 
     [HttpPost("login")]
@@ -103,7 +103,7 @@ public class LoginController : ControllerBase
         if (!result.Succeeded) return Unauthorized("Invalid credentials");
 
         var token = await _tokenService.CreateTokenAsync(user);
-        return Ok(new { token });
+        return Ok(token);
     }
 
     [HttpGet("google-login")]
@@ -222,10 +222,10 @@ public class LoginController : ControllerBase
 
             await _signInManager.SignOutAsync();
 
-            return Ok(new
+            return Ok(new LogoutResponseDto
             {
-                message = "Logged out successfully",
-                token = token
+                Message = "Logged out successfully",
+                Token = token
             });
         }
         catch (Exception ex)
@@ -258,7 +258,7 @@ public class LoginController : ControllerBase
             var result = await _userManager.AddToRoleAsync(user, "Admin");
 
             if (!result.Succeeded)
-                return BadRequest(result.Errors);
+                return BadRequest("Failed to assign admin role");
 
             return Ok($"User {userId} has been set as Admin");
         }
@@ -272,4 +272,10 @@ public class LoginController : ControllerBase
     {
         public string IdToken { get; set; }
     }
+}
+
+public class LogoutResponseDto
+{
+    public string Message { get; set; }
+    public string Token { get; set; }
 }

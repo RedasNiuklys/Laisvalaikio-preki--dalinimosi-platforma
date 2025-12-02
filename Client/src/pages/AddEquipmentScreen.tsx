@@ -5,9 +5,9 @@ import { useRouter } from "expo-router";
 import {
   CreateEquipmentDto,
   Equipment,
-  EquipmentImage,
   UpdateEquipmentDto,
 } from "../types/Equipment";
+import { EquipmentImage } from "../types/EquipmentImage";
 import { Location } from "../types/Location";
 import { Category } from "../types/Category";
 import { getByOwner } from "../api/locationApi";
@@ -20,6 +20,7 @@ import { ImageList } from "../components/ImageList";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
 type AddEquipmentScreenProps = {
   initialLocation?: {
@@ -36,6 +37,7 @@ export default function AddEquipmentScreen({
   const theme = useTheme();
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -50,7 +52,7 @@ export default function AddEquipmentScreen({
     locationId: "",
     condition: "Good",
     category: { id: 0, name: "", iconName: "", categoryId: 0 },
-    status: "Available",
+    IsAvailable: true,
   });
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function AddEquipmentScreen({
         locationId: data.locationId,
         condition: data.condition,
         category: data.category,
-        status: "Available",
+        IsAvailable: data.IsAvailable,
       });
       setSelectedLocationId(data.locationId);
       setSelectedCategoryId(
@@ -81,14 +83,14 @@ export default function AddEquipmentScreen({
       );
       if (data.images) {
         setEquipmentImages(data.images);
-        setImageUrls(data.images.map((img) => img.imageUrl));
+        setImageUrls(data.images.map((img) => img.url));
       }
     } catch (error) {
       console.error("Failed to load equipment:", error);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Failed to load equipment",
+        text1: t("common.error"),
+        text2: t("equipment.form.errors.loadFailed"),
       });
     }
   };
@@ -153,8 +155,8 @@ export default function AddEquipmentScreen({
       if (status !== "granted") {
         Toast.show({
           type: "error",
-          text1: "Permission needed",
-          text2: "Please grant permission to access your photos",
+          text1: t("equipment.form.errors.permissionNeeded"),
+          text2: t("equipment.form.errors.photoPermission"),
         });
         return;
       }
@@ -189,8 +191,8 @@ export default function AddEquipmentScreen({
             const newImage: EquipmentImage = {
               id: "", // This will be set by the server
               equipmentId: "", // This will be set when equipment is created
-              imageUrl: imageUrl,
-              isMainImage: equipmentImages.length === 0, // First image is main by default
+              url: imageUrl,
+              isMain: equipmentImages.length === 0, // First image is main by default
               createdAt: new Date(),
               updatedAt: new Date(),
             };
@@ -200,14 +202,14 @@ export default function AddEquipmentScreen({
         );
 
         setEquipmentImages([...equipmentImages, ...newImages]);
-        setImageUrls([...imageUrls, ...newImages.map((img) => img.imageUrl)]);
+        setImageUrls([...imageUrls, ...newImages.map((img) => img.url)]);
       }
     } catch (error) {
       console.error("Error picking image:", error);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Failed to pick image",
+        text1: t("common.error"),
+        text2: t("equipment.form.errors.pickImage"),
       });
     }
   };
@@ -219,9 +221,9 @@ export default function AddEquipmentScreen({
       // Only handle file system operations on native platforms
       if (
         Platform.OS !== "web" &&
-        imageToRemove.imageUrl.startsWith(FileSystem.cacheDirectory || "")
+        imageToRemove.url.startsWith(FileSystem.cacheDirectory || "")
       ) {
-        await FileSystem.deleteAsync(imageToRemove.imageUrl, {
+        await FileSystem.deleteAsync(imageToRemove.url, {
           idempotent: true,
         });
       }
@@ -232,8 +234,8 @@ export default function AddEquipmentScreen({
       console.error("Error removing image:", error);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Failed to remove image",
+        text1: t("common.error"),
+        text2: t("equipment.form.errors.removeImage"),
       });
     }
   };
@@ -249,8 +251,8 @@ export default function AddEquipmentScreen({
     ) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Please fill in all required fields",
+        text1: t("common.error"),
+        text2: t("equipment.form.errors.requiredFields"),
       });
       return;
     }
@@ -262,8 +264,8 @@ export default function AddEquipmentScreen({
       if (!selectedCategory) {
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: "Please select a valid category",
+          text1: t("common.error"),
+          text2: t("equipment.form.errors.invalidCategory"),
         });
         return;
       }
@@ -273,8 +275,8 @@ export default function AddEquipmentScreen({
         description: equipment.description,
         locationId: selectedLocationId,
         category: selectedCategory,
-        status: equipment.status,
         condition: equipment.condition,
+        IsAvailable: equipment.IsAvailable,
       };
       console.log("equipmentData", equipmentData);
       console.log("equipmentImages", equipmentImages);
@@ -305,8 +307,7 @@ export default function AddEquipmentScreen({
               //console.log
               if (image.id.length > 0) {
                 // New image
-                console.log("New image");
-                await uploadImage(equipmentId, image.imageUrl, index === 0);
+                await uploadImage(equipmentId, image.url, index === 0);
               }
             })
           );
@@ -322,11 +323,7 @@ export default function AddEquipmentScreen({
               //console.log
               image.equipmentId = createdEquipment.id || "";
               //console.log
-              await uploadImage(
-                createdEquipment.id,
-                image.imageUrl,
-                index === 0
-              );
+              await uploadImage(createdEquipment.id, image.url, index === 0);
             })
           );
         }
@@ -334,11 +331,10 @@ export default function AddEquipmentScreen({
 
       router.back();
     } catch (error) {
-      console.error("Failed to save equipment:", error);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Failed to save equipment",
+        text1: t("common.error"),
+        text2: t("equipment.form.errors.saveFailed"),
       });
     } finally {
       setLoading(false);
@@ -351,14 +347,14 @@ export default function AddEquipmentScreen({
     >
       <ScrollView style={styles.scrollView}>
         <TextInput
-          label="Name"
+          label={t("equipment.form.name")}
           value={equipment.name}
           onChangeText={(text) => setEquipment({ ...equipment, name: text })}
           style={styles.input}
           textColor={theme.colors.onSurface}
         />
         <TextInput
-          label="Description"
+          label={t("equipment.form.description")}
           value={equipment.description}
           onChangeText={(text) =>
             setEquipment({ ...equipment, description: text })
@@ -369,7 +365,7 @@ export default function AddEquipmentScreen({
           textColor={theme.colors.onSurface}
         />
         <Text style={[styles.label, { color: theme.colors.onSurface }]}>
-          Category
+          {t("equipment.form.category")}
         </Text>
         <View
           style={[
@@ -399,7 +395,7 @@ export default function AddEquipmentScreen({
           </Picker>
         </View>
         <Text style={[styles.label, { color: theme.colors.onSurface }]}>
-          Location
+          {t("equipment.form.location")}
         </Text>
         <View
           style={[
@@ -436,10 +432,10 @@ export default function AddEquipmentScreen({
           style={styles.button}
           textColor={theme.colors.primary}
         >
-          Create New Location
+          {t("equipment.form.createLocation")}
         </Button>
         <Text style={[styles.label, { color: theme.colors.onSurface }]}>
-          Images
+          {t("equipment.form.images")}
         </Text>
         <ImageList
           images={imageUrls}
@@ -453,7 +449,9 @@ export default function AddEquipmentScreen({
           disabled={loading}
           style={styles.submitButton}
         >
-          {equipmentId ? "Update Equipment" : "Add Equipment"}
+          {equipmentId
+            ? t("equipment.form.submit.update")
+            : t("equipment.form.submit.add")}
         </Button>
       </ScrollView>
     </View>

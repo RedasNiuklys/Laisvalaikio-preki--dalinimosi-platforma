@@ -99,7 +99,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       // Update theme in database if user is authenticated
       if (isAuthenticated && user) {
-        await updateUserThemePreference(user.id as string, newTheme ? "dark" : "light");
+        await updateUserThemePreference(newTheme ? "dark" : "light");
       }
     } catch (error) {
       console.error("Error saving theme:", error);

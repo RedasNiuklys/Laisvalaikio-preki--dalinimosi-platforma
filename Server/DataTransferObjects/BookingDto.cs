@@ -28,6 +28,12 @@ namespace Server.DataTransferObjects
         public string? Notes { get; set; }
     }
 
+    public class UpdateBookingStatusDto
+    {
+        [Required]
+        public BookingStatus Status { get; set; }
+    }
+
     public class BookingResponseDto
     {
         public string Id { get; set; }

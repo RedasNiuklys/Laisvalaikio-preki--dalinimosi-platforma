@@ -154,7 +154,10 @@ public class ChatHub : Hub
         {
             var messageRead = new MessageRead
             {
+                Id = Guid.NewGuid().ToString(),
                 MessageId = messageId,
+                Message = message,
+                User = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId),
                 UserId = userId,
                 ReadAt = DateTime.UtcNow
             };

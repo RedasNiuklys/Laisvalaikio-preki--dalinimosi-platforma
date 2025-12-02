@@ -8,7 +8,8 @@
     <CollectCoverage>true</CollectCoverage>
     <CoverletOutputFormat>cobertura</CoverletOutputFormat>
     <CoverletOutput>./TestResults/</CoverletOutput>
-    <ExcludeByFile>**/Program.cs,**/Startup.cs,**/Migrations/*.cs</ExcludeByFile>
+    <ExcludeByFile>**/Program.cs,**/Startup.cs,**/Migrations/**/*.cs</ExcludeByFile>
+    <ExcludeByAttribute>ExcludeFromCodeCoverage</ExcludeByAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    
   </ItemGroup>
 
   <ItemGroup>
