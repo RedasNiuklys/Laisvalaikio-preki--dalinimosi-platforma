@@ -34,7 +34,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // Configure URLs
-builder.WebHost.UseUrls("http://localhost:5000", "http://10.151.2.109:5000");
+builder.WebHost.UseUrls("http://localhost:5000", "http://10.151.26.44:5000");
 
 // // Configure Kestrel
 // builder.WebHost.ConfigureKestrel(serverOptions =>
