@@ -16,13 +16,11 @@ import {
   List,
   RadioButton,
 } from "react-native-paper";
-import CountryFlag from "react-native-country-flag";
 
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
-import { router } from "expo-router";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "@/src/i18n";
@@ -127,7 +125,7 @@ export default function SettingsScreen() {
               updateSettings({ ...settings, language: "en" });
             }}
           >
-            <CountryFlag isoCode="GB" size={24} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 24, marginRight: 8 }}>🇬🇧</Text>
             <RadioButton
               value="en"
               status={settings.language === "en" ? "checked" : "unchecked"}
@@ -148,7 +146,7 @@ export default function SettingsScreen() {
               updateSettings({ ...settings, language: "lt" });
             }}
           >
-            <CountryFlag isoCode="LT" size={24} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 24, marginRight: 8 }}>🇱🇹</Text>
             <RadioButton
               value="lt"
               status={settings.language === "lt" ? "checked" : "unchecked"}

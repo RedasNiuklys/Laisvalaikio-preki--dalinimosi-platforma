@@ -33,12 +33,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure URLs
-<<<<<<< HEAD
-builder.WebHost.UseUrls("http://localhost:5000", "http://10.151.26.44:5000");
-=======
-builder.WebHost.UseUrls("http://10.151.2.109:5000", "http://10.151.2.109:8081");
->>>>>>> 38d1a4506f88137b5577706e4cf7967370fa061c
+// Configure URLs - Listen on all interfaces to allow phone connections
+// Using port 8000 to avoid FortiClient blocking common ports
+builder.WebHost.UseUrls("http://0.0.0.0:8000"); // Listen on all interfaces
 
 // // Configure Kestrel
 // builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -144,9 +141,40 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Equipment Sharing API", Version = "v1" });
+
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 System.Console.WriteLine("Building app");
 var app = builder.Build();
@@ -154,6 +182,19 @@ System.Console.WriteLine("Building app done");
 
 // Use CORS before any other middleware
 app.UseCors("CorsPolicy");
+
+// Add request logging middleware
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"=== INCOMING REQUEST ===");
+    Console.WriteLine($"Method: {context.Request.Method}");
+    Console.WriteLine($"Path: {context.Request.Path}");
+    Console.WriteLine($"From: {context.Connection.RemoteIpAddress}");
+    Console.WriteLine($"Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+    await next();
+    Console.WriteLine($"Response Status: {context.Response.StatusCode}");
+    Console.WriteLine("======================");
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -165,6 +206,23 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add health check endpoint (no auth required)
+app.MapGet("/health", () => new
+{
+    status = "healthy",
+    timestamp = DateTime.UtcNow,
+    environment = builder.Environment.EnvironmentName,
+    version = "1.0.0"
+}).WithName("HealthCheck").WithOpenApi();
+
+// Add info endpoint (no auth required)
+app.MapGet("/", () => new
+{
+    message = "Equipment Sharing API",
+    docs = "/swagger",
+    health = "/health"
+}).WithName("ApiInfo").WithOpenApi();
 
 // Map SignalR hub
 System.Console.WriteLine("Mapping SignalR hub");

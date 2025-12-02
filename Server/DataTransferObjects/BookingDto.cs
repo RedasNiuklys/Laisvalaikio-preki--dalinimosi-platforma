@@ -7,15 +7,13 @@ namespace Server.DataTransferObjects
     public class CreateBookingDto
     {
         [Required]
-        public string EquipmentId { get; set; }
+        public required string EquipmentId { get; set; }
 
         [Required]
         public DateTime StartDateTime { get; set; }
 
         [Required]
         public DateTime EndDateTime { get; set; }
-
-        [Required]
 
         public string? Notes { get; set; }
     }
@@ -36,9 +34,9 @@ namespace Server.DataTransferObjects
 
     public class BookingResponseDto
     {
-        public string Id { get; set; }
-        public string EquipmentId { get; set; }
-        public string UserId { get; set; }
+        public required string Id { get; set; }
+        public required string EquipmentId { get; set; }
+        public required string UserId { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
         public BookingStatus Status { get; set; }
@@ -47,7 +45,7 @@ namespace Server.DataTransferObjects
         public DateTime? UpdatedAt { get; set; }
 
         // Include related data
-        public EquipmentResponseDto Equipment { get; set; }
-        public UserResponseDto User { get; set; }
+        public required EquipmentResponseDto Equipment { get; set; }
+        public required UserResponseDto User { get; set; }
     }
 }

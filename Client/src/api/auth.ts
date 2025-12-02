@@ -8,17 +8,70 @@ import { Platform } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
+// Add axios interceptors for debugging
+axios.interceptors.request.use(
+    (config) => {
+        console.log('📤 Axios Request:', {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            data: config.data ? 'Present' : 'None'
+        });
+        return config;
+    },
+    (error) => {
+        console.error('❌ Axios Request Error:', error);
+        return Promise.reject(error);
+    }
+);
+
+axios.interceptors.response.use(
+    (response) => {
+        console.log('📥 Axios Response:', {
+            status: response.status,
+            url: response.config.url,
+            data: response.data ? 'Present' : 'None'
+        });
+        return response;
+    },
+    (error) => {
+        console.error('❌ Axios Response Error:', {
+            message: error.message,
+            status: error.response?.status,
+            url: error.config?.url,
+            data: error.response?.data
+        });
+        return Promise.reject(error);
+    }
+);
+
 export const authApi = {
     login: async (email: string, password: string) => {
-        console.log("Login started");
-        const response = await axios.post(`${LOGIN_ENDPOINT}/login`, { email, password });
-        return response.data;
+        try {
+            console.log("=== LOGIN API CALL ===");
+            console.log("Login endpoint:", LOGIN_ENDPOINT);
+            console.log("Full URL:", LOGIN_ENDPOINT + "/loginUser");
+            console.log("Request payload:", { email, password: "***" });
+
+            const response = await axios.post(LOGIN_ENDPOINT + "/loginUser", { email, password });
+
+            console.log("Login response status:", response.status);
+            console.log("Login response data:", response.data);
+            return response.data;
+        } catch (error: any) {
+            console.error("=== LOGIN ERROR ===");
+            console.error("Error message:", error.message);
+            console.error("Error response:", error.response?.data);
+            console.error("Error status:", error.response?.status);
+            console.error("Error config:", error.config?.url);
+            throw error;
+        }
     },
 
     googleLogin: async () => {
         if (Platform.OS === 'web') {
             // For web, use the server-side flow
-            Linking.openURL(`${LOGIN_ENDPOINT}/google-login`);
+            Linking.openURL(`${LOGIN_ENDPOINT.replace('/login', '')}/google-login`);
         } else {
             try {
                 //console.log
@@ -31,7 +84,7 @@ export const authApi = {
                     const { id_token } = result.params;
 
                     // Send the token to your server
-                    const serverResponse = await axios.post(`${LOGIN_ENDPOINT}/google-mobile`, {
+                    const serverResponse = await axios.post(`${LOGIN_ENDPOINT.replace('/login', '')}/google-mobile`, {
                         idToken: id_token
                     });
 
@@ -47,11 +100,12 @@ export const authApi = {
     },
 
     facebookLogin: () => {
-        Linking.openURL(`${LOGIN_ENDPOINT}/facebook-login`);
+        Linking.openURL(`${LOGIN_ENDPOINT.replace('/login', '')}/facebook-login`);
     },
 
     register: async (email: string, password: string, firstName: string, lastName: string, theme: string = "light") => {
-        const response = await axios.post(`${LOGIN_ENDPOINT}/register`, {
+        console.log("Register endpoint:", `${LOGIN_ENDPOINT.replace('/login', '')}/register`);
+        const response = await axios.post(`${LOGIN_ENDPOINT.replace('/login', '')}/register`, {
             email,
             password,
             firstName,
@@ -64,7 +118,7 @@ export const authApi = {
     logout: async () => {
         const token = await AsyncStorage.getItem('token');
         const response = await axios.post(
-            `${LOGIN_ENDPOINT}/logout`,
+            `${LOGIN_ENDPOINT.replace('/login', '')}/logout`,
             {},
             {
                 headers: {

@@ -41,6 +41,8 @@ public class LoginController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
+        Console.WriteLine("=== REGISTER ENDPOINT HIT ===");
+        Console.WriteLine($"Request from: {HttpContext.Connection.RemoteIpAddress}");
         Console.WriteLine("Registering user {0} {1} {2} {3} {4}", dto.Email, dto.UserName, dto.FirstName, dto.LastName, dto.Theme, dto.Password);
         var user = new ApplicationUser
         {
@@ -92,9 +94,12 @@ public class LoginController : ControllerBase
         return Ok(token);
     }
 
-    [HttpPost("login")]
+    [HttpPost("loginUser")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        Console.WriteLine("=== LOGIN ENDPOINT HIT ===");
+        Console.WriteLine($"Request from: {HttpContext.Connection.RemoteIpAddress}");
+        Console.WriteLine($"Email: {dto.Email}");
         Console.WriteLine("Login started");
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null) return Unauthorized("Invalid credentials");

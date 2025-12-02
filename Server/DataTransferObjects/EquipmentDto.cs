@@ -7,34 +7,32 @@ namespace Server.DataTransferObjects
 {
     public class CreateEquipmentDto
     {
-
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         [StringLength(500)]
-        public string Description { get; set; }
+        public required string Description { get; set; }
 
         [Required]
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
         [Required]
-        public string Condition { get; set; }
+        public required string Condition { get; set; }
 
         [Required]
         public bool IsAvailable { get; set; }
 
-
         [Required]
-        public string LocationId { get; set; }
+        public required string LocationId { get; set; }
         public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }
 
     public class UpdateEquipmentDto : CreateEquipmentDto
     {
-        public string Status { get; set; }
+        public string? Status { get; set; }
     }
 
     public class EquipmentResponseDto

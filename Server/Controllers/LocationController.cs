@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
 using Server.Models;
+using AutoMapper;
 
 namespace Server.Controllers
 {
@@ -14,10 +15,12 @@ namespace Server.Controllers
     public class LocationController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public LocationController(ApplicationDbContext context)
+        public LocationController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Location
@@ -26,34 +29,20 @@ namespace Server.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             Console.WriteLine($"Current User ID: {userId}");
-            List<LocationResponseDto> locations = new List<LocationResponseDto>();
+            // List<LocationResponseDto> locations = new List<LocationResponseDto>();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            locations = await _context.Locations
+            var locations = await _context.Locations
                 .Where(l => l.UserId == userId)
-                .Select(l => new LocationResponseDto
-                {
-                    Id = l.Id,
-                    Name = l.Name,
-                    Description = l.Description,
-                    StreetAddress = l.StreetAddress,
-                    City = l.City,
-                    State = l.State,
-                    PostalCode = l.PostalCode,
-                    Country = l.Country,
-                    Latitude = l.Latitude,
-                    Longitude = l.Longitude,
-                    UserId = l.UserId,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
-                })
                 .ToListAsync();
 
-            Console.WriteLine($"Found {locations.Count} locations for user {userId}");
-            return Ok(locations);
+            var dtos = _mapper.Map<List<LocationResponseDto>>(locations);
+
+            Console.WriteLine($"Found {dtos.Count} locations for user {userId}");
+            return Ok(dtos);
         }
 
         // GET: api/Location/5
@@ -62,31 +51,15 @@ namespace Server.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var location = await _context.Locations
-                .Where(l => l.Id == id && l.UserId == userId)
-                .Select(l => new LocationResponseDto
-                {
-                    Id = l.Id,
-                    Name = l.Name,
-                    Description = l.Description,
-                    StreetAddress = l.StreetAddress,
-                    City = l.City,
-                    State = l.State,
-                    PostalCode = l.PostalCode,
-                    Country = l.Country,
-                    Latitude = l.Latitude,
-                    Longitude = l.Longitude,
-                    UserId = l.UserId,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
 
             if (location == null)
             {
                 return NotFound();
             }
 
-            return Ok(location);
+            var dto = _mapper.Map<LocationResponseDto>(location);
+            return Ok(dto);
         }
 
         // POST: api/Location
@@ -141,44 +114,20 @@ namespace Server.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             System.Console.WriteLine("Came to CreateLocation");
 
-            var location = new Location
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = createLocationDto.Name,
-                Description = createLocationDto.Description,
-                StreetAddress = createLocationDto.StreetAddress,
-                City = createLocationDto.City,
-                State = createLocationDto.State,
-                PostalCode = createLocationDto.PostalCode,
-                Country = createLocationDto.Country,
-                Latitude = createLocationDto.Latitude,
-                Longitude = createLocationDto.Longitude,
-                UserId = userId,
-                CreatedAt = DateTime.UtcNow
-            };
+            var location = _mapper.Map<Location>(createLocationDto);
+            location.Id = Guid.NewGuid().ToString();
+            location.UserId = userId;
+            location.CreatedAt = DateTime.UtcNow;
 
             _context.Locations.Add(location);
             await _context.SaveChangesAsync();
 
+            var responseDto = _mapper.Map<LocationResponseDto>(location);
+
             return CreatedAtAction(
                 nameof(GetLocation),
                 new { id = location.Id },
-                new LocationResponseDto
-                {
-                    Id = location.Id,
-                    Name = location.Name,
-                    Description = location.Description,
-                    StreetAddress = location.StreetAddress,
-                    City = location.City,
-                    State = location.State,
-                    PostalCode = location.PostalCode,
-                    Country = location.Country,
-                    Latitude = location.Latitude,
-                    Longitude = location.Longitude,
-                    UserId = location.UserId,
-                    CreatedAt = location.CreatedAt,
-                    UpdatedAt = location.UpdatedAt
-                });
+                responseDto);
         }
 
         // Patch: api/Location/5
@@ -227,15 +176,16 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            location.Name = updateLocationDto.Name;
-            location.Description = updateLocationDto.Description;
-            location.StreetAddress = updateLocationDto.StreetAddress;
-            location.City = updateLocationDto.City;
-            location.State = updateLocationDto.State;
-            location.PostalCode = updateLocationDto.PostalCode;
-            location.Country = updateLocationDto.Country;
-            location.Latitude = updateLocationDto.Latitude;
-            location.Longitude = updateLocationDto.Longitude;
+            // Map only non-null properties
+            if (updateLocationDto.Name != null) location.Name = updateLocationDto.Name;
+            if (updateLocationDto.Description != null) location.Description = updateLocationDto.Description;
+            if (updateLocationDto.StreetAddress != null) location.StreetAddress = updateLocationDto.StreetAddress;
+            if (updateLocationDto.City != null) location.City = updateLocationDto.City;
+            if (updateLocationDto.State != null) location.State = updateLocationDto.State;
+            if (updateLocationDto.PostalCode != null) location.PostalCode = updateLocationDto.PostalCode;
+            if (updateLocationDto.Country != null) location.Country = updateLocationDto.Country;
+            if (updateLocationDto.Latitude.HasValue) location.Latitude = updateLocationDto.Latitude;
+            if (updateLocationDto.Longitude.HasValue) location.Longitude = updateLocationDto.Longitude;
             location.UpdatedAt = DateTime.UtcNow;
 
             try
@@ -284,25 +234,10 @@ namespace Server.Controllers
         {
             var locations = await _context.Locations
                 .Where(l => l.UserId == id)
-                .Select(l => new LocationResponseDto
-                {
-                    Id = l.Id,
-                    Name = l.Name,
-                    Description = l.Description,
-                    StreetAddress = l.StreetAddress,
-                    City = l.City,
-                    State = l.State,
-                    PostalCode = l.PostalCode,
-                    Country = l.Country,
-                    Latitude = l.Latitude,
-                    Longitude = l.Longitude,
-                    UserId = l.UserId,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
-                })
                 .ToListAsync();
 
-            return locations;
+            var dtos = _mapper.Map<List<LocationResponseDto>>(locations);
+            return dtos;
         }
     }
 }

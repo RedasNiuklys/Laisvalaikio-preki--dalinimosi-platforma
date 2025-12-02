@@ -1,18 +1,7 @@
-import { Stack, Tabs } from "expo-router";
-import {
-  Ionicons,
-  MaterialIcons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useAuth } from "@/src/context/AuthContext";
-import LoginScreen from "@/src/pages/auth/LoginPage";
-import RegisterScreen from "@/src/pages/auth/RegisterPage";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import {
-  NavigationContainer,
-  NavigationIndependentTree,
-} from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useEffect, useState } from "react";
@@ -20,11 +9,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AuthLayout from "../(auth)/_layout";
 
 export default function TabLayout() {
-  const Stack = createNativeStackNavigator();
   const { t } = useTranslation();
   const { settings } = useSettings();
   const theme = useTheme();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {

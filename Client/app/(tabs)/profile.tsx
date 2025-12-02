@@ -1,23 +1,13 @@
 import React, { useEffect } from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ProfileScreen from "../../src/pages/ProfileScreen";
-import UserFormScreen from "../../src/pages/UserFormScreen";
-import { useTheme } from "react-native-paper";
 import { Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useAuth } from "@/src/context/AuthContext";
+import { Stack } from "expo-router";
+import { useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
-export type ProfileStackParamList = {
-  Profile: undefined;
-  UserForm: { userId?: number } | undefined; // Optionally pass a userId for editing
-};
-
-const Stack = createNativeStackNavigator<ProfileStackParamList>();
-
-export default function ProfileStack() {
+export default function ProfileScreenWrapper() {
   const theme = useTheme();
-  const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -38,23 +28,15 @@ export default function ProfileStack() {
   };
 
   return (
-    <Stack.Navigator
-      initialRouteName="Profile"
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.onBackground,
-      }}
-    >
+    <>
       <Stack.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: t("profile.title") }}
+        options={{
+          title: t("profile.title"),
+          headerStyle: { backgroundColor: theme.colors.background },
+          headerTintColor: theme.colors.onBackground,
+        }}
       />
-      <Stack.Screen
-        name="UserForm"
-        component={UserFormScreen}
-        options={{ title: t("common.buttons.edit") }}
-      />
-    </Stack.Navigator>
+      <ProfileScreen />
+    </>
   );
 }

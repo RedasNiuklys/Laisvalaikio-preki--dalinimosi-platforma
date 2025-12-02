@@ -1,115 +1,7 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet } from "react-native";
 import { Location } from "../types/Location";
 import { GOOGLE_API_KEY } from "../utils/envConfig";
-import { useTheme } from "react-native-paper";
-
-// Declare google maps types
-declare global {
-  interface Window {
-    google: typeof google;
-  }
-}
-
-const containerStyle = {
-  width: "100%",
-  height: "400px",
-};
-
-// Map styles for light and dark themes
-const mapStyles = {
-  light: [],
-  dark: [
-    {
-      elementType: "geometry",
-      stylers: [{ color: "#242f3e" }],
-    },
-    {
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#746855" }],
-    },
-    {
-      elementType: "labels.text.stroke",
-      stylers: [{ color: "#242f3e" }],
-    },
-    {
-      featureType: "administrative.locality",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#d59563" }],
-    },
-    {
-      featureType: "poi",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#d59563" }],
-    },
-    {
-      featureType: "poi.park",
-      elementType: "geometry",
-      stylers: [{ color: "#263c3f" }],
-    },
-    {
-      featureType: "poi.park",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#6b9a76" }],
-    },
-    {
-      featureType: "road",
-      elementType: "geometry",
-      stylers: [{ color: "#38414e" }],
-    },
-    {
-      featureType: "road",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#212a37" }],
-    },
-    {
-      featureType: "road",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#9ca5b3" }],
-    },
-    {
-      featureType: "road.highway",
-      elementType: "geometry",
-      stylers: [{ color: "#746855" }],
-    },
-    {
-      featureType: "road.highway",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#1f2835" }],
-    },
-    {
-      featureType: "road.highway",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#f3d19c" }],
-    },
-    {
-      featureType: "transit",
-      elementType: "geometry",
-      stylers: [{ color: "#2f3948" }],
-    },
-    {
-      featureType: "transit.station",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#d59563" }],
-    },
-    {
-      featureType: "water",
-      elementType: "geometry",
-      stylers: [{ color: "#17263c" }],
-    },
-    {
-      featureType: "water",
-      elementType: "labels.text.fill",
-      stylers: [{ color: "#515c6d" }],
-    },
-    {
-      featureType: "water",
-      elementType: "labels.text.stroke",
-      stylers: [{ color: "#17263c" }],
-    },
-  ],
-};
 
 interface WebMapProps {
   onLocationSelect: (location: Location) => void;
@@ -120,137 +12,174 @@ interface WebMapProps {
   selectedLocation: Location | null;
 }
 
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
+
 export default function WebMap({
   onLocationSelect,
-  initialPosition = { lat: 54.903929466398154, lng: 23.957888105144654 },
+  initialPosition,
   locations = [],
   onLocationClick,
   isAddingLocation = false,
   selectedLocation = null,
 }: WebMapProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: GOOGLE_API_KEY,
-  });
+  const [map, setMap] = useState<any>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
+  const [currentPosition, setCurrentPosition] = useState(
+    initialPosition || { lat: 54.903929466398154, lng: 23.957888105144654 }
+  );
 
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [center, setCenter] = useState(initialPosition);
-  const [zoom, setZoom] = useState(13);
-  const theme = useTheme();
-  const isDark = theme.dark;
+  // Get user's current location
+  useEffect(() => {
+    if (!initialPosition && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentPosition({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log("Error getting location:", error);
+          // Keep default position if geolocation fails
+        }
+      );
+    }
+  }, [initialPosition]);
 
-  React.useEffect(() => {
-    if (selectedLocation) {
-      setCenter({
-        lat: selectedLocation.latitude || 0,
-        lng: selectedLocation.longitude || 0,
+  useEffect(() => {
+    // Load Google Maps script
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+
+    window.initMap = () => {
+      const mapInstance = new window.google.maps.Map(
+        document.getElementById("map"),
+        {
+          center: currentPosition,
+          zoom: 13,
+          styles: [], // Can add dark mode styles here
+        }
+      );
+
+      // Add click listener for adding locations
+      mapInstance.addListener("click", (e: any) => {
+        if (isAddingLocation) {
+          const newLocation: Location = {
+            latitude: e.latLng.lat(),
+            longitude: e.latLng.lng(),
+            name: "",
+            streetAddress: "",
+            city: "",
+            country: "",
+            userId: "",
+          };
+          onLocationSelect(newLocation);
+        }
       });
-      setZoom(15);
-    }
-  }, [selectedLocation]);
 
-  const handleClick = (e: google.maps.MapMouseEvent) => {
-    if (isAddingLocation && e.latLng) {
-      const newLocation: Location = {
-        latitude: e.latLng.lat(),
-        longitude: e.latLng.lng(),
-        name: "",
-        streetAddress: "",
-        city: "",
-        country: "",
-        userId: "",
-      };
-      onLocationSelect(newLocation);
-    }
-  };
+      setMap(mapInstance);
+    };
 
-  const onLoad = React.useCallback((map: google.maps.Map) => {
-    setMap(map);
-  }, []);
+    document.head.appendChild(script);
 
-  const onUnmount = React.useCallback(() => {
-    setMap(null);
-  }, []);
+    return () => {
+      document.head.removeChild(script);
+      delete window.initMap;
+    };
+  }, [currentPosition]);
 
-  if (!isLoaded)
-    return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
-    );
+  // Update markers when locations or selectedLocation change
+  useEffect(() => {
+    if (!map || !window.google) return;
 
-  return (
-    <View style={styles.container}>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={zoom}
-        onClick={handleClick}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={{
-          zoomControl: true,
-          streetViewControl: false,
-          mapTypeControl: true,
-          fullscreenControl: false,
-          styles: isDark ? mapStyles.dark : mapStyles.light,
-        }}
-      >
-        {/* Display existing location markers */}
-        {locations.map((location, index) =>
-          location.latitude && location.longitude ? (
-            <Marker
-              key={index}
-              position={{
-                lat: location.latitude || 0,
-                lng: location.longitude || 0,
-              }}
-              onClick={() => onLocationClick(location)}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor:
-                  selectedLocation?.id === location.id ? "#FF0000" : "#3498db",
-                fillOpacity: 1,
-                strokeWeight: 2,
-                strokeColor: "#FFFFFF",
-              }}
-            />
-          ) : null
-        )}
+    // Clear existing markers
+    markers.forEach((marker) => marker.setMap(null));
+    const newMarkers: any[] = [];
 
-        {/* Initial position marker */}
-        <Marker
-          position={initialPosition}
-          icon={{
-            path: google.maps.SymbolPath.CIRCLE,
+    // Add initial position marker
+    const initialMarker = new window.google.maps.Marker({
+      position: currentPosition,
+      map: map,
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: "#2ecc71",
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: "#FFFFFF",
+      },
+    });
+    newMarkers.push(initialMarker);
+
+    // Add location markers
+    locations.forEach((location) => {
+      if (location.latitude && location.longitude) {
+        const marker = new window.google.maps.Marker({
+          position: { lat: location.latitude, lng: location.longitude },
+          map: map,
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
             scale: 8,
-            fillColor: "#2ecc71",
+            fillColor:
+              selectedLocation?.id === location.id ? "#FF0000" : "#3498db",
             fillOpacity: 1,
             strokeWeight: 2,
             strokeColor: "#FFFFFF",
-          }}
-        />
+          },
+        });
 
-        {/* Selected location marker (if not in locations array) */}
-        {selectedLocation &&
-          !locations.find((l) => l.id === selectedLocation.id) && (
-            <Marker
-              position={{
-                lat: selectedLocation.latitude || 0,
-                lng: selectedLocation.longitude || 0,
-              }}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: "#FF0000",
-                fillOpacity: 1,
-                strokeWeight: 2,
-                strokeColor: "#FFFFFF",
-              }}
-            />
-          )}
-      </GoogleMap>
+        marker.addListener("click", () => onLocationClick(location));
+        newMarkers.push(marker);
+      }
+    });
+
+    // Add selected location marker if not in locations
+    if (
+      selectedLocation &&
+      !locations.find((l) => l.id === selectedLocation.id)
+    ) {
+      const selectedMarker = new window.google.maps.Marker({
+        position: {
+          lat: selectedLocation.latitude || 0,
+          lng: selectedLocation.longitude || 0,
+        },
+        map: map,
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#FF0000",
+          fillOpacity: 1,
+          strokeWeight: 2,
+          strokeColor: "#FFFFFF",
+        },
+      });
+      newMarkers.push(selectedMarker);
+    }
+
+    setMarkers(newMarkers);
+  }, [map, locations, selectedLocation, onLocationClick, isAddingLocation]);
+
+  // Pan to selected location
+  useEffect(() => {
+    if (map && selectedLocation) {
+      map.panTo({
+        lat: selectedLocation.latitude || 0,
+        lng: selectedLocation.longitude || 0,
+      });
+      map.setZoom(15);
+    }
+  }, [map, selectedLocation]);
+
+  return (
+    <View style={styles.container}>
+      <div id="map" style={{ width: "100%", height: "100%" }} />
     </View>
   );
 }
