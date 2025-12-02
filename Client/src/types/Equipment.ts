@@ -1,16 +1,9 @@
+import { Booking } from './Booking';
+import { Category } from './Category';
 import { Location } from './Location';
-import { UsedDates } from './UsedDates';
+import { EquipmentImage } from './EquipmentImage';
 
 export type EquipmentCondition = 'Good' | 'Fair' | 'Poor' | 'Needs Repair';
-
-export interface EquipmentImage {
-    id: number;
-    equipmentId: string;
-    imageUrl: string;
-    isMainImage: boolean;
-    createdAt: Date;
-    updatedAt?: Date;
-}
 
 export interface MaintenanceRecord {
     id: number;
@@ -37,26 +30,39 @@ export interface Equipment {
     id: string;
     name: string;
     description: string;
-    category: string;
+    ownerId: string;
+    category: Category;
+    categoryId: number;
+    tags: string[];
     condition: string;
+    isAvailable: boolean;
     locationId: string;
     location: Location;
-    images?: EquipmentImage[];
-    usedDates?: UsedDates[];
-    ownerId: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt?: string;
+    bookings: Booking[];
+    maintenanceHistory: MaintenanceRecord[];
+    images: EquipmentImage[];
 }
+
+// export interface Category {
+//     id: number;
+//     name: string;
+//     iconName: string;
+//     parentCategoryId?: number;
+//     createdAt: Date;
+//     updatedAt: Date;
+// }
 
 export interface CreateEquipmentDto {
     name: string;
     description: string;
-    category: string;
+    category: Category;
     condition: string;
     locationId: string;
     images?: EquipmentImage[];
 }
 
 export interface UpdateEquipmentDto extends CreateEquipmentDto {
-    status?: string;
+    isAvailable?: boolean;
 } 

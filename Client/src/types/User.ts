@@ -1,9 +1,17 @@
 export interface User {
-  id?: string;
-  name: string;
+  id: string;
+  userName: string;
   email: string;
-  age: number;
-  avatarUrl: string;
-  theme: string;
-  roles?: string[];
+  firstName: string;
+  lastName: string;
+  profileImage?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface UpdateUserDto {
+  userName?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
 }
