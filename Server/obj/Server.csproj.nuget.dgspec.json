@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj": {}
+    "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\Server.csproj": {}
   },
   "projects": {
-    "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj": {
+    "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj",
+        "projectUniqueName": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\Server.csproj",
         "projectName": "Server",
-        "projectPath": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\Server.csproj",
-        "packagesPath": "C:\\Users\\redniu\\.nuget\\packages\\",
-        "outputPath": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\obj\\",
+        "projectPath": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\Server.csproj",
+        "packagesPath": "C:\\Users\\redas\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\redniu\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\redas\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

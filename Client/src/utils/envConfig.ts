@@ -1,5 +1,5 @@
 // Default values (will be overridden by server config)
-const LOCAL_IP = '10.151.2.109';
+const LOCAL_IP = '10.151.26.44';
 const API_PORT = '5000';
 
 const getBaseUrl = () => {
