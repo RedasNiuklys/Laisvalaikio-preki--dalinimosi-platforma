@@ -3,3 +3,5 @@ bin/*
 obj/*
 *.ppk
 node_modules/*
+./bin/
+./obj/

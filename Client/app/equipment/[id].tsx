@@ -10,18 +10,14 @@ import {
 } from "react-native-paper";
 import {
   useLocalSearchParams,
-  useNavigation,
-  Stack,
-  router,
+  useRouter,
 } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Equipment } from "@/src/types/Equipment";
 import * as equipmentApi from "@/src/api/equipmentApi";
 import * as userApi from "@/src/api/userApi";
 import { showToast } from "@/src/components/Toast";
-import { useAuth } from "@/src/context/AuthContext";
 import DateSelector from "@/src/components/DateSelector";
-import { format } from "date-fns";
 import { User } from "@/src/types/User";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -32,13 +28,13 @@ export default function EquipmentCardScreen() {
   const [loading, setLoading] = useState(true);
   const [owner, setOwner] = useState<User | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const navigation = useNavigation();
+  const router = useRouter();
   const theme = useTheme();
   const { t } = useTranslation();
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchEquipment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchEquipment = async () => {
@@ -89,129 +85,121 @@ export default function EquipmentCardScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: t("equipment.details.title"),
-          headerShown: true,
-        }}
-      />
-      <ScrollView
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
-      >
-        {/* Image Slider */}
-        {equipment.images && equipment.images.length > 0 && (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: equipment.images[currentImageIndex].imageUrl }}
-              style={styles.image}
-              resizeMode="contain"
-            />
-            {equipment.images.length > 1 && (
-              <>
-                <IconButton
-                  icon="chevron-left"
-                  size={30}
-                  onPress={handlePreviousImage}
-                  style={[styles.navButton, styles.leftButton]}
-                />
-                <IconButton
-                  icon="chevron-right"
-                  size={30}
-                  onPress={handleNextImage}
-                  style={[styles.navButton, styles.rightButton]}
-                />
-                <View style={styles.imageCounter}>
-                  <Text style={styles.imageCounterText}>
-                    {currentImageIndex + 1} / {equipment.images.length}
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
-        )}
-
-        <View style={styles.content}>
-          {/* Basic Information */}
-          <Card style={styles.section}>
-            <Card.Content>
-              <Text variant="headlineMedium">{equipment.name}</Text>
-              <Text variant="bodyLarge" style={styles.description}>
-                {equipment.description}
-              </Text>
-              <Text variant="bodyMedium">
-                {t("equipment.details.category")}: {equipment.category}
-              </Text>
-              <Text variant="bodyMedium">
-                {t("equipment.details.condition")}: {equipment.condition}
-              </Text>
-              <Text variant="bodyMedium">
-                {t("equipment.details.owner")}: {owner?.name}
-              </Text>
-            </Card.Content>
-          </Card>
-
-          {/* Location Information */}
-          <Card style={styles.section}>
-            <Card.Content>
-              <Text variant="titleMedium">{t("location.title")}</Text>
-              <Text variant="bodyMedium">{equipment.location.name}</Text>
-              <Text variant="bodyMedium">
-                {equipment.location.streetAddress}
-              </Text>
-              <Text variant="bodyMedium">
-                {equipment.location.city}, {equipment.location.country}
-              </Text>
-              <Button
-                mode="contained"
-                onPress={() => {
-                  // TODO: Implement map navigation
-                }}
-                icon="map-marker"
-                style={styles.mapButton}
-              >
-                {t("location.showOnMap")}
-              </Button>
-            </Card.Content>
-          </Card>
-
-          {/* Used Dates */}
-          <Card style={styles.section}>
-            <Card.Content>
-              <Text variant="titleMedium">
-                {t("equipment.details.usedDates")}
-              </Text>
-              <DateSelector
-                equipmentId={equipment.id}
-                onDateSelect={(startDate, endDate) => {
-                  // Handle date selection
-                }}
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      {/* Image Slider */}
+      {equipment.images && equipment.images.length > 0 && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: equipment.images[currentImageIndex].url }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+          {equipment.images.length > 1 && (
+            <>
+              <IconButton
+                icon="chevron-left"
+                size={30}
+                onPress={handlePreviousImage}
+                style={[styles.navButton, styles.leftButton]}
               />
-            </Card.Content>
-          </Card>
+              <IconButton
+                icon="chevron-right"
+                size={30}
+                onPress={handleNextImage}
+                style={[styles.navButton, styles.rightButton]}
+              />
+              <View style={styles.imageCounter}>
+                <Text style={styles.imageCounterText}>
+                  {currentImageIndex + 1} / {equipment.images.length}
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+      )}
 
-          {/* Action Buttons */}
-          <View style={styles.actions}>
+      <View style={styles.content}>
+        {/* Basic Information */}
+        <Card style={styles.section}>
+          <Card.Content>
+            <Text variant="headlineMedium">{equipment.name}</Text>
+            <Text variant="bodyLarge" style={styles.description}>
+              {equipment.description}
+            </Text>
+            <Text variant="bodyMedium">
+              {t("equipment.details.category")}: {typeof equipment.category === 'object' ? equipment.category.name : equipment.category}
+            </Text>
+            <Text variant="bodyMedium">
+              {t("equipment.details.condition")}: {equipment.condition}
+            </Text>
+            <Text variant="bodyMedium">
+              {t("equipment.details.owner")}: {owner?.userName || `${owner?.firstName || ''} ${owner?.lastName || ''}`.trim() || owner?.email}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        {/* Location Information */}
+        <Card style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium">{t("location.title")}</Text>
+            <Text variant="bodyMedium">{equipment.location.name}</Text>
+            <Text variant="bodyMedium">
+              {equipment.location.streetAddress}
+            </Text>
+            <Text variant="bodyMedium">
+              {equipment.location.city}, {equipment.location.country}
+            </Text>
             <Button
               mode="contained"
-              onPress={() => router.push(`/equipment/edit/${equipment.id}`)}
-              icon="pencil"
-              style={styles.actionButton}
+              onPress={() => {
+                // TODO: Implement map navigation
+              }}
+              icon="map-marker"
+              style={styles.mapButton}
             >
-              {t("common.buttons.edit")}
+              {t("location.showOnMap")}
             </Button>
-            <Button
-              mode="contained-tonal"
-              onPress={() => router.push("/equipment")}
-              icon="arrow-left"
-              style={styles.actionButton}
-            >
-              {t("common.buttons.back")}
-            </Button>
-          </View>
+          </Card.Content>
+        </Card>
+
+        {/* Used Dates */}
+        <Card style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium">
+              {t("equipment.details.usedDates")}
+            </Text>
+            <DateSelector
+              equipmentId={equipment.id}
+              onDateSelect={(startDate, endDate) => {
+                // Handle date selection
+              }}
+            />
+          </Card.Content>
+        </Card>
+
+        {/* Action Buttons */}
+        <View style={styles.actions}>
+          <Button
+            mode="contained"
+            onPress={() => router.push(`/equipment/edit/${equipment.id}`)}
+            icon="pencil"
+            style={styles.actionButton}
+          >
+            {t("common.buttons.edit")}
+          </Button>
+          <Button
+            mode="contained-tonal"
+            onPress={() => router.push("/equipment")}
+            icon="arrow-left"
+            style={styles.actionButton}
+          >
+            {t("common.buttons.back")}
+          </Button>
         </View>
-      </ScrollView>
-    </>
+      </View>
+    </ScrollView>
   );
 }
 

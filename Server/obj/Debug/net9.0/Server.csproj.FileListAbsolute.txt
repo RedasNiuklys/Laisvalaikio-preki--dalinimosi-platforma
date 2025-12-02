@@ -834,3 +834,5 @@ C:\Laisvalaikio-preki--dalinimosi-platforma\Server\obj\Debug\net9.0\refint\Serve
 C:\Laisvalaikio-preki--dalinimosi-platforma\Server\obj\Debug\net9.0\Server.pdb
 C:\Laisvalaikio-preki--dalinimosi-platforma\Server\obj\Debug\net9.0\Server.genruntimeconfig.cache
 C:\Laisvalaikio-preki--dalinimosi-platforma\Server\obj\Debug\net9.0\ref\Server.dll
+C:\Laisvalaikio-preki--dalinimosi-platforma\Server\bin\Debug\net9.0\AutoMapper.dll
+C:\Laisvalaikio-preki--dalinimosi-platforma\Server\bin\Debug\net9.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

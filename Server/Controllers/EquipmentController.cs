@@ -5,6 +5,7 @@ using Server.DataTransferObjects;
 using Server.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Cors;
+using AutoMapper;
 
 namespace Server.Controllers
 {
@@ -15,13 +16,16 @@ namespace Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
         public EquipmentController(
             ApplicationDbContext context,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IMapper mapper)
         {
             _context = context;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         private static string GetFullImageUrl(string relativeUrl, IConfiguration configuration)
@@ -72,53 +76,24 @@ namespace Server.Controllers
                     .Include(e => e.Location)
                     .Include(e => e.Images)
                     .Include(e => e.Category)
-                    .Select(e => new EquipmentResponseDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Description = e.Description,
-                        Category = new CategoryDto
-                        {
-                            Id = e.Category.Id,
-                            Name = e.Category.Name,
-                            IconName = e.Category.IconName,
-                            ParentCategoryId = e.Category.ParentCategoryId
-                        },
-                        Condition = e.Condition,
-                        OwnerId = e.OwnerId,
-                        IsAvailable = e.IsAvailable,
-                        CreatedAt = e.CreatedAt,
-                        UpdatedAt = e.UpdatedAt,
-                        Location = new LocationDto
-                        {
-                            Id = e.Location.Id,
-                            Name = e.Location.Name,
-                            Description = e.Location.Description,
-                            StreetAddress = e.Location.StreetAddress,
-                            City = e.Location.City,
-                            State = e.Location.State,
-                            PostalCode = e.Location.PostalCode,
-                            Country = e.Location.Country,
-                            Latitude = e.Location.Latitude,
-                            Longitude = e.Location.Longitude,
-                            UserId = e.Location.UserId,
-                            CreatedAt = e.Location.CreatedAt,
-                            UpdatedAt = e.Location.UpdatedAt
-                        },
-                        Images = e.Images.Select(i => new EquipmentImageDto
-                        {
-                            Id = i.Id,
-                            EquipmentId = i.EquipmentId,
-                            ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
-                            IsMainImage = i.IsMainImage,
-                            CreatedAt = i.CreatedAt,
-                            UpdatedAt = i.UpdatedAt
-                        }).ToList()
-                    })
                     .ToListAsync();
 
-                System.Console.WriteLine($"Found {equipment.Count} equipment items");
-                return Ok(equipment);
+                var dtos = _mapper.Map<List<EquipmentResponseDto>>(equipment);
+
+                // Transform image URLs to full URLs
+                foreach (var dto in dtos)
+                {
+                    if (dto.Images != null)
+                    {
+                        foreach (var image in dto.Images)
+                        {
+                            image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                        }
+                    }
+                }
+
+                System.Console.WriteLine($"Found {dtos.Count} equipment items");
+                return Ok(dtos);
             }
             catch (Exception ex)
             {
@@ -144,61 +119,18 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            return new EquipmentResponseDto
+            var dto = _mapper.Map<EquipmentResponseDto>(equipment);
+
+            // Transform image URLs to full URLs
+            if (dto.Images != null)
             {
-                Id = equipment.Id,
-                Name = equipment.Name,
-                Description = equipment.Description,
-                Category = new CategoryDto
+                foreach (var image in dto.Images)
                 {
-                    Id = equipment.Category.Id,
-                    Name = equipment.Category.Name,
-                    IconName = equipment.Category.IconName,
-                    ParentCategoryId = equipment.Category.ParentCategoryId
-                },
-                Condition = equipment.Condition,
-                OwnerId = equipment.OwnerId,
-                IsAvailable = equipment.IsAvailable,
-                CreatedAt = equipment.CreatedAt,
-                UpdatedAt = equipment.UpdatedAt,
-                Location = new LocationDto
-                {
-                    Id = equipment.Location.Id,
-                    Name = equipment.Location.Name,
-                    Description = equipment.Location.Description,
-                    StreetAddress = equipment.Location.StreetAddress,
-                    City = equipment.Location.City,
-                    State = equipment.Location.State,
-                    PostalCode = equipment.Location.PostalCode,
-                    Country = equipment.Location.Country,
-                    Latitude = equipment.Location.Latitude,
-                    Longitude = equipment.Location.Longitude,
-                    UserId = equipment.Location.UserId,
-                    CreatedAt = equipment.Location.CreatedAt,
-                    UpdatedAt = equipment.Location.UpdatedAt
-                },
-                Images = equipment.Images.Select(i => new EquipmentImageDto
-                {
-                    Id = i.Id,
-                    EquipmentId = i.EquipmentId,
-                    ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
-                    IsMainImage = i.IsMainImage,
-                    CreatedAt = i.CreatedAt,
-                    UpdatedAt = i.UpdatedAt
-                }).ToList(),
-                Bookings = equipment.Bookings.Select(b => new BookingDto
-                {
-                    Id = b.Id,
-                    EquipmentId = b.EquipmentId,
-                    UserId = b.UserId,
-                    StartDateTime = b.StartDateTime,
-                    EndDateTime = b.EndDateTime,
-                    Status = b.Status.ToString(),
-                    Notes = b.Notes,
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt
-                }).ToList()
-            };
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                }
+            }
+
+            return dto;
         }
         // POST: api/Equipment/{id}/images
         [HttpPost("{id}/images")]
@@ -281,18 +213,11 @@ namespace Server.Controllers
                 return Unauthorized();
             }
 
-            var equipment = new Equipment
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = createDto.Name,
-                Description = createDto.Description,
-                Category = createDto.Category,
-                Condition = createDto.Condition,
-                OwnerId = userId,
-                LocationId = createDto.LocationId,
-                IsAvailable = true,
-                CreatedAt = DateTime.UtcNow
-            };
+            var equipment = _mapper.Map<Equipment>(createDto);
+            equipment.Id = Guid.NewGuid().ToString();
+            equipment.OwnerId = userId;
+            equipment.IsAvailable = true;
+            equipment.CreatedAt = DateTime.UtcNow;
             Console.WriteLine("Equipment created");
 
             _context.Equipment.Add(equipment);
@@ -314,43 +239,25 @@ namespace Server.Controllers
                     _context.EquipmentImages.Add(equipmentImage);
                 }
             }
+            // Reload equipment with related data for response
+            await _context.Entry(equipment).Reference(e => e.Location).LoadAsync();
+            await _context.Entry(equipment).Reference(e => e.Category).LoadAsync();
+
+            var responseDto = _mapper.Map<EquipmentResponseDto>(equipment);
+
+            // Transform image URLs to full URLs
+            if (responseDto.Images != null)
+            {
+                foreach (var image in responseDto.Images)
+                {
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                }
+            }
+
             return CreatedAtAction(
                 nameof(GetEquipment),
                 new { id = equipment.Id },
-                new EquipmentResponseDto
-                {
-                    Id = equipment.Id,
-                    Name = equipment.Name,
-                    Description = equipment.Description,
-                    Category = new CategoryDto
-                    {
-                        Id = equipment.Category.Id,
-                        Name = equipment.Category.Name,
-                        IconName = equipment.Category.IconName,
-                        ParentCategoryId = equipment.Category.ParentCategoryId
-                    },
-                    Condition = equipment.Condition,
-                    OwnerId = equipment.OwnerId,
-                    IsAvailable = equipment.IsAvailable,
-                    CreatedAt = equipment.CreatedAt,
-                    UpdatedAt = equipment.UpdatedAt,
-                    Location = new LocationDto
-                    {
-                        Id = equipment.Location.Id,
-                        Name = equipment.Location.Name,
-                        Description = equipment.Location.Description,
-                        StreetAddress = equipment.Location.StreetAddress,
-                        City = equipment.Location.City,
-                        State = equipment.Location.State,
-                        PostalCode = equipment.Location.PostalCode,
-                        Country = equipment.Location.Country,
-                        Latitude = equipment.Location.Latitude,
-                        Longitude = equipment.Location.Longitude,
-                        UserId = equipment.Location.UserId,
-                        CreatedAt = equipment.Location.CreatedAt,
-                        UpdatedAt = equipment.Location.UpdatedAt
-                    }
-                });
+                responseDto);
         }
 
         // PUT: api/Equipment/5
@@ -449,53 +356,25 @@ namespace Server.Controllers
             var equipment = await _context.Equipment
                 .Include(e => e.Location)
                 .Include(e => e.Images)
+                .Include(e => e.Category)
                 .Where(e => e.OwnerId == userId)
-                .Select(e => new EquipmentResponseDto
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Description = e.Description,
-                    Category = new CategoryDto
-                    {
-                        Id = e.Category.Id,
-                        Name = e.Category.Name,
-                        IconName = e.Category.IconName,
-                        ParentCategoryId = e.Category.ParentCategoryId
-                    },
-                    Condition = e.Condition,
-                    OwnerId = e.OwnerId,
-                    IsAvailable = e.IsAvailable,
-                    CreatedAt = e.CreatedAt,
-                    UpdatedAt = e.UpdatedAt,
-                    Location = new LocationDto
-                    {
-                        Id = e.Location.Id,
-                        Name = e.Location.Name,
-                        Description = e.Location.Description,
-                        StreetAddress = e.Location.StreetAddress,
-                        City = e.Location.City,
-                        State = e.Location.State,
-                        PostalCode = e.Location.PostalCode,
-                        Country = e.Location.Country,
-                        Latitude = e.Location.Latitude,
-                        Longitude = e.Location.Longitude,
-                        UserId = e.Location.UserId,
-                        CreatedAt = e.Location.CreatedAt,
-                        UpdatedAt = e.Location.UpdatedAt
-                    },
-                    Images = e.Images.Select(i => new EquipmentImageDto
-                    {
-                        Id = i.Id,
-                        EquipmentId = i.EquipmentId,
-                        ImageUrl = GetFullImageUrl(i.ImageUrl, _configuration),
-                        IsMainImage = i.IsMainImage,
-                        CreatedAt = i.CreatedAt,
-                        UpdatedAt = i.UpdatedAt
-                    }).ToList()
-                })
                 .ToListAsync();
 
-            return equipment;
+            var dtos = _mapper.Map<List<EquipmentResponseDto>>(equipment);
+
+            // Transform image URLs to full URLs
+            foreach (var dto in dtos)
+            {
+                if (dto.Images != null)
+                {
+                    foreach (var image in dto.Images)
+                    {
+                        image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                    }
+                }
+            }
+
+            return dtos;
         }
 
         private bool EquipmentExists(string id)

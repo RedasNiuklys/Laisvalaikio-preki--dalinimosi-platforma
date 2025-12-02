@@ -36,10 +36,14 @@ const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
       <View style={{ flex: 1 }}>
         <WebMap
           selectedLocation={selectedLocation}
-          initialPosition={{
-            lat: selectedLocation?.latitude ?? defaultCoordinates.latitude,
-            lng: selectedLocation?.longitude ?? defaultCoordinates.longitude,
-          }}
+          initialPosition={
+            selectedLocation?.latitude && selectedLocation?.longitude
+              ? {
+                lat: selectedLocation.latitude,
+                lng: selectedLocation.longitude,
+              }
+              : undefined
+          }
           onLocationSelect={onLocationSelect}
           locations={locations}
           onLocationClick={onLocationClick}

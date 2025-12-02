@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "BfSg9gwLYtxHZ83VYDeGnf38PPBQMfGhXbIFTgIzGso=",
+  "Hash": "m0Tdxpg3yGn4e4Xa4C6RT7ORvDkOjJbXafRk6wiMeyI=",
   "Source": "Server",
   "BasePath": "_content/Server",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "Server\\wwwroot",
       "Source": "Server",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/3750a32d-5304-42ba-ab06-e763a91573a6#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -38,10 +38,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/c56b9845-f045-4ec0-b900-498f8697d0da#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -59,10 +59,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/d6905336-b07a-42b0-b61b-159a50e13e3a#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -80,10 +80,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/f2aaec31-d42a-4c2e-8386-10107b7112a7#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -101,10 +101,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/129fa479-9971-486b-b295-d372667403d5#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -122,10 +122,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/25cb2918-f1e0-4d98-9391-6f81f75b7f3a#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -143,10 +143,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/85ad7f72-e39e-4735-9708-b1a380cce1c7#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -164,10 +164,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/c060a187-4103-492b-898a-bf1d94d9b669#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -185,10 +185,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/d6538f0f-b449-4b40-9aa7-d8eec219a58d#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -206,10 +206,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/dbcfa595-de9c-4424-982d-afeda8073387#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -227,10 +227,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/05a4ad9c-5bce-4305-903e-ebb019f32895#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -248,10 +248,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/0b24134c-99c5-45e1-bd66-ecd03b449b3e#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -269,10 +269,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/7670c47d-4917-470e-bf15-dd40201ddea3#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -290,10 +290,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/89a22669-e602-45b1-9103-bb4c7e99797e#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -311,10 +311,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/90e07c15-51b4-4f92-9756-64fad78ddbf6#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -332,10 +332,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5bcd498-a40d-4e60-813a-1c8f89254f5b#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -353,10 +353,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5ec2776-5fe5-4664-948c-e1942b996be0#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -374,10 +374,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cad70860-5a9f-43fa-ba40-7751e3553e6e#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -395,10 +395,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cccf45df-469b-4f7a-a200-31cf2ef08c23#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -416,10 +416,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/ea3b60bb-ad60-4007-bae4-65fca7034918#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -437,10 +437,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/f04fd205-e73b-4248-b81c-f14430d52266#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -458,10 +458,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/e6f13a79-1422-4f17-8da9-d4ad0992c9a3/ec1858d8-daa7-4938-a8b4-2c7cde5ca66f#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -479,10 +479,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg"
     },
     {
-      "Identity": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
+      "Identity": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
       "SourceId": "Server",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\",
+      "ContentRoot": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\",
       "BasePath": "_content/Server",
       "RelativePath": "uploads/avatars/fd98b39b-29cf-4468-a906-deefaf777250/f4d159c0-c9b0-49cf-949e-52013989b17b#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -503,7 +503,7 @@
   "Endpoints": [
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -524,7 +524,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 01 May 2025 20:16:01 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -540,7 +540,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/3750a32d-5304-42ba-ab06-e763a91573a6.ulgxlmybh0.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\3750a32d-5304-42ba-ab06-e763a91573a6.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -561,7 +561,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 01 May 2025 20:16:01 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -585,7 +585,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -606,7 +606,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:11:34 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -622,7 +622,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/c56b9845-f045-4ec0-b900-498f8697d0da.rrx0c0pbnz.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\c56b9845-f045-4ec0-b900-498f8697d0da.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -643,7 +643,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:11:34 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -667,7 +667,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/d6905336-b07a-42b0-b61b-159a50e13e3a.1nv4ff5dv3.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -688,7 +688,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:11:48 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -712,7 +712,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\d6905336-b07a-42b0-b61b-159a50e13e3a.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -733,7 +733,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:11:48 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -749,7 +749,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/f2aaec31-d42a-4c2e-8386-10107b7112a7.fb8zm5rmzu.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -770,7 +770,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:12:02 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -794,7 +794,7 @@
     },
     {
       "Route": "uploads/avatars/966612d6-fa5e-48d8-9713-49fb022ed69b/f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\966612d6-fa5e-48d8-9713-49fb022ed69b\\f2aaec31-d42a-4c2e-8386-10107b7112a7.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -815,7 +815,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 30 Apr 2025 00:12:02 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -831,7 +831,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/129fa479-9971-486b-b295-d372667403d5.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -852,7 +852,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:40 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -868,7 +868,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/129fa479-9971-486b-b295-d372667403d5.xwrxezghsx.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\129fa479-9971-486b-b295-d372667403d5.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -889,7 +889,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:40 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -913,7 +913,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -934,7 +934,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:59 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -950,7 +950,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/25cb2918-f1e0-4d98-9391-6f81f75b7f3a.p9pbzy4tq1.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\25cb2918-f1e0-4d98-9391-6f81f75b7f3a.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -971,7 +971,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:59 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -995,7 +995,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/85ad7f72-e39e-4735-9708-b1a380cce1c7.23gdnrffum.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1016,7 +1016,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:32 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1040,7 +1040,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\85ad7f72-e39e-4735-9708-b1a380cce1c7.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1061,7 +1061,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:32 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1077,7 +1077,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/c060a187-4103-492b-898a-bf1d94d9b669.hyt1c7lzee.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1098,7 +1098,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:50 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1122,7 +1122,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/c060a187-4103-492b-898a-bf1d94d9b669.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\c060a187-4103-492b-898a-bf1d94d9b669.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1143,7 +1143,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:24:50 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1159,7 +1159,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/d6538f0f-b449-4b40-9aa7-d8eec219a58d.23gdnrffum.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1180,7 +1180,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:21:51 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1204,7 +1204,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\d6538f0f-b449-4b40-9aa7-d8eec219a58d.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1225,7 +1225,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:21:51 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1241,7 +1241,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/dbcfa595-de9c-4424-982d-afeda8073387.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1262,7 +1262,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:22:13 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1278,7 +1278,7 @@
     },
     {
       "Route": "uploads/avatars/b4b09def-7575-44b7-b6e6-e9d59d0718b1/dbcfa595-de9c-4424-982d-afeda8073387.qmg5m63ye0.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b4b09def-7575-44b7-b6e6-e9d59d0718b1\\dbcfa595-de9c-4424-982d-afeda8073387.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1299,7 +1299,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Tue, 13 May 2025 20:22:13 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1323,7 +1323,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1344,7 +1344,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:10 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1360,7 +1360,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/05a4ad9c-5bce-4305-903e-ebb019f32895.q2w9ogpu34.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\05a4ad9c-5bce-4305-903e-ebb019f32895.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1381,7 +1381,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:10 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1405,7 +1405,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/0b24134c-99c5-45e1-bd66-ecd03b449b3e.f7bhxfa98m.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1426,7 +1426,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:34:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1450,7 +1450,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\0b24134c-99c5-45e1-bd66-ecd03b449b3e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1471,7 +1471,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:34:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1487,7 +1487,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/7670c47d-4917-470e-bf15-dd40201ddea3.f7bhxfa98m.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1508,7 +1508,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:05 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1532,7 +1532,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\7670c47d-4917-470e-bf15-dd40201ddea3.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1553,7 +1553,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:05 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1569,7 +1569,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1590,7 +1590,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:45:27 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1606,7 +1606,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/89a22669-e602-45b1-9103-bb4c7e99797e.ndmci7k1m2.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\89a22669-e602-45b1-9103-bb4c7e99797e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1627,7 +1627,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:45:27 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1651,7 +1651,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1672,7 +1672,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 19:21:09 GMT"
+          "Value": "Mon, 05 May 2025 13:21:47 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1688,7 +1688,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/90e07c15-51b4-4f92-9756-64fad78ddbf6.vq5b4k13mm.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\90e07c15-51b4-4f92-9756-64fad78ddbf6.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1709,7 +1709,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 19:21:09 GMT"
+          "Value": "Mon, 05 May 2025 13:21:47 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1733,7 +1733,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5bcd498-a40d-4e60-813a-1c8f89254f5b.f7bhxfa98m.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1754,7 +1754,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:16:03 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1778,7 +1778,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5bcd498-a40d-4e60-813a-1c8f89254f5b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1799,7 +1799,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:16:03 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1815,7 +1815,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5ec2776-5fe5-4664-948c-e1942b996be0.f7bhxfa98m.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1836,7 +1836,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:27:22 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1860,7 +1860,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\c5ec2776-5fe5-4664-948c-e1942b996be0.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1881,7 +1881,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:27:22 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1897,7 +1897,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cad70860-5a9f-43fa-ba40-7751e3553e6e.f7bhxfa98m.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1918,7 +1918,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:55:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1942,7 +1942,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cad70860-5a9f-43fa-ba40-7751e3553e6e.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1963,7 +1963,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:55:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1979,7 +1979,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2000,7 +2000,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:35 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2016,7 +2016,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/cccf45df-469b-4f7a-a200-31cf2ef08c23.ndmci7k1m2.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\cccf45df-469b-4f7a-a200-31cf2ef08c23.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2037,7 +2037,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:35 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2061,7 +2061,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/ea3b60bb-ad60-4007-bae4-65fca7034918.2l3nn87e0d.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2082,7 +2082,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:23 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2106,7 +2106,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\ea3b60bb-ad60-4007-bae4-65fca7034918.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2127,7 +2127,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:32:23 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2143,7 +2143,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/f04fd205-e73b-4248-b81c-f14430d52266.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2164,7 +2164,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:21:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2180,7 +2180,7 @@
     },
     {
       "Route": "uploads/avatars/b5acbd34-ac23-43d5-bdd2-616c44c21d3e/f04fd205-e73b-4248-b81c-f14430d52266.q2w9ogpu34.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\b5acbd34-ac23-43d5-bdd2-616c44c21d3e\\f04fd205-e73b-4248-b81c-f14430d52266.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2201,7 +2201,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 29 Apr 2025 23:21:25 GMT"
+          "Value": "Sun, 04 May 2025 22:05:36 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2225,7 +2225,7 @@
     },
     {
       "Route": "uploads/avatars/e6f13a79-1422-4f17-8da9-d4ad0992c9a3/ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2246,7 +2246,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 22:25:29 GMT"
+          "Value": "Thu, 08 May 2025 17:06:18 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2262,7 +2262,7 @@
     },
     {
       "Route": "uploads/avatars/e6f13a79-1422-4f17-8da9-d4ad0992c9a3/ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.kvop5gj776.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\e6f13a79-1422-4f17-8da9-d4ad0992c9a3\\ec1858d8-daa7-4938-a8b4-2c7cde5ca66f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2283,7 +2283,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 05 May 2025 22:25:29 GMT"
+          "Value": "Thu, 08 May 2025 17:06:18 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2307,7 +2307,7 @@
     },
     {
       "Route": "uploads/avatars/fd98b39b-29cf-4468-a906-deefaf777250/f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2328,7 +2328,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Thu, 08 May 2025 17:50:17 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2344,7 +2344,7 @@
     },
     {
       "Route": "uploads/avatars/fd98b39b-29cf-4468-a906-deefaf777250/f4d159c0-c9b0-49cf-949e-52013989b17b.p9pbzy4tq1.jpg",
-      "AssetFile": "C:\\Users\\redas\\Desktop\\Laisvalaikio_prekiu_dalinimosi_platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
+      "AssetFile": "C:\\Laisvalaikio-preki--dalinimosi-platforma\\Server\\wwwroot\\uploads\\avatars\\fd98b39b-29cf-4468-a906-deefaf777250\\f4d159c0-c9b0-49cf-949e-52013989b17b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2365,7 +2365,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 13 May 2025 20:52:06 GMT"
+          "Value": "Thu, 08 May 2025 17:50:17 GMT"
         },
         {
           "Name": "Cache-Control",

@@ -7,28 +7,28 @@ namespace Server.DataTransferObjects
     {
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [StringLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string StreetAddress { get; set; }
+        public required string StreetAddress { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string City { get; set; }
+        public required string City { get; set; }
 
         [StringLength(50)]
-        public string State { get; set; }
+        public string? State { get; set; }
 
         [StringLength(20)]
-        public string PostalCode { get; set; }
+        public string? PostalCode { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string Country { get; set; }
+        public required string Country { get; set; }
 
         [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90 degrees")]
         public double? Latitude { get; set; }
@@ -43,8 +43,8 @@ namespace Server.DataTransferObjects
 
     public class LocationResponseDto : CreateLocationDto
     {
-        public string Id { get; set; }
-        public string UserId { get; set; }
+        public required string Id { get; set; }
+        public required string UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

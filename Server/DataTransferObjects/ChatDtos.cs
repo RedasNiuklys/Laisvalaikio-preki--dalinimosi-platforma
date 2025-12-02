@@ -15,7 +15,7 @@ namespace Server.DataTransferObjects
 
     public class MessageDto
     {
-        public string Id { get; set; }
+        public required string Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime SentAt { get; set; }
         public UserDto Sender { get; set; } = new();
@@ -33,11 +33,11 @@ namespace Server.DataTransferObjects
 
     public class MessageResponseDto
     {
-        public string Id { get; set; }
-        public string Content { get; set; }
-        public string SentAt { get; set; }  // Using string to maintain ISO 8601 format
-        public UserDto Sender { get; set; }
-        public List<ReadReceiptDto> ReadBy { get; set; }
+        public required string Id { get; set; }
+        public required string Content { get; set; }
+        public required string SentAt { get; set; }  // Using string to maintain ISO 8601 format
+        public required UserDto Sender { get; set; }
+        public required List<ReadReceiptDto> ReadBy { get; set; }
     }
 
     public class ReadReceiptDto

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
 using Server.Models;
 using System.Security.Claims;
+using AutoMapper;
 
 namespace Server.Controllers
 {
@@ -13,10 +14,12 @@ namespace Server.Controllers
     public class BookingController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public BookingController(ApplicationDbContext context)
+        public BookingController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Booking
@@ -31,49 +34,13 @@ namespace Server.Controllers
 
             var bookings = await _context.Bookings
                 .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.UserId == userId)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    EquipmentId = b.EquipmentId,
-                    UserId = b.UserId,
-                    StartDateTime = b.StartDateTime,
-                    EndDateTime = b.EndDateTime,
-                    Status = b.Status,
-                    Notes = b.Notes,
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt,
-                    Equipment = new EquipmentResponseDto
-                    {
-                        Id = b.Equipment.Id,
-                        Name = b.Equipment.Name,
-                        Description = b.Equipment.Description,
-                        Category = new CategoryDto
-                        {
-                            Id = b.Equipment.Category.Id,
-                            Name = b.Equipment.Category.Name,
-                            IconName = b.Equipment.Category.IconName,
-                            ParentCategoryId = b.Equipment.Category.ParentCategoryId
-                        },
-                        Condition = b.Equipment.Condition,
-                        OwnerId = b.Equipment.OwnerId,
-                        IsAvailable = b.Equipment.IsAvailable,
-                        CreatedAt = b.Equipment.CreatedAt,
-                        UpdatedAt = b.Equipment.UpdatedAt
-                    },
-                    User = new UserResponseDto
-                    {
-                        Id = b.User.Id,
-                        UserName = b.User.UserName,
-                        Email = b.User.Email,
-                        FirstName = b.User.FirstName,
-                        LastName = b.User.LastName
-                    }
-                })
                 .ToListAsync();
 
-            return bookings;
+            var dtos = _mapper.Map<List<BookingResponseDto>>(bookings);
+            return dtos;
         }
 
         // GET: api/Booking/equipment/{equipmentId}
@@ -82,49 +49,13 @@ namespace Server.Controllers
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.EquipmentId == equipmentId)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    EquipmentId = b.EquipmentId,
-                    UserId = b.UserId,
-                    StartDateTime = b.StartDateTime,
-                    EndDateTime = b.EndDateTime,
-                    Status = b.Status,
-                    Notes = b.Notes,
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt,
-                    Equipment = new EquipmentResponseDto
-                    {
-                        Id = b.Equipment.Id,
-                        Name = b.Equipment.Name,
-                        Description = b.Equipment.Description,
-                        Category = new CategoryDto
-                        {
-                            Id = b.Equipment.Category.Id,
-                            Name = b.Equipment.Category.Name,
-                            IconName = b.Equipment.Category.IconName,
-                            ParentCategoryId = b.Equipment.Category.ParentCategoryId
-                        },
-                        Condition = b.Equipment.Condition,
-                        OwnerId = b.Equipment.OwnerId,
-                        IsAvailable = b.Equipment.IsAvailable,
-                        CreatedAt = b.Equipment.CreatedAt,
-                        UpdatedAt = b.Equipment.UpdatedAt
-                    },
-                    User = new UserResponseDto
-                    {
-                        Id = b.User.Id,
-                        UserName = b.User.UserName,
-                        Email = b.User.Email,
-                        FirstName = b.User.FirstName,
-                        LastName = b.User.LastName
-                    }
-                })
                 .ToListAsync();
 
-            return bookings;
+            var dtos = _mapper.Map<List<BookingResponseDto>>(bookings);
+            return dtos;
         }
 
         // GET: api/Booking/5
@@ -139,6 +70,7 @@ namespace Server.Controllers
 
             var booking = await _context.Bookings
                 .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
 
@@ -147,44 +79,7 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            return new BookingResponseDto
-            {
-                Id = booking.Id,
-                EquipmentId = booking.EquipmentId,
-                UserId = booking.UserId,
-                StartDateTime = booking.StartDateTime,
-                EndDateTime = booking.EndDateTime,
-                Status = booking.Status,
-                Notes = booking.Notes,
-                CreatedAt = booking.CreatedAt,
-                UpdatedAt = booking.UpdatedAt,
-                Equipment = new EquipmentResponseDto
-                {
-                    Id = booking.Equipment.Id,
-                    Name = booking.Equipment.Name,
-                    Description = booking.Equipment.Description,
-                    Category = new CategoryDto
-                    {
-                        Id = booking.Equipment.Category.Id,
-                        Name = booking.Equipment.Category.Name,
-                        IconName = booking.Equipment.Category.IconName,
-                        ParentCategoryId = booking.Equipment.Category.ParentCategoryId
-                    },
-                    Condition = booking.Equipment.Condition,
-                    OwnerId = booking.Equipment.OwnerId,
-                    IsAvailable = booking.Equipment.IsAvailable,
-                    CreatedAt = booking.Equipment.CreatedAt,
-                    UpdatedAt = booking.Equipment.UpdatedAt
-                },
-                User = new UserResponseDto
-                {
-                    Id = booking.User.Id,
-                    UserName = booking.User.UserName,
-                    Email = booking.User.Email,
-                    FirstName = booking.User.FirstName,
-                    LastName = booking.User.LastName
-                }
-            };
+            return _mapper.Map<BookingResponseDto>(booking);
         }
 
         // POST: api/Booking
@@ -216,36 +111,25 @@ namespace Server.Controllers
                 return BadRequest("Equipment is already booked for this time period");
             }
 
-            var booking = new Booking
-            {
-                Id = Guid.NewGuid().ToString(),
-                EquipmentId = createDto.EquipmentId,
-                UserId = userId,
-                StartDateTime = createDto.StartDateTime,
-                EndDateTime = createDto.EndDateTime,
-                Status = BookingStatus.Planning,
-                Notes = createDto.Notes,
-                CreatedAt = DateTime.UtcNow
-            };
+            var booking = _mapper.Map<Booking>(createDto);
+            booking.Id = Guid.NewGuid().ToString();
+            booking.UserId = userId;
+            booking.CreatedAt = DateTime.UtcNow;
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
+            // Reload with related data for response
+            await _context.Entry(booking).Reference(b => b.Equipment).LoadAsync();
+            await _context.Entry(booking).Reference(b => b.User).LoadAsync();
+            await _context.Entry(booking.Equipment).Reference(e => e.Category).LoadAsync();
+
+            var responseDto = _mapper.Map<BookingResponseDto>(booking);
+
             return CreatedAtAction(
                 nameof(GetBooking),
                 new { id = booking.Id },
-                new BookingResponseDto
-                {
-                    Id = booking.Id,
-                    EquipmentId = booking.EquipmentId,
-                    UserId = booking.UserId,
-                    StartDateTime = booking.StartDateTime,
-                    EndDateTime = booking.EndDateTime,
-                    Status = booking.Status,
-                    Notes = booking.Notes,
-                    CreatedAt = booking.CreatedAt,
-                    UpdatedAt = booking.UpdatedAt
-                });
+                responseDto);
         }
 
         // PUT: api/Booking/5
@@ -280,44 +164,7 @@ namespace Server.Controllers
             {
                 await _context.SaveChangesAsync();
 
-                return new BookingResponseDto
-                {
-                    Id = booking.Id,
-                    EquipmentId = booking.EquipmentId,
-                    UserId = booking.UserId,
-                    StartDateTime = booking.StartDateTime,
-                    EndDateTime = booking.EndDateTime,
-                    Status = booking.Status,
-                    Notes = booking.Notes,
-                    CreatedAt = booking.CreatedAt,
-                    UpdatedAt = booking.UpdatedAt,
-                    Equipment = new EquipmentResponseDto
-                    {
-                        Id = booking.Equipment.Id,
-                        Name = booking.Equipment.Name,
-                        Description = booking.Equipment.Description,
-                        Category = new CategoryDto
-                        {
-                            Id = booking.Equipment.Category.Id,
-                            Name = booking.Equipment.Category.Name,
-                            IconName = booking.Equipment.Category.IconName,
-                            ParentCategoryId = booking.Equipment.Category.ParentCategoryId
-                        },
-                        Condition = booking.Equipment.Condition,
-                        OwnerId = booking.Equipment.OwnerId,
-                        IsAvailable = booking.Equipment.IsAvailable,
-                        CreatedAt = booking.Equipment.CreatedAt,
-                        UpdatedAt = booking.Equipment.UpdatedAt
-                    },
-                    User = new UserResponseDto
-                    {
-                        Id = booking.User.Id,
-                        UserName = booking.User.UserName,
-                        Email = booking.User.Email,
-                        FirstName = booking.User.FirstName,
-                        LastName = booking.User.LastName
-                    }
-                };
+                return _mapper.Map<BookingResponseDto>(booking);
             }
             catch (DbUpdateConcurrencyException)
             {
