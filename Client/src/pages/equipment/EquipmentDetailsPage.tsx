@@ -18,11 +18,12 @@ import { Equipment } from "@/src/types/Equipment";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Booking } from '../../types/Booking';
-import { getBookingsForEquipment, createBooking } from '../../api/bookingApi';
+import { Booking, BookingStatus } from '../../types/Booking';
+import { getBookingsForEquipment, createBooking, updateBooking } from '../../api/bookingApi';
 import { deleteEquipment } from '../../api/equipmentApi';
 import BookingModal from "@/src/components/BookingModal";
-import BookingCard from "@/src/components/BookingCard";
+import BookingsCalendar from "@/src/components/BookingsCalendar";
+import BookingsListModal from "@/src/components/BookingsListModal";
 
 export default function EquipmentDetailsPage({ id }: { id: string }) {
     const [equipment, setEquipment] = useState<Equipment | null>(null);
@@ -33,19 +34,19 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [showBookingModal, setShowBookingModal] = useState(false);
+    const [showBookingsListModal, setShowBookingsListModal] = useState(false);
 
-    useEffect(() => {
-        fetchEquipmentDetails();
-        const loadBookings = async () => {
-            console.log("Loading bookings for equipment:", id);
-            if (equipment?.id) {
-                const data = await getBookingsForEquipment(equipment.id);
-                console.log("Bookings loaded:", data);
-                setBookings(data);
-            }
-        };
-        loadBookings();
-    }, [id]);
+    const loadBookings = async (equipmentId: string) => {
+        try {
+            console.log("Loading bookings for equipment:", equipmentId);
+            const data = await getBookingsForEquipment(equipmentId);
+            console.log("Bookings loaded:", data);
+            setBookings(data);
+        } catch (error) {
+            console.error("Error loading bookings:", error);
+            showToast("error", t("booking.error"));
+        }
+    };
 
     const fetchEquipmentDetails = async () => {
         try {
@@ -53,6 +54,8 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
             const data = await equipmentApi.getById(id as string);
             console.log("Equipment details:", data);
             setEquipment(data);
+            // Load bookings right after equipment is loaded
+            await loadBookings(data.id);
         } catch (error) {
             console.error("Error fetching equipment details:", error);
             showToast("error", t("equipment.errors.fetchFailed"));
@@ -60,6 +63,10 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchEquipmentDetails();
+    }, [id]);
 
     const handleDelete = async () => {
         if (!equipment) return;
@@ -81,16 +88,32 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                 equipmentId: equipment.id,
                 startDateTime: startDate.toISOString(),
                 endDateTime: endDate.toISOString(),
-                status: 'Pending',
+                status: BookingStatus.Pending,
                 notes: notes.trim()
             };
 
             await createBooking(newBooking);
-            await fetchEquipmentDetails(); // Refresh equipment details
+            // Reload bookings after creating a new one
+            await loadBookings(equipment.id);
             showToast("success", t("booking.success"));
         } catch (error) {
             console.error("Error creating booking:", error);
             showToast("error", t("booking.error"));
+        }
+    };
+
+    const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
+        try {
+            console.log('New status:', newStatus);
+            await updateBooking(bookingId, { status: newStatus });
+            // Refresh bookings after status update
+            if (equipment?.id) {
+                await loadBookings(equipment.id);
+            }
+            showToast("success", t("booking.actions.statusChanged"));
+        } catch (error) {
+            console.error("Error updating booking status:", error);
+            showToast("error", t("booking.actions.statusError"));
         }
     };
 
@@ -196,25 +219,34 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                                     <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
                                         {t("booking.title")}
                                     </Text>
-                                    {equipment && equipment.ownerId !== user?.id && (
+                                    <View style={styles.bookingActions}>
+                                        {equipment && equipment.ownerId !== user?.id && (
+                                            <Button
+                                                mode="contained-tonal"
+                                                onPress={() => setShowBookingModal(true)}
+                                                icon="plus"
+                                                style={styles.bookingButton}
+                                            >
+                                                {t("booking.create")}
+                                            </Button>
+                                        )}
                                         <Button
-                                            mode="contained-tonal"
-                                            onPress={() => setShowBookingModal(true)}
-                                            icon="plus"
+                                            mode="outlined"
+                                            onPress={() => setShowBookingsListModal(true)}
+                                            icon="format-list-bulleted"
                                         >
-                                            {t("booking.create")}
+                                            {t("booking.viewAll")}
                                         </Button>
-                                    )}
-                                </View>
-                                {bookings && bookings.length > 0 ? (
-                                    <View style={styles.bookingsList}>
-                                        {bookings.map((booking) => (
-                                            <BookingCard key={booking.id} booking={booking} />
-                                        ))}
                                     </View>
-                                ) : (
-                                    <Text style={{ color: theme.colors.onSurface }}>{t('booking.noBookings')}</Text>
-                                )}
+                                </View>
+
+                                <BookingsCalendar
+                                    bookings={bookings}
+                                    onDayPress={(date) => {
+                                        // You can add functionality here if needed
+                                        console.log("Selected date:", date);
+                                    }}
+                                />
                             </Card.Content>
                         </Card>
 
@@ -245,6 +277,15 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                 onDismiss={() => setShowBookingModal(false)}
                 onSubmit={handleCreateBooking}
                 equipmentName={equipment?.name || ''}
+            />
+
+            <BookingsListModal
+                visible={showBookingsListModal}
+                onDismiss={() => setShowBookingsListModal(false)}
+                bookings={bookings}
+                equipmentName={equipment?.name || ''}
+                equipmentOwnerId={equipment?.ownerId}
+                onStatusChange={handleStatusChange}
             />
         </>
     );
@@ -317,7 +358,11 @@ const styles = StyleSheet.create({
     deleteButton: {
         marginLeft: 8,
     },
-    bookingsList: {
-        marginTop: 12,
+    bookingActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    bookingButton: {
+        marginRight: 8,
     },
 }); 

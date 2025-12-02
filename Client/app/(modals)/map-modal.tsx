@@ -71,7 +71,7 @@ export default function MapModal() {
 
                 // Filter equipment by category if one is selected
                 const filtered = selectedCategory
-                    ? equipmentData.filter(item => relevantCategories.includes(item.category))
+                    ? equipmentData.filter(item => relevantCategories.includes(item.category.name))
                     : equipmentData;
 
                 setFilteredEquipment(filtered);
@@ -105,7 +105,7 @@ export default function MapModal() {
         if (!parentCategory) return [parentCategoryName];
 
         const childCategories = categoriesData
-            .filter(c => c.parentCategoryId === parentCategory.id)
+            .filter(c => c.categoryId === parentCategory.id)
             .map(c => c.name);
 
         return [parentCategoryName, ...childCategories];
@@ -216,7 +216,7 @@ export default function MapModal() {
                                     {item.name}
                                 </Text>
                                 <Text style={[globalStyles.tableCell, globalStyles.categoryCell, { color: theme.colors.onSurface }]} numberOfLines={1}>
-                                    {item.category}
+                                    {item.category.name}
                                 </Text>
                                 <Text style={[globalStyles.tableCell, globalStyles.addressCell, { color: theme.colors.onSurface }]} numberOfLines={2}>
                                     {item.location ? `${item.location.streetAddress}, ${item.location.city}` : '-'}

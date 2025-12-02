@@ -51,7 +51,8 @@ namespace Server.Tests.Controllers
                 Id = _currentUserId,
                 UserName = "currentuser@example.com",
                 Email = "currentuser@example.com",
-                Name = "Current User"
+                FirstName = "Current",
+                LastName = "User"
             };
 
             var otherUser = new ApplicationUser
@@ -59,7 +60,8 @@ namespace Server.Tests.Controllers
                 Id = _otherUserId,
                 UserName = "otheruser@example.com",
                 Email = "otheruser@example.com",
-                Name = "Other User"
+                FirstName = "Other",
+                LastName = "User"
             };
 
             await _context.Users.AddRangeAsync(currentUser, otherUser);
@@ -106,7 +108,8 @@ namespace Server.Tests.Controllers
                 Id = _currentUserId,
                 UserName = "currentuser@example.com",
                 Email = "currentuser@example.com",
-                Name = "Current User"
+                FirstName = "Current",
+                LastName = "User"
             };
 
             await _context.Users.AddAsync(currentUser);
@@ -154,7 +157,8 @@ namespace Server.Tests.Controllers
                 Id = _otherUserId,
                 UserName = "otheruser@example.com",
                 Email = "otheruser@example.com",
-                Name = "Other User"
+                FirstName = "Other",
+                LastName = "User"
             };
 
             await _context.Users.AddAsync(otherUser);
@@ -202,7 +206,8 @@ namespace Server.Tests.Controllers
                 Id = _currentUserId,
                 UserName = "currentuser@example.com",
                 Email = "currentuser@example.com",
-                Name = "Current User"
+                FirstName = "Current",
+                LastName = "User"
             };
 
             await _context.Users.AddAsync(currentUser);

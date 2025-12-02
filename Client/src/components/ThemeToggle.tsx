@@ -44,7 +44,7 @@ export default function ThemeToggle() {
             // If user is logged in, update their theme preference in the backend
             if (user?.id) {
                 try {
-                    await updateUserThemePreference(user.id, newTheme ? "dark" : "light");
+                    await updateUserThemePreference(newTheme ? "dark" : "light");
                     // Reload user data to ensure sync
                     await loadUser();
                 } catch (error) {

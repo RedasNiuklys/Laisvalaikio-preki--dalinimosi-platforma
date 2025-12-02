@@ -7,7 +7,9 @@ import { getAuthToken } from "../utils/authUtils";
 
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   email: string;
   avatar?: string;
 }
@@ -37,8 +39,6 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
   const fetchUsers = async () => {
     try {
       const token = await getAuthToken();
-      //console.log
-      "Fetching users with token:", token;
       const response = await axios.get(`${BASE_URL}/user/chat-users`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,7 +55,9 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
 
   const filteredUsers = users.filter(
     (user) =>
-      (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
       !excludeUsers.includes(user.id)
   );
@@ -94,7 +96,7 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <List.Item
-              title={item.name}
+              title={`${item.firstName} ${item.lastName}`}
               description={item.email}
               left={(props) => (
                 <Avatar.Image

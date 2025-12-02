@@ -258,27 +258,24 @@ public class UserController : ControllerBase
     }
 
     [Authorize]
-    [HttpPatch("{id}/theme-preference")]
-    public async Task<ActionResult<UserDto>> UpdateUserThemePreference([FromRoute] string id, [FromBody] ThemePreferenceDto themeDto)
+    [HttpPatch("theme-preference")]
+    public async Task<ActionResult<UserDto>> UpdateUserThemePreference([FromBody] ThemePreferenceDto themeDto)
     {
         try
         {
             // Verify the user is updating their own theme
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != id)
-            {
-                return Forbid();
-            }
 
-            var user = await _userManager.FindByIdAsync(id);
+
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
-                return NotFound($"User with ID {id} not found");
+                return NotFound($"User with ID {userId} not found");
 
             if (string.IsNullOrEmpty(themeDto.ThemePreference))
                 return BadRequest("Theme preference is required");
 
-            System.Console.WriteLine($"Updating theme preference for user {id} to {themeDto.ThemePreference}");
+            System.Console.WriteLine($"Updating theme preference for user {userId} to {themeDto.ThemePreference}");
             user.Theme = themeDto.ThemePreference;
             var result = await _userManager.UpdateAsync(user);
 

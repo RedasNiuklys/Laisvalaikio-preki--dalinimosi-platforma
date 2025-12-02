@@ -28,6 +28,8 @@ export default function RegisterPage() {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
+    const [firstName, setFirstName] = useState<string>("");
+    const [lastName, setLastName] = useState<string>("");
     const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
@@ -55,7 +57,13 @@ export default function RegisterPage() {
 
         try {
             setIsLoading(true);
-            await register(email, password);
+            await register(
+                email,
+                password,
+                firstName || undefined,
+                lastName || undefined,
+                theme.dark ? "dark" : "light"
+            );
             showToast("success", t("auth.register.success"));
             router.replace("/");
         } catch (err) {
@@ -99,6 +107,26 @@ export default function RegisterPage() {
                     >
                         {t("auth.register.title")}
                     </Text>
+
+                    <TextInput
+                        mode="outlined"
+                        label={t("auth.register.firstName")}
+                        value={firstName}
+                        onChangeText={setFirstName}
+                        style={{ marginBottom: spacing.md }}
+                        outlineStyle={{ borderRadius: 8 }}
+                        left={<TextInput.Icon icon="account" />}
+                    />
+
+                    <TextInput
+                        mode="outlined"
+                        label={t("auth.register.lastName")}
+                        value={lastName}
+                        onChangeText={setLastName}
+                        style={{ marginBottom: spacing.md }}
+                        outlineStyle={{ borderRadius: 8 }}
+                        left={<TextInput.Icon icon="account" />}
+                    />
 
                     <TextInput
                         mode="outlined"

@@ -54,7 +54,8 @@ namespace Server.Tests.Controllers
                 Id = _currentUserId,
                 UserName = "currentuser@example.com",
                 Email = "currentuser@example.com",
-                Name = "Current User"
+                FirstName = "Current",
+                LastName = "User"
             };
 
             var otherUser = new ApplicationUser
@@ -62,7 +63,8 @@ namespace Server.Tests.Controllers
                 Id = _otherUserId,
                 UserName = "otheruser@example.com",
                 Email = "otheruser@example.com",
-                Name = "Other User"
+                FirstName = "Other",
+                LastName = "User"
             };
 
             _context.Users.AddRange(currentUser, otherUser);
@@ -122,7 +124,8 @@ namespace Server.Tests.Controllers
 
             Assert.NotNull(friendObjectDict);
             Assert.Equal(_otherUserId, friendObjectDict["Id"].ToString());
-            Assert.Equal("Other User", friendObjectDict["Name"].ToString());
+            Assert.Equal("Other", friendObjectDict["FirstName"].ToString());
+            Assert.Equal("User", friendObjectDict["LastName"].ToString());
             Assert.Equal("otheruser@example.com", friendObjectDict["Email"].ToString());
             Assert.NotNull(friendDict["CreatedAt"]);
         }
@@ -181,7 +184,8 @@ namespace Server.Tests.Controllers
 
             Assert.NotNull(requesterDict);
             Assert.Equal(_otherUserId, requesterDict["Id"].ToString());
-            Assert.Equal("Other User", requesterDict["Name"].ToString());
+            Assert.Equal("Other", requesterDict["FirstName"].ToString());
+            Assert.Equal("User", requesterDict["LastName"].ToString());
             Assert.Equal("otheruser@example.com", requesterDict["Email"].ToString());
             Assert.NotNull(invitationDict["CreatedAt"]);
         }

@@ -181,7 +181,7 @@ export default function EquipmentListPage() {
     const { numColumns, cardWidth } = calculateGridLayout();
 
     const renderEquipmentItem = ({ item }: { item: Equipment }) => {
-        const mainImage = item.images?.find(img => img.isMainImage)?.imageUrl || item.images?.[0]?.imageUrl;
+        const mainImage = item.images?.find(img => img.isMain)?.url || item.images?.[0]?.url;
         return (
             <Card
                 style={[styles.equipmentCard, { width: cardWidth }]}
@@ -250,7 +250,7 @@ export default function EquipmentListPage() {
             <FAB
                 icon="plus"
                 style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-                onPress={() => router.push("/equipment/new")}
+                onPress={() => router.push("/equipment/add-equipment")}
             />
         </View>
     );

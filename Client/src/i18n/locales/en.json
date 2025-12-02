@@ -54,12 +54,18 @@
     "searchNoResults": "No locations found",
     "searchResults": "Search results",
     "showOnMap": "Show on map",
+    "showOnMapDesc": "Show location on map",
+    "showMap": "Show map",
     "title": "Location",
     "currentLocation": "Show location",
     "openInMaps": "Open in Google Maps",
     "errors": {
       "addressFetchFailed": "Failed to get address details",
-      "nameRequired": "Name is required"
+      "nameRequired": "Name is required",
+      "requiredFields": "The following fields are required: {{fields}}",
+      "locationRequired": "Please select a location on the map",
+      "permissionDenied": "Location permission denied",
+      "locationFetchFailed": "Failed to fetch location"
     },
     "form": {
       "addNew": "Add New Location",
@@ -80,7 +86,9 @@
         "address": "Address",
         "actions": "Actions"
       }
-    }
+    },
+    "address": "Address",
+    "distance": "Distance"
   },
   "navigation": {
     "home": "Home",
@@ -145,7 +153,10 @@
       "signUp": "Sign Up",
       "google": "Google",
       "facebook": "Facebook",
-      "apple": "Apple"
+      "apple": "Apple",
+      "invalidEmail": "Please enter a valid email",
+      "success": "Login successful",
+      "error": "Login failed"
     },
     "register": {
       "title": "Register",
@@ -154,7 +165,11 @@
       "confirmPassword": "Confirm Password",
       "submit": "Create Account",
       "haveAccount": "Already have an account?",
-      "signIn": "Sign In"
+      "signIn": "Sign In",
+      "invalidEmail": "Please enter a valid email address",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "success": "Registration successful",
+      "error": "Registration failed. Please try again"
     }
   },
   "equipment": {
@@ -206,31 +221,89 @@
       "usedDates": "Used Dates",
       "condition": "Condition",
       "owner": "Owner",
-      "delete": "Delete Equipment"
+      "delete": "Delete Equipment",
+      "info": "Equipment Information"
     },
     "available": "Available",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+    "errors": {
+      "fetchFailed": "Failed to fetch equipment",
+      "notFound": "Equipment not found"
+    },
+    "actions": {
+      "edit": "Edit Equipment",
+      "delete": "Delete Equipment"
+    },
+    "name": "Equipment Name",
+    "category": "Category",
+    "form": {
+      "title": "Add Equipment",
+      "titleEdit": "Update Equipment",
+      "name": "Name",
+      "description": "Description",
+      "category": "Category",
+      "location": "Location",
+      "images": "Images",
+      "selectLocation": "Select a location",
+      "createLocation": "Create New Location",
+      "submit": {
+        "add": "Add Equipment",
+        "update": "Update Equipment"
+      },
+      "errors": {
+        "permissionNeeded": "Permission needed",
+        "photoPermission": "Please grant permission to access your photos",
+        "pickImage": "Failed to pick image",
+        "removeImage": "Failed to remove image",
+        "requiredFields": "Please fill in all required fields",
+        "invalidCategory": "Please select a valid category",
+        "saveFailed": "Failed to save equipment",
+        "loadFailed": "Failed to load equipment"
+      }
+    }
   },
   "booking": {
     "title": "Bookings",
+    "listTitle": "All Bookings",
     "new": "New Booking",
     "create": "Book Equipment",
+    "viewAll": "View All",
     "startDateTime": "Start Date & Time",
     "endDateTime": "End Date & Time",
     "submit": "Create Booking",
     "success": "Booking created successfully",
     "error": "Failed to create booking",
     "noBookings": "No bookings yet",
-    "startDate": "Start Date",
-    "endDate": "End Date",
     "notes": "Notes",
     "notesPlaceholder": "Add any additional information about your booking...",
+    "errors": {
+      "dateBlocked": "Date Unavailable",
+      "dateBlockedMessage": "This date is already booked and approved"
+    },
     "status": {
       "title": "Status",
       "pending": "Pending",
+      "planning": "Planning",
       "approved": "Approved",
       "rejected": "Rejected",
       "cancelled": "Cancelled"
+    },
+    "calendar": {
+      "legend": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "planning": "Planning",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      }
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "submit": "Submit for Approval",
+      "statusChanged": "Booking status updated successfully",
+      "statusError": "Failed to update booking status"
     }
   },
   "usedDates": {
@@ -256,6 +329,7 @@
     "userName": "Username",
     "firstName": "First Name",
     "lastName": "Last Name",
+    "name": "Name",
     "email": "Email",
     "personalInfo": "Personal Information",
     "myEquipment": "My Equipment",
@@ -266,9 +340,35 @@
       "choose": "Choose Image",
       "take": "Take Photo",
       "noData": "No data available",
-      "success": "Image uploaded successfully"
+      "success": "Image uploaded successfully",
+      "uploadError": "Failed to upload image",
+      "pickError": "Failed to pick image",
+      "takeError": "Failed to take photo"
     },
     "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile"
+    "updateError": "Failed to update profile",
+    "permissions": {
+      "title": "Permissions Required",
+      "message": "Please grant access to continue"
+    }
+  },
+  "category": {
+    "name": "Category Name",
+    "parentCategory": "Parent Category",
+    "icon": "Category Icon",
+    "noParent": "No Parent Category",
+    "errors": {
+      "fetchFailed": "Failed to fetch categories",
+      "loadError": "Failed to load categories",
+      "nameRequired": "Category name is required",
+      "updateSuccess": "Category updated successfully",
+      "createSuccess": "Category created successfully"
+    }
+  },
+  "chat": {
+    "newChat": "New Chat",
+    "groupChat": "Group Chat",
+    "groupName": "Group Name",
+    "create": "Create Chat"
   }
 }

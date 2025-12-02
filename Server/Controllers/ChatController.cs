@@ -327,13 +327,6 @@ public class ChatController : ControllerBase
     }
 }
 
-public class CreateChatRequest
-{
-    public string? Name { get; set; }
-    public bool IsGroupChat { get; set; }
-    public List<string> ParticipantIds { get; set; } = new();
-}
-
 public class UpdateParticipantsRequest
 {
     public List<string>? ParticipantsToAdd { get; set; }

@@ -12,14 +12,16 @@ namespace Server.Tests
             {
                 UserName = "testuser1@example.com",
                 Email = "testuser1@example.com",
-                Name = "Test User 1"
+                FirstName = "Test",
+                LastName = "User 1"
             };
 
             var user2 = new ApplicationUser
             {
                 UserName = "testuser2@example.com",
                 Email = "testuser2@example.com",
-                Name = "Test User 2"
+                FirstName = "Test",
+                LastName = "User 2"
             };
 
             await userManager.CreateAsync(user1, "Test123!");

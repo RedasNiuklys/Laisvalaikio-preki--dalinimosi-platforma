@@ -250,15 +250,21 @@ namespace Server.Controllers
 
         // PUT: api/Booking/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBooking(string id, UpdateBookingDto updateDto)
+        public async Task<ActionResult<BookingResponseDto>> UpdateBooking(string id, UpdateBookingDto updateDto)
         {
+            Console.WriteLine("Update booking called");
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
             if (booking == null || booking.UserId != userId)
             {
                 return NotFound();
@@ -273,6 +279,45 @@ namespace Server.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                return new BookingResponseDto
+                {
+                    Id = booking.Id,
+                    EquipmentId = booking.EquipmentId,
+                    UserId = booking.UserId,
+                    StartDateTime = booking.StartDateTime,
+                    EndDateTime = booking.EndDateTime,
+                    Status = booking.Status,
+                    Notes = booking.Notes,
+                    CreatedAt = booking.CreatedAt,
+                    UpdatedAt = booking.UpdatedAt,
+                    Equipment = new EquipmentResponseDto
+                    {
+                        Id = booking.Equipment.Id,
+                        Name = booking.Equipment.Name,
+                        Description = booking.Equipment.Description,
+                        Category = new CategoryDto
+                        {
+                            Id = booking.Equipment.Category.Id,
+                            Name = booking.Equipment.Category.Name,
+                            IconName = booking.Equipment.Category.IconName,
+                            ParentCategoryId = booking.Equipment.Category.ParentCategoryId
+                        },
+                        Condition = booking.Equipment.Condition,
+                        OwnerId = booking.Equipment.OwnerId,
+                        IsAvailable = booking.Equipment.IsAvailable,
+                        CreatedAt = booking.Equipment.CreatedAt,
+                        UpdatedAt = booking.Equipment.UpdatedAt
+                    },
+                    User = new UserResponseDto
+                    {
+                        Id = booking.User.Id,
+                        UserName = booking.User.UserName,
+                        Email = booking.User.Email,
+                        FirstName = booking.User.FirstName,
+                        LastName = booking.User.LastName
+                    }
+                };
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -282,8 +327,6 @@ namespace Server.Controllers
                 }
                 throw;
             }
-
-            return NoContent();
         }
 
         // DELETE: api/Booking/5
@@ -306,6 +349,76 @@ namespace Server.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // PATCH: api/Booking/5/status
+        [HttpPatch("{id}/status")]
+        [Authorize]
+        public async Task<ActionResult> UpdateBookingStatus([FromRoute] string id, [FromBody] string statusDto)
+        {
+            System.Console.WriteLine(statusDto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Check if user is authorized to change the status
+            // Owner can change any status, user can only change from Planning to Pending
+            var isOwner = booking.Equipment.OwnerId == userId;
+            var isBookingUser = booking.UserId == userId;
+
+            if (!isOwner && !isBookingUser)
+            {
+                return Forbid();
+            }
+
+            if (!isOwner && (booking.Status != BookingStatus.Planning || statusDto != "Pending"))
+            {
+                return BadRequest("Users can only change their booking status from Planning to Pending");
+            }
+
+            var newStatus = Enum.Parse<BookingStatus>(statusDto);
+            Console.WriteLine("StatusDto: " + newStatus);
+
+            // If owner is rejecting or cancelling an approved booking, delete it
+            if (isOwner &&
+                booking.Status == BookingStatus.Approved &&
+                (newStatus == BookingStatus.Rejected || newStatus == BookingStatus.Cancelled))
+            {
+                _context.Bookings.Remove(booking);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+
+            // Otherwise, update the status
+            booking.Status = newStatus;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BookingExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
         }
 
         private bool BookingExists(string id)

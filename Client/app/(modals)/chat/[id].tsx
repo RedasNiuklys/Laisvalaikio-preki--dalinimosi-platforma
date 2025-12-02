@@ -139,7 +139,6 @@ export default function ChatScreen() {
 
         setMessages(formattedMessages);
         //console.log
-        "Loaded messages:", formattedMessages.length;
       } else {
         console.error("Invalid message data received:", response.data);
         setError("Failed to load messages");
@@ -174,7 +173,6 @@ export default function ChatScreen() {
     try {
       setSending(true);
       //console.log
-      "Sending message:", newMessage.trim();
       await chatService.sendMessage(Number(id), newMessage.trim());
       setNewMessage("");
       scrollToBottom();

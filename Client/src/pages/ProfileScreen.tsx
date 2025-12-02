@@ -27,9 +27,10 @@ import { useTranslation } from "react-i18next";
 
 interface UserProfile {
   id: string;
-  name: string;
   email: string;
   avatarUrl?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 const ProfileScreen = () => {
@@ -236,7 +237,7 @@ const ProfileScreen = () => {
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarText}>
-                  {profile.name?.charAt(0)?.toUpperCase() || "?"}
+                  {profile.firstName?.charAt(0)?.toUpperCase() || "?"}
                 </Text>
               </View>
             )}
@@ -255,7 +256,7 @@ const ProfileScreen = () => {
           </View>
 
           <Text style={[styles.text, { color: theme.colors.onBackground }]}>
-            {t("profile.name")}: {profile.name}
+            {t("profile.name")}: {profile.firstName} {profile.lastName}
           </Text>
           <Text style={[styles.text, { color: theme.colors.onBackground }]}>
             {t("profile.email")}: {profile.email}
