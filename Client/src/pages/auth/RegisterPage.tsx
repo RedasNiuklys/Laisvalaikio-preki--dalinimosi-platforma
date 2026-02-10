@@ -115,7 +115,7 @@ export default function RegisterPage() {
                         onChangeText={setFirstName}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="account" />}
+                        left={<TextInput.Icon icon="account" pointerEvents="none" tabIndex={-1} />}
                     />
 
                     <TextInput
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                         onChangeText={setLastName}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="account" />}
+                        left={<TextInput.Icon icon="account" pointerEvents="none" tabIndex={-1} />}
                     />
 
                     <TextInput
@@ -139,11 +139,13 @@ export default function RegisterPage() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoComplete="email"
-                        left={<TextInput.Icon icon="email" />}
+                        left={<TextInput.Icon icon="email" pointerEvents="none" tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isEmailValid ? "check" : "close"}
                                 color={isEmailValid ? colors.success : colors.danger}
+                                pointerEvents="none"
+                                tabIndex={-1}
                             />
                         }
                     />
@@ -156,11 +158,13 @@ export default function RegisterPage() {
                         secureTextEntry={!isPasswordVisible}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="lock" />}
+                        left={<TextInput.Icon icon="lock" pointerEvents="none" tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
                                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                accessible={false}
+                                tabIndex={-1}
                             />
                         }
                     />
@@ -173,11 +177,13 @@ export default function RegisterPage() {
                         secureTextEntry={!isPasswordVisible}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="lock-check" />}
+                        left={<TextInput.Icon icon="lock-check" pointerEvents="none" tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
                                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                accessible={false}
+                                tabIndex={-1}
                             />
                         }
                     />

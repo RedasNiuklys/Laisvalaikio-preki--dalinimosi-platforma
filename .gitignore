@@ -3,6 +3,11 @@
 *.ppk
 Server/bin/
 Server/obj/
+Server/**/bin/
+Server/**/obj/
 **/bin/
 **/obj/
 node_modules/
+.vs/
+*.user
+*.suo

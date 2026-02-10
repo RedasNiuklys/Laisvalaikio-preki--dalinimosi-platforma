@@ -180,6 +180,8 @@
     "register": {
       "title": "Registracija",
       "email": "El. paštas",
+      "firstName": "Vardas",
+      "lastName": "Pavardė",
       "password": "Slaptažodis",
       "confirmPassword": "Pakartokite slaptažodį",
       "submit": "Sukurti paskyrą",
