@@ -162,6 +162,8 @@
       "title": "Register",
       "email": "Email",
       "password": "Password",
+      "firstName": "First Name",
+      "lastName": "Last Name",
       "confirmPassword": "Confirm Password",
       "submit": "Create Account",
       "haveAccount": "Already have an account?",
