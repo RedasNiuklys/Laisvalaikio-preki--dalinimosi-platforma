@@ -4,13 +4,28 @@
     "slug": "Client",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
-    "scheme": "myapp",
+    "icon": "./src/assets/favicon.png",
+    "scheme": "com.laisvalaikio.app",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./src/assets/splash.png",
+      "image": "./src/assets/favicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "deepLinking": {
+      "url": "com.laisvalaikio.app",
+      "prefixes": [
+        "com.laisvalaikio.app://",
+        "https://laisvalaikio.app"
+      ],
+      "config": {
+        "screens": {
+          "google-callback": "google-callback/:code",
+          "facebook-callback": "facebook-callback/:code",
+          "login": "(auth)/login",
+          "register": "(auth)/register"
+        }
+      }
     },
     "assetBundlePatterns": [
       "**/*"
@@ -20,7 +35,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/favicon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.redasn.Client"
@@ -39,9 +54,9 @@
     },
     "extra": {
       "router": {
-        "origin": "http://10.92.125.135:8081"
+        "origin": "http://10.51.21.135:8081"
       },
-      "API_BASE_URL": "http://10.92.125.135:5050"
+      "API_BASE_URL": "http://10.51.21.135:5050"
     }
   }
 }

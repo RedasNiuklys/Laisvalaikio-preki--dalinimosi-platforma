@@ -60,8 +60,8 @@ export default function RegisterPage() {
             await register(
                 email,
                 password,
-                firstName || undefined,
-                lastName || undefined,
+                firstName || null,
+                lastName || null,
                 theme.dark ? "dark" : "light"
             );
             showToast("success", t("auth.register.success"));
@@ -130,7 +130,7 @@ export default function RegisterPage() {
 
                     <TextInput
                         mode="outlined"
-                        label={t("auth.register.email")}
+                        label={`${t("auth.register.email")} *`}
                         value={email}
                         onChangeText={handleEmailChange}
                         style={{ marginBottom: spacing.md }}
@@ -152,7 +152,7 @@ export default function RegisterPage() {
 
                     <TextInput
                         mode="outlined"
-                        label={t("auth.register.password")}
+                        label={`${t("auth.register.password")} *`}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={!isPasswordVisible}
@@ -171,7 +171,7 @@ export default function RegisterPage() {
 
                     <TextInput
                         mode="outlined"
-                        label={t("auth.register.confirmPassword")}
+                        label={`${t("auth.register.confirmPassword")} *`}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry={!isPasswordVisible}

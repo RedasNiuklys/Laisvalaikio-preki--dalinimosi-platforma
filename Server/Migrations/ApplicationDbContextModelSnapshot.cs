@@ -4,12 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using System.Diagnostics.CodeAnalysis;
+
 #nullable disable
 
 namespace Server.Migrations
 {
-    [ExcludeFromCodeCoverage]
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
@@ -168,6 +167,9 @@ namespace Server.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("FirebaseUid")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("TEXT");

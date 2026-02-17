@@ -21,6 +21,7 @@ public class LoginController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly FirebaseAuthService _firebaseAuth;
 
     public LoginController(
         UserManager<ApplicationUser> userManager,
@@ -28,7 +29,8 @@ public class LoginController : ControllerBase
         ITokenService tokenService,
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        FirebaseAuthService firebaseAuth)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -36,8 +38,177 @@ public class LoginController : ControllerBase
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
         _roleManager = roleManager;
+        _firebaseAuth = firebaseAuth;
     }
 
+    [HttpGet("ping")]
+    [AllowAnonymous]
+    public IActionResult Ping()
+    {
+        return Ok(new
+        {
+            status = "ok",
+            message = "LoginController reachable",
+            timestamp = DateTime.UtcNow
+        });
+    }
+
+    [HttpPost("firebase-login")]
+    public async Task<IActionResult> FirebaseLogin([FromBody] FirebaseLoginRequest request)
+    {
+        try
+        {
+            Console.WriteLine("=== FIREBASE LOGIN ENDPOINT HIT ===");
+            Console.WriteLine($"Firebase UID: {request.Uid}");
+
+            // Verify Firebase token
+            var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
+
+            // Find or create user based on Firebase UID
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                // Create new user
+                user = new ApplicationUser
+                {
+                    UserName = request.Email,
+                    Email = request.Email,
+                    EmailConfirmed = true, // Firebase already verified email
+                    FirebaseUid = request.Uid
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                // Check if first user - make admin
+                if (_userManager.Users.Count() == 1)
+                {
+                    if (!await _roleManager.RoleExistsAsync("Admin"))
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                    }
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                }
+            }
+            else
+            {
+                // Update Firebase UID if not set
+                if (string.IsNullOrEmpty(user.FirebaseUid))
+                {
+                    user.FirebaseUid = request.Uid;
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
+            // Return user data (no JWT token needed - using Firebase tokens)
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                userName = user.UserName,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                theme = user.Theme,
+                avatarUrl = user.AvatarUrl
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Firebase login error: {ex.Message}");
+            return StatusCode(500, "Internal server error during Firebase login");
+        }
+    }
+
+    [HttpPost("firebase-register")]
+    public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterRequest request)
+    {
+        try
+        {
+            Console.WriteLine("=== FIREBASE REGISTER ENDPOINT HIT ===");
+            Console.WriteLine($"Firebase UID: {request.Uid}");
+            Console.WriteLine($"Email: {request.Email}");
+            Console.WriteLine($"FirebaseToken present: {!string.IsNullOrEmpty(request.FirebaseToken)}");
+
+            // Verify Firebase token
+            Console.WriteLine("Verifying Firebase token...");
+            var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
+            Console.WriteLine($"Token verified successfully. UID from token: {firebaseToken.Uid}");
+
+            // Check if user already exists
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                Console.WriteLine($"User already exists with email: {request.Email}");
+                return BadRequest("User already exists");
+            }
+
+            // Create new user
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FirstName = request.FirstName ?? "User",
+                LastName = request.LastName ?? "",
+                Theme = request.Theme ?? "light",
+                EmailConfirmed = true, // Firebase already verified email
+                FirebaseUid = request.Uid
+            };
+
+            Console.WriteLine($"Creating user with email: {request.Email}");
+            var result = await _userManager.CreateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                Console.WriteLine($"User creation failed: {errors}");
+                return BadRequest(result.Errors.Select(e => e.Description));
+            }
+
+            Console.WriteLine($"User created successfully: {user.Id}");
+
+            // Check if first user - make admin
+            if (_userManager.Users.Count() == 1)
+            {
+                if (!await _roleManager.RoleExistsAsync("Admin"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                }
+                await _userManager.AddToRoleAsync(user, "Admin");
+            }
+
+            Console.WriteLine("Firebase register completed successfully");
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                userName = user.UserName,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                theme = user.Theme,
+                avatarUrl = user.AvatarUrl
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"Unauthorized: {ex.Message}");
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Firebase register error: {ex.Message}");
+            return StatusCode(500, "Internal server error during Firebase registration");
+        }
+    }
+
+    // Keep existing endpoints for backwards compatibility
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
@@ -276,6 +447,23 @@ public class LoginController : ControllerBase
     public class GoogleMobileRequest
     {
         public string IdToken { get; set; }
+    }
+
+    public class FirebaseLoginRequest
+    {
+        public string FirebaseToken { get; set; }
+        public string Email { get; set; }
+        public string Uid { get; set; }
+    }
+
+    public class FirebaseRegisterRequest
+    {
+        public string FirebaseToken { get; set; }
+        public string Email { get; set; }
+        public string Uid { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Theme { get; set; }
     }
 }
 

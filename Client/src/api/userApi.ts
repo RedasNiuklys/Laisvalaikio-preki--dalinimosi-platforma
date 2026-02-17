@@ -9,7 +9,7 @@ const apiUrl = USER_ENDPOINT;
 
 export const getUsers = async () => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.get(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -24,7 +24,7 @@ export const getUsers = async () => {
 
 export const getUserById = async (userId: string) => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.get(`${apiUrl}/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -39,7 +39,7 @@ export const getUserById = async (userId: string) => {
 
 export const createUser = async (userData: User) => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.post(apiUrl, userData, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -67,7 +67,7 @@ export const updateUser = async (id: string, userData: UpdateUserDto): Promise<U
 
 export const updateUserThemePreference = async (themePreference: string) => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.patch(`${apiUrl}/theme-preference`, {
       themePreference: themePreference
     }, {
@@ -85,7 +85,7 @@ export const updateUserThemePreference = async (themePreference: string) => {
 
 export const deleteUser = async (userId: number) => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.delete(`${apiUrl}/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -100,7 +100,7 @@ export const deleteUser = async (userId: number) => {
 
 export const getProfile = async () => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem('firebaseToken');
     const response = await axios.get(`${apiUrl}/profile`, {
       headers: {
         Authorization: `Bearer ${token}`

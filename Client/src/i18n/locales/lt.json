@@ -171,11 +171,31 @@
       "password": "Slaptažodis",
       "submit": "Prisijungti",
       "forgotPassword": "Pamiršote slaptažodį?",
+      "resetPassword": "Atstatyti slaptažodį",
+      "resetDescription": "Įveskite savo el. pašto adresą ir mes atsiųsime jums nuorodą slaptažodziui atstatyti.",
+      "sendReset": "Siųsti slaptažodžio atstatymo el. laišką",
+      "resetEmailSent": "Slaptažodžio atstatymo el. laiškas sėkmingai nusiųstas",
+      "resetError": "Nepavyko nusiųsti slaptažodžio atstatymo el. laiško",
+      "userNotFound": "Vartotojas negrastas su šiuo el. paštu",
+      "enterEmail": "Prašome įvesti el. pašto adresą",
       "noAccount": "Neturite paskyros?",
       "signUp": "Registruotis",
+      "google": "Google",
+      "facebook": "Facebook",
+      "apple": "Apple",
       "invalidEmail": "Įveskite teisingą el. pašto adresą",
       "success": "Prisijungimas sėkmingas",
-      "error": "Prisijungimas nepavyko"
+      "error": "Prisijungimas nepavyko",
+      "googleLoginFailed": "Google prisijungimas nepavyko",
+      "facebookLoginFailed": "Facebook prisijungimas nepavyko",
+      "googleLoginError": "Įvyko netikėta klaida",
+      "facebookLoginError": "Įvyko netikėta klaida",
+      "connectingGoogle": "Jungiamaisi...",
+      "connectingFacebook": "Jungiamaisi...",
+      "loginWithGoogle": "Prisijungti su Google",
+      "loginWithFacebook": "Prisijungti su Facebook",
+      "processingGoogle": "Apdorojamas Google prisijungimas...",
+      "processingFacebook": "Apdorojamas Facebook prisijungimas..."
     },
     "register": {
       "title": "Registracija",
@@ -286,7 +306,14 @@
       "title": "Reikalingi leidimai",
       "message": "Prašome suteikti prieigą"
     },
-    "noData": "Nėra duomenų"
+    "noData": "Nėra duomenų",
+    "form": {
+      "editTitle": "Redaguoti vartotoją",
+      "namePlaceholder": "Vardas",
+      "agePlaceholder": "Amžius",
+      "emailPlaceholder": "El. paštas",
+      "allFieldsRequired": "Visi laukai yra privalomi."
+    }
   },
   "category": {
     "name": "Kategorijos pavadinimas",
@@ -305,6 +332,46 @@
     "newChat": "Naujas pokalbis",
     "groupChat": "Grupės pokalbis",
     "groupName": "Grupės pavadinimas",
-    "create": "Sukurti pokalbį"
+    "create": "Sukurti pokalbį",
+    "loadingChats": "Įkeliami pokalbiai...",
+    "searchPlaceholder": "Ieškoti vartotojų..."
+  },
+  "friends": {
+    "title": "Draugai",
+    "friendNotFound": "Draugas nerasta",
+    "noFriends": "Dar nėra draugų",
+    "noPendingRequests": "Nėra laukiančių prašymų",
+    "groupChats": "Grupės pokalbiai",
+    "noGroupChats": "Dar nėra grupės pokalbių",
+    "pendingStatus": "Laukiama"
+  },
+  "search": {
+    "users": "Ieškoti vartotojų...",
+    "equipment": "Ieškoti įrangos...",
+    "location": "Ieškoti vietos...",
+    "loadingUsers": "Įkeliami vartotojai..."
+  },
+  "forms": {
+    "selectLocation": "Pasirinkite vietą",
+    "allFieldsRequired": "Visi laukai yra privalomi."
+  },
+  "map": {
+    "currentLocation": "Dabartinė vieta"
+  },
+  "modals": {
+    "addCategory": "Pridėti kategoriją",
+    "editCategory": "Redaguoti kategoriją",
+    "chats": "Pokalbiai",
+    "newChat": "Naujas pokalbis",
+    "chat": "Pokalbis"
+  },
+  "pages": {
+    "home": "Pradžia",
+    "equipment": "Įranga",
+    "profile": "Profilis",
+    "settings": "Nustatymai",
+    "messages": "Pranešimai",
+    "adminPanel": "Administratoriaus sąsaja",
+    "about": "Apie"
   }
 }

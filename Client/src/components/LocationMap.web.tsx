@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { View } from "react-native";
 import WebMap from "./WebMap";

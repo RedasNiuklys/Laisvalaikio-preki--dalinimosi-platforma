@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Server.Services;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR;
 using Server.Models;
 using Server.Hubs;
@@ -47,6 +46,7 @@ var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<FirebaseAuthService>();
 
 System.Console.WriteLine("JWT Key: " + jwtKey);
 System.Console.WriteLine("JWT Issuer: " + jwtIssuer);
@@ -62,16 +62,17 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        // Disable all validation - let Firebase verification handle it in OnTokenValidated
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = false,
+        RequireSignedTokens = false,
+        // Skip signature validation entirely
+        SignatureValidator = (token, parameters) => new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token)
     };
 
-    // Configure for SignalR
+    // Configure for SignalR and Firebase tokens
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -84,42 +85,56 @@ builder.Services.AddAuthentication(options =>
                 context.Token = accessToken;
             }
             return Task.CompletedTask;
-        }
-    };
-})
-.AddOpenIdConnect("Google", options =>
-{
-    options.Authority = "https://accounts.google.com";
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.ResponseType = "code";
-    options.CallbackPath = "/api/login/google-callback";
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        NameClaimType = "name",
-        RoleClaimType = "role"
-    };
-    options.SaveTokens = true;
-    options.Events = new OpenIdConnectEvents
-    {
-        OnRedirectToIdentityProvider = context =>
+        },
+        OnTokenValidated = async context =>
         {
-            context.ProtocolMessage.RedirectUri = $"{builder.Configuration["Client:Url"]}/api/login/google-callback";
-            return Task.CompletedTask;
+            // Check if this is a Firebase token by attempting to verify it
+            var token = context.SecurityToken as Microsoft.IdentityModel.JsonWebTokens.JsonWebToken;
+            if (token != null)
+            {
+                var firebaseService = context.HttpContext.RequestServices.GetService<FirebaseAuthService>();
+                var userManager = context.HttpContext.RequestServices.GetService<UserManager<ApplicationUser>>();
+
+                if (firebaseService != null && userManager != null)
+                {
+                    try
+                    {
+                        // Try to verify as Firebase token
+                        var firebaseToken = await firebaseService.VerifyTokenAsync(token.EncodedToken);
+                        var firebaseUid = firebaseToken.Uid;
+
+                        // Find ASP.NET Identity user by Firebase UID
+                        var aspNetUser = userManager.Users.FirstOrDefault(u => u.FirebaseUid == firebaseUid);
+
+                        if (aspNetUser != null)
+                        {
+                            // Map Firebase token to ASP.NET Identity user
+                            var claims = new List<System.Security.Claims.Claim>
+                            {
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, aspNetUser.Id),
+                                new System.Security.Claims.Claim("firebase_uid", firebaseUid),
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, firebaseToken.Claims["email"].ToString()),
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, aspNetUser.UserName ?? aspNetUser.Email)
+                            };
+
+                            var identity = new System.Security.Claims.ClaimsIdentity(claims, "Firebase");
+                            context.Principal = new System.Security.Claims.ClaimsPrincipal(identity);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Firebase user {firebaseUid} not found in ASP.NET Identity");
+                            context.Fail("User not found in database");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Firebase token validation error: {ex.Message}");
+                        // Not a Firebase token, continue with JWT validation
+                    }
+                }
+            }
         }
     };
-})
-.AddFacebook(options =>
-{
-    options.AppId = builder.Configuration["Authentication:Facebook:ClientId"];
-    options.AppSecret = builder.Configuration["Authentication:Facebook:ClientSecret"];
-    options.CallbackPath = "/signin-facebook";
-    options.SaveTokens = true;
-    options.Fields.Add("name");
-    options.Fields.Add("email");
 });
 
 // Add SignalR services

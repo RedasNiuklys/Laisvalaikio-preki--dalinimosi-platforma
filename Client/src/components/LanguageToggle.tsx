@@ -1,0 +1,50 @@
+import React, { useState } from 'react';
+import { Menu, Divider } from 'react-native-paper';
+import { IconButton, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+
+export default function LanguageToggle() {
+    const theme = useTheme();
+    const { i18n } = useTranslation();
+    const [visible, setVisible] = useState(false);
+
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+
+    const currentLanguage = i18n.language;
+
+    const handleLanguageChange = async (lang: string) => {
+        await i18n.changeLanguage(lang);
+        closeMenu();
+    };
+
+    return (
+        <Menu
+            visible={visible}
+            onDismiss={closeMenu}
+            anchor={
+                <IconButton
+                    icon="translate"
+                    onPress={openMenu}
+                    size={24}
+                    iconColor={theme.colors.primary}
+                />
+            }
+            contentStyle={{
+                backgroundColor: theme.colors.surface,
+            }}
+        >
+            <Menu.Item
+                onPress={() => handleLanguageChange('en')}
+                title="English"
+                trailingIcon={currentLanguage === 'en' ? 'check' : undefined}
+            />
+            <Divider />
+            <Menu.Item
+                onPress={() => handleLanguageChange('lt')}
+                title="Lietuvių"
+                trailingIcon={currentLanguage === 'lt' ? 'check' : undefined}
+            />
+        </Menu>
+    );
+}

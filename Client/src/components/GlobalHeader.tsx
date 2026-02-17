@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { usePathname } from 'expo-router';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 import { colors, spacing } from '@/src/styles/globalStyles';
 
 export default function GlobalHeader() {
@@ -45,7 +46,10 @@ export default function GlobalHeader() {
             >
                 {getTitle()}
             </Text>
-            <ThemeToggle />
+            <View style={styles.togglesContainer}>
+                <LanguageToggle />
+                <ThemeToggle />
+            </View>
         </View>
     );
 }
@@ -60,6 +64,10 @@ const styles = StyleSheet.create({
         minHeight: 64,
         borderBottomWidth: 1,
         borderBottomColor: colors.gray5,
+    },
+    togglesContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     title: {
         fontWeight: '600',

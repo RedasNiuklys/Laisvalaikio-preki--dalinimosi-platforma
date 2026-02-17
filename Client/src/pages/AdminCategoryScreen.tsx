@@ -230,7 +230,7 @@ export default function AdminCategoryScreen({
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)}>
-              {t("common.cancel")}
+              {t("common.buttons.cancel")}
             </Button>
             <Button onPress={handleDelete} textColor={theme.colors.error}>
               {t("common.delete")}

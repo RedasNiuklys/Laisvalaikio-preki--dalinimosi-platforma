@@ -18,11 +18,12 @@ import { getProfile } from "../api/userApi";
 import { User } from "../types/User";
 import { styles } from "../styles/ProfileScreen.styles";
 import * as ImagePicker from "expo-image-picker";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { MediaType, CameraType } from "expo-image-picker";
+import {SaveOptions, ImageResult , SaveFormat, ImageManipulator, ImageManipulatorContext, ImageRef } from "expo-image-manipulator";
 import { getAuthToken } from "../utils/authUtils";
 import { BASE_URL } from "../utils/envConfig";
 import axios from "axios";
-import * as FileSystem from "expo-file-system";
+import {File as ExpoFile, Directory, Paths, FileInfo} from "expo-file-system";
 import { useTranslation } from "react-i18next";
 
 interface UserProfile {
@@ -44,6 +45,8 @@ const ProfileScreen = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -96,7 +99,7 @@ const ProfileScreen = () => {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images' as MediaType,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
@@ -107,7 +110,7 @@ const ProfileScreen = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert(t("common.error"), t("profile.image.pickError"));
+      Alert.alert(t("common.status.error"), t("profile.image.pickError"));
     }
   };
 
@@ -117,67 +120,93 @@ const ProfileScreen = () => {
 
     try {
       const result = await ImagePicker.launchCameraAsync({
+        cameraType: CameraType.back,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
       });
-
       if (!result.canceled) {
         await uploadImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error("Error taking photo:", error);
-      Alert.alert(t("common.error"), t("profile.image.takeError"));
+      Alert.alert(t("common.status.error"), t("profile.image.takeError"));
     }
   };
 
   const uploadImage = async (uri: string) => {
+    let tempFileUri: string | null = null;
+    let manipulatedImage: ImageManipulatorContext | null = null;
+    let imageRef : ImageRef | null = null;
+    let ImageResult : ImageResult | null = null;
+    // Android specific vars
+    let androidFile: ExpoFile | null = null;
+    let info: FileInfo;  
+
     try {
-      setLoading(true);
+      setAvatarLoading(true);
+      console.log("Starting image processing...");
 
-      // Resize and compress image
-      const manipulatedImage = await manipulateAsync(
-        uri,
-        [{ resize: { width: 500, height: 500 } }],
-        { compress: 0.7, format: SaveFormat.JPEG }
-      );
-
+      // Step 1: Manipulate image (resize and compress)
+      manipulatedImage = await ImageManipulator.manipulate(uri);
+      // const manipulatedImage = await manipulate(
+      //   uri,
+      //   [{ resize: { width: 500, height: 500 } }],
+      //   { compress: 0.7, format: SaveFormat.JPEG }
+      // );
+      manipulatedImage.resize({ width: 500, height: 500 });
+    
+      // Extract ImageRef for saving/uploading
+      imageRef = await manipulatedImage.renderAsync();
+      ImageResult = await imageRef.saveAsync({
+        compress: 0.7,
+        format: SaveFormat.JPEG,
+        base64: false,
+      } as SaveOptions);
+      // Step 2: Prepare file for upload
       const formData = new FormData();
       formData.append("userId", String(user?.id || 0));
-
+      androidFile = new ExpoFile(ImageResult.uri);
       if (Platform.OS === "web") {
-        // For web, convert to File object
-        const response = await fetch(manipulatedImage.uri);
+        // For web: convert blob to File object
+        console.log("Web platform detected - converting to File object");
+        const response = await fetch(ImageResult.uri);
+        console.log("Fetched image from URI, status:", ImageResult.uri);
         const blob = await response.blob();
+        console.log("Blob created, size:", blob, "bytes");
         const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
         formData.append("file", file);
       } else {
-        // For mobile (Expo), save to temporary file and send
-        const tempFileUri = `${FileSystem.cacheDirectory
-          }avatar_${Date.now()}.jpg`;
-        await FileSystem.copyAsync({
-          from: manipulatedImage.uri,
-          to: tempFileUri,
-        });
+        // For mobile: create temp file in cache directory
+        console.log("Mobile platform detected - creating temporary file");
+        console.log("Manipulated image URI:", ImageResult.uri);
+        tempFileUri = `${Paths.cache.name}avatar_${Date.now()}.jpg`;
+        
+        // Copy manipulated image to temporary location
+        androidFile.move(Paths.cache);
+        console.log("Temporary file created:", androidFile.uri);
 
-        // Create a file object from the temporary file
-        const fileInfo = await FileSystem.getInfoAsync(tempFileUri);
-        if (!fileInfo.exists) {
-          throw new Error("Failed to create temporary file");
+        // Verify temp file exists
+        if(!androidFile.exists){
+            throw new Error("Failed to create temporary file");
         }
+        info = androidFile.info();
+        console.log("Temporary file path,", info.uri);
+        console.log("Temporary file verified, size:", info.size, "bytes");
 
+        // Append file to form data
         const file = {
-          uri: tempFileUri,
+          uri: info.uri,
           type: "image/jpeg",
           name: "avatar.jpg",
         };
-
         formData.append("file", file as any);
       }
 
-      // Upload using axios
+      // Step 3: Upload to server
+      console.log("Uploading image to server...");
       const token = await getAuthToken();
-      const response = await axios.post(
+      const uploadResponse = await axios.post(
         `${BASE_URL}/Storage/UploadAvatar`,
         formData,
         {
@@ -187,24 +216,32 @@ const ProfileScreen = () => {
           },
         }
       );
+      console.log("Upload successful, new avatar URL:", uploadResponse.data.avatarUrl);
 
-      // Clean up temporary file on mobile
-      if (Platform.OS !== "web") {
-        const tempFileUri = `${FileSystem.cacheDirectory
-          }avatar_${Date.now()}.jpg`;
-        await FileSystem.deleteAsync(tempFileUri, { idempotent: true });
-      }
+      // Step 4: Update UI with new avatar (only update avatar, not entire profile)
+      setAvatarUrl(uploadResponse.data.avatarUrl);
 
-      // Update profile with new avatar URL
-      setProfile((prev) =>
-        prev ? { ...prev, avatarUrl: response.data.avatarUrl } : null
-      );
-      Alert.alert(t("common.success"), t("profile.image.uploadSuccess"));
+      Alert.alert(t("common.Status.success"), t("profile.image.uploadSuccess"));
     } catch (error) {
       console.error("Error uploading image:", error);
-      Alert.alert(t("common.error"), t("profile.image.uploadError"));
+      Alert.alert(t("common.Status.error"), t("profile.image.uploadError"));
     } finally {
-      setLoading(false);
+      // Step 5: Clean up temporary file
+      if (Platform.OS !== "web" && androidFile?.uri) {
+        try {
+          if (androidFile != null) {
+          console.log("Cleaning up temporary file:", androidFile.uri);
+          const fileInfo = await androidFile.info();
+          if (fileInfo.exists) {
+            await androidFile.delete();
+            console.log("Temporary file deleted successfully");
+          }
+        }
+        } catch (cleanupError) {
+          console.warn("Warning: Failed to delete temporary file:", cleanupError);
+        }
+      }
+      setAvatarLoading(false);
     }
   };
 
@@ -229,9 +266,9 @@ const ProfileScreen = () => {
       {profile ? (
         <>
           <View style={styles.avatarContainer}>
-            {profile.avatarUrl ? (
+            {avatarUrl || profile.avatarUrl ? (
               <Image
-                source={{ uri: profile.avatarUrl }}
+                source={{ uri: avatarUrl || profile.avatarUrl }}
                 style={styles.avatar}
               />
             ) : (

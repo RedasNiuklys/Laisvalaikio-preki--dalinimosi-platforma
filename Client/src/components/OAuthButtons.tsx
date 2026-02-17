@@ -1,0 +1,160 @@
+import React, { useState } from 'react';
+import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { Button } from 'react-native-paper';
+import { authApi } from '../api/auth';
+
+interface OAuthButtonsProps {
+    firstName?: string;
+    lastName?: string;
+    theme?: string;
+    onSuccess?: (user: any, token: string) => void;
+    onError?: (error: Error) => void;
+}
+
+/**
+ * OAuth Login Buttons Component
+ * 
+ * Usage in LoginPage or RegisterPage:
+ * 
+
+ */
+
+export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
+    firstName,
+    lastName,
+    theme = 'light',
+    onSuccess,
+    onError
+}) => {
+    const [loadingGoogle, setLoadingGoogle] = useState(false);
+    const [loadingFacebook, setLoadingFacebook] = useState(false);
+
+    const handleGoogleLogin = async () => {
+        try {
+            setLoadingGoogle(true);
+            const result = await authApi.googleLogin(firstName, lastName, theme);
+            onSuccess?.(result.user, result.token);
+        } catch (error: any) {
+            console.error('Google login error:', error);
+            onError?.(error);
+            Alert.alert(
+                'Google Login Failed',
+                error.message || 'An unexpected error occurred'
+            );
+        } finally {
+            setLoadingGoogle(false);
+        }
+    };
+
+    const handleFacebookLogin = async () => {
+        try {
+            setLoadingFacebook(true);
+            const result = await authApi.facebookLogin(firstName, lastName, theme);
+            onSuccess?.(result.user, result.token);
+        } catch (error: any) {
+            console.error('Facebook login error:', error);
+            onError?.(error);
+            Alert.alert(
+                'Facebook Login Failed',
+                error.message || 'An unexpected error occurred'
+            );
+        } finally {
+            setLoadingFacebook(false);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.divider} />
+            
+            <Button
+                mode="outlined"
+                onPress={handleGoogleLogin}
+                disabled={loadingGoogle || loadingFacebook}
+                loading={loadingGoogle}
+                style={styles.button}
+                icon="google"
+            >
+                {loadingGoogle ? 'Connecting...' : 'Login with Google'}
+            </Button>
+
+            <Button
+                mode="outlined"
+                onPress={handleFacebookLogin}
+                disabled={loadingGoogle || loadingFacebook}
+                loading={loadingFacebook}
+                style={styles.button}
+                icon="facebook"
+            >
+                {loadingFacebook ? 'Connecting...' : 'Login with Facebook'}
+            </Button>
+
+            {(loadingGoogle || loadingFacebook) && (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#0000ff" />
+                </View>
+            )}
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        marginVertical: 20,
+        gap: 12
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#ccc',
+        marginBottom: 20
+    },
+    button: {
+        borderRadius: 8,
+        paddingVertical: 8
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        marginTop: 10
+    }
+});
+
+/**
+ * EXAMPLE USAGE IN RegisterPage.tsx:
+ * 
+ * import { OAuthButtons } from '../components/OAuthButtons';
+ * 
+ * export default function RegisterPage() {
+ *     const [firstName, setFirstName] = useState('');
+ *     const [lastName, setLastName] = useState('');
+ *     const { login } = useAuth();
+ * 
+ *     return (
+ *         <ScrollView>
+ *             <TextInput
+ *                 label="First Name"
+ *                 value={firstName}
+ *                 onChangeText={setFirstName}
+ *             />
+ *             <TextInput
+ *                 label="Last Name"
+ *                 value={lastName}
+ *                 onChangeText={setLastName}
+ *             />
+ * 
+ *             // Email/Password form here
+ * 
+ *             <OAuthButtons
+ *                 firstName={firstName}
+ *                 lastName={lastName}
+ *                 onSuccess={(user) => {
+ *                     login(user);
+ *                     router.replace('/(tabs)/');
+ *                 }}
+ *                 onError={(error) => {
+ *                     Alert.alert('Error', error.message);
+ *                 }}
+ *             />
+ *         </ScrollView>
+ *     );
+ * }
+ */

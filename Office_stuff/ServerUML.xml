@@ -783,7 +783,7 @@
 						</xmi:Extension>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type='uml:Operation' xmi:id='EAID_FF2CE557_8935_4666_9EAD_D1F207056DCC' name='Token' visibility='public'>
+				<ownedOperation xmi:type='uml:Operation' xmi:id='EAID_FF2CE557_8935_4666_9EAD_D1F207056DCC' name='firebaseToken' visibility='public'>
 					<ownedParameter xmi:type='uml:Parameter' xmi:id='EAID_RT000000_8935_4666_9EAD_D1F207056DCC' name='return' direction='return'>
 						<xmi:Extension extender='MagicDraw UML 2022x'>
 							<modelExtension>
