@@ -10,7 +10,6 @@ export interface Category {
 }
 export interface CategoryEdit {
     name: string;
-    description: string;
     iconName: string;
     parentCategoryId?: number;
     parentCategory?: Category;

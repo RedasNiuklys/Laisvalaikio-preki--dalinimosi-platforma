@@ -24,7 +24,7 @@
     "@react-native-picker/picker": "2.11.1",
     "@types/react-native-snap-carousel": "^3.8.11",
     "@types/signalr": "^2.4.3",
-    "axios": "^1.8.4",
+    "axios": "^1.13.5",
     "date-fns": "^4.1.0",
     "expo": "^54.0.25",
     "expo-auth-session": "~7.0.9",

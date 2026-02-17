@@ -70,7 +70,7 @@ export default function EditCategoryModal() {
   }, [searchQuery]);
 
   const parentCategories = useMemo(() => {
-    return categories.filter((cat) => !cat.parentCategoryId);
+    return categories.filter((cat) => !cat.categoryId);
   }, [categories]);
 
   useEffect(() => {
@@ -83,9 +83,8 @@ export default function EditCategoryModal() {
       const data = await getCategoryById(Number(id));
       setCategory(data);
       setName(data.name);
-      setDescription(data.description);
       setSelectedIcon(data.iconName);
-      setSelectedParentId(data.parentCategoryId ?? null);
+      setSelectedParentId(data.categoryId ?? null);
     } catch (error) {
       console.error("Error loading category:", error);
     }
@@ -105,7 +104,6 @@ export default function EditCategoryModal() {
       setLoading(true);
       await updateCategory(Number(id), {
         name,
-        description,
         iconName: selectedIcon,
         parentCategoryId: selectedParentId ?? undefined,
       });

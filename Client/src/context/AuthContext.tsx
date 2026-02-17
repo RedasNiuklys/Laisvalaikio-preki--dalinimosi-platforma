@@ -3,14 +3,13 @@ import React, { createContext, ReactNode, useContext, useState } from "react";
 import { AuthContextType } from "../types/AuthContextType";
 import { authApi } from "../api/auth";
 import { useEffect } from "react";
-import {
-  getAuthToken,
-  setAuthToken,
-  removeAuthToken,
-} from "../utils/authUtils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/User";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Singleton pattern: track if initial load has been performed
+let initialLoadPromise: Promise<void> | null = null;
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
@@ -28,100 +27,157 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Check for token in AsyncStorage on initial load
-    const loadToken = async () => {
+    // Singleton pattern: ensure initial auth check only happens once
+    const performInitialLoad = async () => {
       try {
-        const storedToken = await getAuthToken();
+        const storedToken = await AsyncStorage.getItem('firebaseToken');
         if (storedToken) {
-          loadUser();
+          console.log("AuthContext: Token found in AsyncStorage, fetching user data...");
           setToken(storedToken);
-          setIsAuthenticated(true);
+          
+          // Fetch user before setting authenticated to avoid empty state
+          try {
+            const userResponse = await authApi.getUser();
+            console.log("AuthContext: ✓ User loaded successfully during initial load");
+            setUser(userResponse);
+            setIsAuthenticated(true);
+          } catch (userError) {
+            console.error("AuthContext: ❌ Failed to load user with cached token:", userError);
+            // Token is stale or user data unavailable - clear auth state
+            await AsyncStorage.removeItem('firebaseToken');
+            await AsyncStorage.removeItem('firebaseUid');
+            setToken(null);
+            setIsAuthenticated(false);
+            setUser(null);
+          }
+        } else {
+          console.log("AuthContext: No token found, user not authenticated");
         }
       } catch (error) {
+        console.error("Auth check error:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    loadToken();
+
+    // Use singleton pattern to ensure this only runs once across all instances
+    if (!initialLoadPromise) {
+      initialLoadPromise = performInitialLoad();
+    }
+    initialLoadPromise.catch(err => console.error("Initial load promise error:", err));
   }, []);
 
   const loadUser = async () => {
     try {
       const response = await authApi.getUser();
       setUser(response);
+      console.log("AuthContext: User loaded successfully");
     } catch (error) {
+      console.error("AuthContext: Load user error:", error);
       throw error;
     }
   };
 
   const login = async (email: string, password: string, provider?: string) => {
     try {
-      if (provider === "Google") {
-        //console.log
-        ("Google login started");
-        authApi.googleLogin();
-        //console.log
-        ("Google login successful");
-        return;
-      } else if (provider === "Facebook") {
-        authApi.facebookLogin();
-        return;
-      } else {
-        const response = await authApi.login(email, password);
-        setToken(response.token);
-        await setAuthToken(response.token);
+      console.log("AuthContext: Starting login...");
+      const response = await authApi.login(email, password);
+      
+      console.log("AuthContext: Login returned, verifying token and fetching user...");
+      // Verify token is actually in AsyncStorage before proceeding
+      const storedToken = await AsyncStorage.getItem('firebaseToken');
+      if (!storedToken) {
+        console.error("AuthContext: ❌ Token not found in AsyncStorage after login!");
+        throw new Error("Token storage failed - user not authenticated");
+      }
+      
+      console.log("AuthContext: ✓ Token verified, loading user data...");
+      // Load user BEFORE setting authenticated to ensure user exists
+      try {
+        await loadUser();
+        setToken(storedToken);
         setIsAuthenticated(true);
-        setAuthProvider("User");
-        setUser(response);
+        setAuthProvider("Email");
+        console.log("AuthContext: ✓ User loaded and authenticated");
+      } catch (userError) {
+        console.error("AuthContext: ❌ Failed to load user after login:", userError);
+        // Clear failed auth state
+        await AsyncStorage.removeItem('firebaseToken');
+        await AsyncStorage.removeItem('firebaseUid');
+        setToken(null);
+        setIsAuthenticated(false);
+        setUser(null);
+        throw new Error("Failed to load user profile after login");
       }
     } catch (error) {
+      console.error("AuthContext: Login error:", error);
       setIsAuthenticated(false);
+      setToken(null);
+      setUser(null);
       throw error;
     }
   };
 
-  const register = async (email: string, password: string, firstName: string, lastName: string, theme: string = "light") => {
+  const register = async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light") => {
     try {
+      console.log("AuthContext: Starting register...");
       const response = await authApi.register(email, password, firstName, lastName, theme);
-      const { token } = response;
-      setToken(token);
-      await setAuthToken(token);
-      setIsAuthenticated(true);
-      setAuthProvider("User");
+      
+      console.log("AuthContext: Register returned, verifying token and fetching user...");
+      // Verify token is actually in AsyncStorage before proceeding
+      const storedToken = await AsyncStorage.getItem('firebaseToken');
+      if (!storedToken) {
+        console.error("AuthContext: ❌ Token not found in AsyncStorage after register!");
+        throw new Error("Token storage failed - user not authenticated");
+      }
+      
+      console.log("AuthContext: ✓ Token verified, loading user data...");
+      // Load user BEFORE setting authenticated to ensure user exists
+      try {
+        await loadUser();
+        setToken(storedToken);
+        setIsAuthenticated(true);
+        setAuthProvider("Email");
+        console.log("AuthContext: ✓ User loaded and authenticated");
+      } catch (userError) {
+        console.error("AuthContext: ❌ Failed to load user after register:", userError);
+        // Clear failed auth state
+        await AsyncStorage.removeItem('firebaseToken');
+        await AsyncStorage.removeItem('firebaseUid');
+        setToken(null);
+        setIsAuthenticated(false);
+        setUser(null);
+        throw new Error("Failed to load user profile after registration");
+      }
     } catch (error) {
+      console.error("AuthContext: Register error:", error);
+      setIsAuthenticated(false);
+      setToken(null);
+      setUser(null);
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      // Set the current token before logout
-      const currentToken = await getAuthToken();
-      if (currentToken) {
-        setToken(currentToken);
-      }
-
-      // Call the logout endpoint
       await authApi.logout();
-
-      // Clear the token and auth state
-      await removeAuthToken();
-      setToken(null);
-      setIsAuthenticated(false);
+      // Firebase listener will handle clearing auth state
       setAuthProvider("");
-      setUser(null);
     } catch (error) {
+      console.error("Logout error:", error);
       throw error;
     }
   };
+
   const clearToken = async () => {
     try {
-      await removeAuthToken();
+      await authApi.logout();
       setToken(null);
       setIsAuthenticated(false);
       setAuthProvider("");
       setUser(null);
     } catch (error) {
+      console.error("Clear token error:", error);
       throw error;
     }
   };

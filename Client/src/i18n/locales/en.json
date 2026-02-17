@@ -149,6 +149,13 @@
       "welcomeBack": "Welcome back!",
       "submit": "Sign In",
       "forgotPassword": "Forgot Password?",
+      "resetPassword": "Reset Password",
+      "resetDescription": "Enter your email address and we'll send you a link to reset your password.",
+      "sendReset": "Send Reset Email",
+      "resetEmailSent": "Password reset email sent successfully",
+      "resetError": "Failed to send password reset email",
+      "userNotFound": "User not found with this email",
+      "enterEmail": "Please enter an email address",
       "noAccount": "Don't have an account?",
       "signUp": "Sign Up",
       "google": "Google",
@@ -156,7 +163,17 @@
       "apple": "Apple",
       "invalidEmail": "Please enter a valid email",
       "success": "Login successful",
-      "error": "Login failed"
+      "error": "Login failed",
+      "googleLoginFailed": "Google Login Failed",
+      "facebookLoginFailed": "Facebook Login Failed",
+      "googleLoginError": "An unexpected error occurred",
+      "facebookLoginError": "An unexpected error occurred",
+      "connectingGoogle": "Connecting...",
+      "connectingFacebook": "Connecting...",
+      "loginWithGoogle": "Login with Google",
+      "loginWithFacebook": "Login with Facebook",
+      "processingGoogle": "Processing Google login...",
+      "processingFacebook": "Processing Facebook login..."
     },
     "register": {
       "title": "Register",
@@ -342,7 +359,7 @@
       "choose": "Choose Image",
       "take": "Take Photo",
       "noData": "No data available",
-      "success": "Image uploaded successfully",
+      "uploadSuccess": "Image uploaded successfully",
       "uploadError": "Failed to upload image",
       "pickError": "Failed to pick image",
       "takeError": "Failed to take photo"
@@ -352,6 +369,13 @@
     "permissions": {
       "title": "Permissions Required",
       "message": "Please grant access to continue"
+    },
+    "form": {
+      "editTitle": "Edit User",
+      "namePlaceholder": "Name",
+      "agePlaceholder": "Age",
+      "emailPlaceholder": "Email",
+      "allFieldsRequired": "All fields are required."
     }
   },
   "category": {
@@ -371,6 +395,46 @@
     "newChat": "New Chat",
     "groupChat": "Group Chat",
     "groupName": "Group Name",
-    "create": "Create Chat"
+    "create": "Create Chat",
+    "loadingChats": "Loading chats...",
+    "searchPlaceholder": "Search users..."
+  },
+  "friends": {
+    "title": "Friends",
+    "friendNotFound": "Friend not found",
+    "noFriends": "No friends yet",
+    "noPendingRequests": "No pending requests",
+    "groupChats": "Group Chats",
+    "noGroupChats": "No group chats yet",
+    "pendingStatus": "Pending"
+  },
+  "search": {
+    "users": "Search users...",
+    "equipment": "Search equipment...",
+    "location": "Search location...",
+    "loadingUsers": "Loading users..."
+  },
+  "forms": {
+    "selectLocation": "Select a location",
+    "allFieldsRequired": "All fields are required."
+  },
+  "map": {
+    "currentLocation": "Current Location"
+  },
+  "modals": {
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "chats": "Chats",
+    "newChat": "New Chat",
+    "chat": "Chat"
+  },
+  "pages": {
+    "home": "Home",
+    "equipment": "Equipment",
+    "profile": "Profile",
+    "settings": "Settings",
+    "messages": "Messages",
+    "adminPanel": "Admin Panel",
+    "about": "About"
   }
 }

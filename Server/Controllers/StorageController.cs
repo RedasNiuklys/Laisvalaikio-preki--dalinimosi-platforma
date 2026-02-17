@@ -120,8 +120,8 @@ namespace Server.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
-                // return Ok(new { avatarUrl = fullUrl });
-                return Ok(fullUrl);
+                return Ok(new { avatarUrl = fullUrl });
+                // return Ok(fullUrl);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Category } from '../types/Category';
+import { Category, CategoryEdit } from '../types/Category';
 import { getAuthToken } from '../utils/authUtils';
 import { CATEGORY_ENDPOINT } from '../utils/envConfig';
 
@@ -34,7 +34,7 @@ export const createCategory = async (category: Omit<Category, 'id' | 'createdAt'
 };
 
 // Update category
-export const updateCategory = async (id: number, category: Partial<Category>): Promise<Category> => {
+export const updateCategory = async (id: number, category: Partial<CategoryEdit>): Promise<Category> => {
     const token = await getAuthToken();
     const response = await axios.put(`${API_URL}/${id}`, category, {
         headers: { Authorization: `Bearer ${token}` }

@@ -14,7 +14,6 @@ import {
   Dialog,
   Divider,
   List,
-  RadioButton,
 } from "react-native-paper";
 
 import { useState } from "react";
@@ -23,7 +22,6 @@ import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useTranslation } from "react-i18next";
-import { changeLanguage } from "@/src/i18n";
 import { useRouter } from "expo-router";
 import { globalStyles } from "@/src/styles/globalStyles";
 import { authApi } from "@/src/api/auth";
@@ -36,12 +34,6 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
-
-  const handleLanguageChange = async (language: string) => {
-    await changeLanguage(language);
-
-    updateSettings({ ...settings, language });
-  };
 
   const clearCache = async () => {
     try {
@@ -102,65 +94,6 @@ export default function SettingsScreen() {
           />
         )}
       />
-
-      <Text
-        variant="bodyLarge"
-        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
-      >
-        {t("settings.language.title")}
-      </Text>
-
-      <RadioButton.Group
-        value={settings.language}
-        onValueChange={(value) => {
-          handleLanguageChange(value);
-          updateSettings({ ...settings, language: value });
-        }}
-      >
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center" }}
-            onPress={() => {
-              handleLanguageChange("en");
-              updateSettings({ ...settings, language: "en" });
-            }}
-          >
-            <Text style={{ fontSize: 24, marginRight: 8 }}>🇬🇧</Text>
-            <RadioButton
-              value="en"
-              status={settings.language === "en" ? "checked" : "unchecked"}
-              onPress={() => {
-                handleLanguageChange("en");
-                updateSettings({ ...settings, language: "en" });
-              }}
-            />
-            <Text style={{ color: theme.colors.onBackground }}>
-              {t("settings.language.english")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{ flexDirection: "row", alignItems: "center" }}
-            onPress={() => {
-              handleLanguageChange("lt");
-              updateSettings({ ...settings, language: "lt" });
-            }}
-          >
-            <Text style={{ fontSize: 24, marginRight: 8 }}>🇱🇹</Text>
-            <RadioButton
-              value="lt"
-              status={settings.language === "lt" ? "checked" : "unchecked"}
-              onPress={() => {
-                handleLanguageChange("lt");
-                updateSettings({ ...settings, language: "lt" });
-              }}
-            />
-            <Text style={{ color: theme.colors.onBackground }}>
-              {t("settings.language.lithuanian")}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </RadioButton.Group>
 
       <Text
         variant="bodyLarge"

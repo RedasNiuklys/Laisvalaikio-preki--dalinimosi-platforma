@@ -11,3 +11,5 @@ node_modules/
 .vs/
 *.user
 *.suo
+bakis-aea6d-firebase-adminsdk-fbsvc-9964ba365b.json
+Client/src/config/firebaseConfig.ts

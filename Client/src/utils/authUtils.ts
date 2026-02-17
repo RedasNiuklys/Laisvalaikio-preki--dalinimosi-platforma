@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TOKEN_KEY = 'token';
+const TOKEN_KEY = 'firebaseToken';
 
 export const getAuthToken = async (): Promise<string> => {
     const token = await AsyncStorage.getItem(TOKEN_KEY);
