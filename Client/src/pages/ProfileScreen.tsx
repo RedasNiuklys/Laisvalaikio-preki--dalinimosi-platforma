@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
   useTheme as usePaperTheme,
 } from "react-native-paper";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import { getProfile } from "../api/userApi";
 import { User } from "../types/User";
@@ -36,7 +36,7 @@ interface UserProfile {
 
 const ProfileScreen = () => {
   const theme = usePaperTheme();
-  const navigation = useNavigation();
+  const router = useRouter();
   const { logout } = useAuth();
   const { t } = useTranslation();
 
@@ -63,12 +63,9 @@ const ProfileScreen = () => {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchUser();
-      return () => { };
-    }, [])
-  );
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -166,7 +163,9 @@ const ProfileScreen = () => {
       // Step 2: Prepare file for upload
       const formData = new FormData();
       formData.append("userId", String(user?.id || 0));
-      androidFile = new ExpoFile(ImageResult.uri);
+      if (Platform.OS !== "web") {
+        androidFile = new ExpoFile(ImageResult.uri);
+      }
       if (Platform.OS === "web") {
         // For web: convert blob to File object
         console.log("Web platform detected - converting to File object");
@@ -183,11 +182,11 @@ const ProfileScreen = () => {
         tempFileUri = `${Paths.cache.name}avatar_${Date.now()}.jpg`;
         
         // Copy manipulated image to temporary location
-        androidFile.move(Paths.cache);
-        console.log("Temporary file created:", androidFile.uri);
+        androidFile?.move(Paths.cache);
+        console.log("Temporary file created:", androidFile?.uri);
 
         // Verify temp file exists
-        if(!androidFile.exists){
+        if(!androidFile?.exists){
             throw new Error("Failed to create temporary file");
         }
         info = androidFile.info();

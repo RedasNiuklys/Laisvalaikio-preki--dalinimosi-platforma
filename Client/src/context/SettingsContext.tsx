@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Settings {
   startWeekOnMonday: boolean;
-  language: string;
   // Add more settings as needed
 }
 
@@ -14,7 +13,6 @@ interface SettingsContextType {
 
 const defaultSettings: Settings = {
   startWeekOnMonday: true,
-  language: "en",
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -23,22 +21,6 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
-
-  useEffect(() => {
-    // Load settings from storage on mount
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const storedSettings = await AsyncStorage.getItem("appSettings");
-      if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
-      }
-    } catch (error) {
-      console.error("Error loading settings:", error);
-    }
-  };
 
   const updateSettings = (newSettings: Settings) => {
     try {

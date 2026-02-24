@@ -81,7 +81,7 @@ public class ChatController : ControllerBase
         {
             return Unauthorized();
         }
-
+        Console.WriteLine($"UserId: {userId}");
         var chat = await _context.Chats
             .Include(c => c.Participants)
                 .ThenInclude(p => p.User)
@@ -91,7 +91,7 @@ public class ChatController : ControllerBase
         {
             return NotFound("Chat not found");
         }
-
+        Console.WriteLine($"Chat found: {chat.Id}, Participants: {chat.Participants.Count}, UserId: {userId}");
         var isParticipant = chat.Participants.Any(p => p.UserId == userId);
         if (!isParticipant)
         {
@@ -167,7 +167,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpGet("{chatId}/participants")]
-    public async Task<ActionResult<IEnumerable<object>>> GetChatParticipants(int chatId)
+    public async Task<ActionResult<IEnumerable<object>>> GetChatParticipants([FromRoute] int chatId)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -177,7 +177,8 @@ public class ChatController : ControllerBase
 
         var isParticipant = await _context.ChatParticipants
             .AnyAsync(p => p.ChatId == chatId && p.UserId == userId);
-
+        System.Console.WriteLine($"ChatId: {chatId}");
+        System.Console.WriteLine($"UserId: {userId}");
         if (!isParticipant)
         {
             return Forbid();

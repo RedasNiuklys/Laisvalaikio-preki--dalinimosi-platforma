@@ -1,6 +1,9 @@
 /.env
 *.pem
 *.ppk
+*.pfx
+*.cer
+Server/certs/
 Server/bin/
 Server/obj/
 Server/**/bin/

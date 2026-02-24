@@ -110,7 +110,7 @@ namespace Server.Controllers
                 await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
 
                 // Create full URL for the avatar
-                var fullUrl = $"http://{_baseUrl}/api/Storage/GetAvatar/{userId}/{fileName}";
+                var fullUrl = $"https://{_baseUrl}/api/Storage/GetAvatar/{userId}/{fileName}";
 
                 // Update user's avatar URL
                 var user = await _userManager.FindByIdAsync(userId);

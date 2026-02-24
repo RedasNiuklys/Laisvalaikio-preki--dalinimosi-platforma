@@ -7,8 +7,7 @@ import {
   Platform,
 } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
-import { useRoute } from "@react-navigation/native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Location, LocationFormData } from "../types/Location";
 import { createLocation, updateLocation } from "../api/locationApi";
 import { showToast } from "../components/Toast";
@@ -32,7 +31,7 @@ const LocationFormScreen = (
   const theme = useTheme();
   const router = useRouter();
   const { user } = useAuth();
-  const route = useRoute();
+  const searchParams = useLocalSearchParams();
   const { t } = useTranslation();
   // const {
   //   location: existingLocation,

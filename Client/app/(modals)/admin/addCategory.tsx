@@ -29,7 +29,7 @@ export default function AddCategoryModal() {
             setLoading(true);
             await createCategory({
                 name,
-                description,
+                // description,
                 iconName: selectedIcon,
             });
             router.back();

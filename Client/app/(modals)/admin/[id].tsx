@@ -78,19 +78,20 @@ export default function EditCategoryModal() {
     loadCategories();
   }, [id]);
 
-  const loadCategory = async () => {
-    try {
-      const data = await getCategoryById(Number(id));
-      setCategory(data);
-      setName(data.name);
-      setSelectedIcon(data.iconName);
-      setSelectedParentId(data.categoryId ?? null);
-    } catch (error) {
-      console.error("Error loading category:", error);
+  
+    async function loadCategory() {
+      try {
+        const data = await getCategoryById(Number(id));
+        setCategory(data);
+        setName(data.name);
+        setSelectedIcon(data.iconName);
+        setSelectedParentId(data.categoryId ?? null);
+      } catch (error) {
+        console.error("Error loading category:", error);
+      }
     }
-  };
 
-  const loadCategories = async () => {
+  async function loadCategories() {
     try {
       const data = await getCategories();
       setCategories(data);
@@ -98,7 +99,6 @@ export default function EditCategoryModal() {
       console.error("Error loading categories:", error);
     }
   };
-
   const handleSubmit = async () => {
     try {
       setLoading(true);

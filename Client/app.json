@@ -2,6 +2,9 @@
   "expo": {
     "name": "Laisvalaikio prekių dalinimosi platforma",
     "slug": "Client",
+    "owner": "redasn",
+    "currentFullName": "@redasn/client",
+    "originalFullName": "@redasn/client",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/favicon.png",
@@ -54,9 +57,18 @@
     },
     "extra": {
       "router": {
-        "origin": "http://10.51.21.135:8081"
+        "origin": "https://10.51.21.135:8081"
       },
-      "API_BASE_URL": "http://10.51.21.135:5050"
+      "API_BASE_URL": "https://10.51.21.135:5050",
+      "eas": {
+        "projectId": "547482d5-6c42-4004-8f90-5a109c482988"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/547482d5-6c42-4004-8f90-5a109c482988"
     }
   }
 }

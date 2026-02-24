@@ -32,15 +32,21 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure URLs - Listen on all interfaces to allow phone connections
+// Configure URLs - Listen on both HTTP (mobile) and HTTPS (web)
 // Using port 8000 to avoid FortiClient blocking common ports
-builder.WebHost.UseUrls("http://0.0.0.0:8000"); // Listen on all interfaces
-
-// // Configure Kestrel
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(5000); // HTTP port
-// });
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(8000, listenOptions =>
+    {
+        // HTTP for mobile dev (Expo Go doesn't trust self-signed certs)
+        // HTTPS for web (where cert is trusted)
+        listenOptions.UseHttps(); // HTTPS on 8000
+    });
+    serverOptions.ListenAnyIP(8001, listenOptions =>
+    {
+        // HTTP fallback for mobile
+    });
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -198,18 +204,18 @@ System.Console.WriteLine("Building app done");
 // Use CORS before any other middleware
 app.UseCors("CorsPolicy");
 
-// Add request logging middleware
-app.Use(async (context, next) =>
-{
-    Console.WriteLine($"=== INCOMING REQUEST ===");
-    Console.WriteLine($"Method: {context.Request.Method}");
-    Console.WriteLine($"Path: {context.Request.Path}");
-    Console.WriteLine($"From: {context.Connection.RemoteIpAddress}");
-    Console.WriteLine($"Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
-    await next();
-    Console.WriteLine($"Response Status: {context.Response.StatusCode}");
-    Console.WriteLine("======================");
-});
+// // Add request logging middleware
+// app.Use(async (context, next) =>
+// {
+//     Console.WriteLine($"=== INCOMING REQUEST ===");
+//     Console.WriteLine($"Method: {context.Request.Method}");
+//     Console.WriteLine($"Path: {context.Request.Path}");
+//     Console.WriteLine($"From: {context.Connection.RemoteIpAddress}");
+//     Console.WriteLine($"Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+//     await next();
+//     Console.WriteLine($"Response Status: {context.Response.StatusCode}");
+//     Console.WriteLine("======================");
+// });
 
 app.UseSwagger();
 app.UseSwaggerUI();

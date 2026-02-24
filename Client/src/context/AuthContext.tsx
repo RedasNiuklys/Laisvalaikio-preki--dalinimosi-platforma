@@ -1,8 +1,7 @@
 // context/AuthContext.tsx
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { AuthContextType } from "../types/AuthContextType";
 import { authApi } from "../api/auth";
-import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/User";
 
@@ -23,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authProvider, setAuthProvider] = useState<string>("");
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -55,8 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error("Auth check error:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -182,6 +178,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const oauthLogin = async (provider: string = "OAuth") => {
+    try {
+      console.log("AuthContext: Starting OAuth login...");
+      
+      // Verify token is in AsyncStorage (should be set by OAuth handler)
+      const storedToken = await AsyncStorage.getItem('firebaseToken');
+      if (!storedToken) {
+        console.error("AuthContext: ❌ Token not found in AsyncStorage after OAuth!");
+        throw new Error("OAuth token not found - authentication failed");
+      }
+      
+      console.log("AuthContext: ✓ OAuth token verified, loading user data...");
+      
+      // Load user data from backend
+      try {
+        await loadUser();
+        setToken(storedToken);
+        setIsAuthenticated(true);
+        setAuthProvider(provider);
+        console.log("AuthContext: ✓ User loaded and authenticated via OAuth");
+      } catch (userError) {
+        console.error("AuthContext: ❌ Failed to load user after OAuth:", userError);
+        // Clear failed auth state
+        await AsyncStorage.removeItem('firebaseToken');
+        await AsyncStorage.removeItem('firebaseUid');
+        setToken(null);
+        setIsAuthenticated(false);
+        setUser(null);
+        throw new Error("Failed to load user profile after OAuth login");
+      }
+    } catch (error) {
+      console.error("AuthContext: OAuth login error:", error);
+      setIsAuthenticated(false);
+      setToken(null);
+      setUser(null);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -189,11 +224,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loadUser,
         login,
         register,
+        oauthLogin,
         logout,
         clearToken,
         token,
         authProvider,
-        isLoading,
         user,
       }}
     >

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using Server.Models;
 using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -60,16 +61,18 @@ public class LoginController : ControllerBase
         {
             Console.WriteLine("=== FIREBASE LOGIN ENDPOINT HIT ===");
             Console.WriteLine($"Firebase UID: {request.Uid}");
-
+            Console.WriteLine($"Firebase Token: {request.FirebaseToken}");
             // Verify Firebase token
             var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
 
             // Find or create user based on Firebase UID
             var user = await _userManager.FindByEmailAsync(request.Email);
+            bool isNewUser = false;
 
             if (user == null)
             {
                 // Create new user
+                isNewUser = true;
                 user = new ApplicationUser
                 {
                     UserName = request.Email,
@@ -104,7 +107,7 @@ public class LoginController : ControllerBase
                 }
             }
 
-            // Return user data (no JWT token needed - using Firebase tokens)
+            // Return user data with isNewUser flag for frontend
             return Ok(new
             {
                 id = user.Id,
@@ -113,7 +116,8 @@ public class LoginController : ControllerBase
                 firstName = user.FirstName,
                 lastName = user.LastName,
                 theme = user.Theme,
-                avatarUrl = user.AvatarUrl
+                avatarUrl = user.AvatarUrl,
+                isNewUser = isNewUser
             });
         }
         catch (UnauthorizedAccessException ex)
@@ -127,6 +131,46 @@ public class LoginController : ControllerBase
         }
     }
 
+    [HttpPost("check-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CheckEmail([FromBody] CheckEmailRequest request)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            return Ok(new
+            {
+                exists = user != null,
+                email = request.Email
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Check email error: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("check-firebase-uid")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CheckFirebaseUid([FromBody] CheckFirebaseUidRequest request)
+    {
+        try
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.FirebaseUid == request.Uid);
+            return Ok(new
+            {
+                exists = user != null,
+                uid = request.Uid
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Check Firebase UID error: {ex.Message}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("firebase-register")]
     public async Task<IActionResult> FirebaseRegister([FromBody] FirebaseRegisterRequest request)
     {
@@ -137,6 +181,19 @@ public class LoginController : ControllerBase
             Console.WriteLine($"Email: {request.Email}");
             Console.WriteLine($"FirebaseToken present: {!string.IsNullOrEmpty(request.FirebaseToken)}");
 
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                Console.WriteLine("Error: Email is required");
+                return BadRequest("Email is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Uid))
+            {
+                Console.WriteLine("Error: Firebase UID is required");
+                return BadRequest("Firebase UID is required");
+            }
+
             // Verify Firebase token
             Console.WriteLine("Verifying Firebase token...");
             var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
@@ -146,8 +203,36 @@ public class LoginController : ControllerBase
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                Console.WriteLine($"User already exists with email: {request.Email}");
-                return BadRequest("User already exists");
+                Console.WriteLine($"User already exists with email: {request.Email}. Linking Firebase UID.");
+                // Update existing user with Firebase UID if not already set
+                if (string.IsNullOrEmpty(existingUser.FirebaseUid))
+                {
+                    existingUser.FirebaseUid = request.Uid;
+                    var updateResult = await _userManager.UpdateAsync(existingUser);
+                    Console.WriteLine($"Updated User: {existingUser.Email}, Firebase UID: {existingUser.FirebaseUid}");
+                    if (!updateResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                        Console.WriteLine($"Failed to update Firebase UID: {errors}");
+                        return BadRequest($"Failed to link account: {errors}");
+                    }
+                    Console.WriteLine($"Successfully linked Firebase UID to existing user");
+                }
+                else
+                {
+                    Console.WriteLine($"User already has Firebase UID: {existingUser.FirebaseUid}");
+                }
+                // Return user data
+                return Ok(new
+                {
+                    id = existingUser.Id,
+                    email = existingUser.Email,
+                    userName = existingUser.UserName,
+                    firstName = existingUser.FirstName,
+                    lastName = existingUser.LastName,
+                    theme = existingUser.Theme,
+                    avatarUrl = existingUser.AvatarUrl
+                });
             }
 
             // Create new user
@@ -158,11 +243,12 @@ public class LoginController : ControllerBase
                 FirstName = request.FirstName ?? "User",
                 LastName = request.LastName ?? "",
                 Theme = request.Theme ?? "light",
+                AvatarUrl = request.AvatarUrl ?? "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
                 EmailConfirmed = true, // Firebase already verified email
                 FirebaseUid = request.Uid
             };
 
-            Console.WriteLine($"Creating user with email: {request.Email}");
+            Console.WriteLine($"Creating new user with email: {request.Email}");
             var result = await _userManager.CreateAsync(user);
 
             if (!result.Succeeded)
@@ -204,7 +290,145 @@ public class LoginController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"Firebase register error: {ex.Message}");
-            return StatusCode(500, "Internal server error during Firebase registration");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            return StatusCode(500, $"Internal server error during Firebase registration: {ex.Message}");
+        }
+    }
+
+    [HttpPost("validate-facebook-oauth")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ValidateFacebookOAuth([FromBody] ValidateFacebookOAuthRequest request)
+    {
+        try
+        {
+            Console.WriteLine("=== VALIDATE FACEBOOK OAUTH ENDPOINT HIT ===");
+            Console.WriteLine($"Email: {request.Email}");
+            Console.WriteLine($"Facebook UID: {request.FacebookId}");
+            Console.WriteLine($"Access token present: {!string.IsNullOrEmpty(request.AccessToken)}");
+            Console.WriteLine($"First Name: {request.FirstName}");
+            Console.WriteLine($"Last Name: {request.LastName}");
+            Console.WriteLine($"Theme: {request.Theme}");
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(request.AccessToken))
+            {
+                Console.WriteLine("Error: Access token is required");
+                return BadRequest("Access token is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.FacebookId))
+            {
+                Console.WriteLine("Error: Facebook ID is required");
+                return BadRequest("Facebook ID is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                Console.WriteLine("Error: Email is required");
+                return BadRequest("Email is required");
+            }
+
+            // Validate access token with Facebook Graph API
+            Console.WriteLine("Validating Facebook access token...");
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync($"https://graph.facebook.com/me?access_token={request.AccessToken}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Facebook token validation failed");
+                    return Unauthorized("Invalid Facebook access token");
+                }
+                Console.WriteLine("Facebook token validated successfully");
+            }
+
+            // Check if user already exists
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                Console.WriteLine($"User already exists with email: {request.Email}");
+                // Update user with latest info
+                existingUser.FirstName = request.FirstName ?? existingUser.FirstName;
+                existingUser.LastName = request.LastName ?? existingUser.LastName;
+                existingUser.AvatarUrl = request.AvatarUrl ?? existingUser.AvatarUrl;
+                existingUser.Theme = request.Theme ?? existingUser.Theme;
+
+                var updateResult = await _userManager.UpdateAsync(existingUser);
+                if (!updateResult.Succeeded)
+                {
+                    var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                    Console.WriteLine($"Failed to update user: {errors}");
+                    return BadRequest($"Failed to update user: {errors}");
+                }
+
+                // Generate backend JWT token
+                var token = _tokenService.GenerateToken(existingUser);
+                Console.WriteLine("Facebook OAuth login successful");
+                return Ok(new
+                {
+                    id = existingUser.Id,
+                    email = existingUser.Email,
+                    userName = existingUser.UserName,
+                    firstName = existingUser.FirstName,
+                    lastName = existingUser.LastName,
+                    theme = existingUser.Theme,
+                    avatarUrl = existingUser.AvatarUrl,
+                    token = token
+                });
+            }
+
+            // Create new user
+            var newUser = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FirstName = request.FirstName ?? "User",
+                LastName = request.LastName ?? "",
+                Theme = request.Theme ?? "light",
+                AvatarUrl = request.AvatarUrl ?? "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
+                EmailConfirmed = true // Facebook already verified
+            };
+
+            Console.WriteLine($"Creating new user with email: {request.Email}");
+            var result = await _userManager.CreateAsync(newUser);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                Console.WriteLine($"User creation failed: {errors}");
+                return BadRequest(result.Errors.Select(e => e.Description));
+            }
+
+            Console.WriteLine($"User created successfully: {newUser.Id}");
+
+            // Check if first user - make admin
+            if (_userManager.Users.Count() == 1)
+            {
+                if (!await _roleManager.RoleExistsAsync("Admin"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                }
+                await _userManager.AddToRoleAsync(newUser, "Admin");
+            }
+
+            // Generate backend JWT token
+            var newUserToken = _tokenService.GenerateToken(newUser);
+            Console.WriteLine("Facebook OAuth registration completed successfully");
+            return Ok(new
+            {
+                id = newUser.Id,
+                email = newUser.Email,
+                userName = newUser.UserName,
+                firstName = newUser.FirstName,
+                lastName = newUser.LastName,
+                theme = newUser.Theme,
+                avatarUrl = newUser.AvatarUrl,
+                token = newUserToken
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Facebook OAuth validation error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            return StatusCode(500, $"Internal server error during Facebook OAuth validation: {ex.Message}");
         }
     }
 
@@ -464,6 +688,28 @@ public class LoginController : ControllerBase
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Theme { get; set; }
+        public string? AvatarUrl { get; set; }
+    }
+
+    public class CheckEmailRequest
+    {
+        public string Email { get; set; }
+    }
+
+    public class CheckFirebaseUidRequest
+    {
+        public string Uid { get; set; }
+    }
+
+    public class ValidateFacebookOAuthRequest
+    {
+        public string AccessToken { get; set; }
+        public string Email { get; set; }
+        public string FacebookId { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Theme { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 }
 

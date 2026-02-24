@@ -46,7 +46,7 @@ export default function ChatListScreen() {
 
   useEffect(() => {
     fetchChats();
-  }, []);
+  });
 
   const fetchChats = async () => {
     try {
