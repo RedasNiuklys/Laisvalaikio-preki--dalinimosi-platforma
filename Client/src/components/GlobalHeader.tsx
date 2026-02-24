@@ -5,13 +5,21 @@ import { usePathname } from 'expo-router';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 import { colors, spacing } from '@/src/styles/globalStyles';
+import { useChatContext } from '@/src/context/ChatContext';
 
 export default function GlobalHeader() {
     const theme = useTheme();
     const pathname = usePathname();
+    const { title: chatTitle } = useChatContext();
 
     const getTitle = () => {
         const path = pathname.split('/').pop() || '';
+        
+        // If we're in a chat and have a cached title, use it
+        if (pathname.includes('/chat/') && chatTitle) {
+            return chatTitle;
+        }
+        
         switch (path) {
             case 'index':
                 return 'Home';

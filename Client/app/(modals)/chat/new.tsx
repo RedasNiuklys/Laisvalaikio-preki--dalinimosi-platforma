@@ -48,7 +48,7 @@ export default function NewChatModal() {
           },
         }
       );
-
+      console.log("Chat creation response:", response.data);
       // Navigate to the new chat
       router.push(`/chat/${response.data.chatId}`);
       //console.log

@@ -3,10 +3,11 @@ import { useTheme } from "react-native-paper";
 
 export default function ChatModalLayout() {
   const theme = useTheme();
-
+  let ChatName = "Chat";
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         headerStyle: {
           backgroundColor: theme.colors.primary,
         },
@@ -30,9 +31,9 @@ export default function ChatModalLayout() {
         }}
       />
       <Stack.Screen
-        name="[id]"
+        name={ChatName}
         options={{
-          title: "Chat",
+          title: "Current Chat",
         }}
       />
     </Stack>

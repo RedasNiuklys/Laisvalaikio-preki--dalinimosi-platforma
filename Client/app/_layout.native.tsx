@@ -2,6 +2,7 @@ import { Slot } from "expo-router";
 import { AuthProvider } from "@/src/context/AuthContext";
 import { ThemeProvider } from "@/src/context/ThemeContext";
 import { SettingsProvider } from "@/src/context/SettingsContext";
+import { ChatProvider } from "@/src/context/ChatContext";
 import { PaperProvider } from "react-native-paper";
 import { MD3LightTheme } from "react-native-paper";
 
@@ -23,9 +24,11 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider>
         <SettingsProvider>
-          <PaperProvider theme={lightTheme}>
-            <Slot />
-          </PaperProvider>
+          <ChatProvider>
+            <PaperProvider theme={lightTheme}>
+              <Slot />
+            </PaperProvider>
+          </ChatProvider>
         </SettingsProvider>
       </ThemeProvider>
     </AuthProvider>

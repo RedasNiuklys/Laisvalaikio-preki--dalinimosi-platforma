@@ -12,7 +12,7 @@ import {
 import { router } from "expo-router";
 import { BASE_URL } from "@/src/utils/envConfig";
 import { getAuthToken } from "@/src/utils/authUtils";
-import { useAuth } from "@/src/context/AuthContext";
+import { useChatContext } from "@/src/context/ChatContext";
 import { format } from "date-fns";
 import { User } from "@/src/types/User";
 import axios from "axios";
@@ -34,7 +34,8 @@ interface Chat {
   name: string;
   participants: {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     avatarUrl?: string;
   }[];
   lastMessage?: ChatMessage;
@@ -47,13 +48,14 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const theme = useTheme();
+  const { setChatTitle } = useChatContext();
   // const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     loadChats();
     loadUser();
     // Set up polling for unread messages
-    const interval = setInterval(loadChats, 3000); // Poll every 3 seconds
+    const interval = setInterval(loadChats, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -66,6 +68,7 @@ export default function ChatScreen() {
         },
       });
       setUser(response.data);
+      console.log("Loaded user profile:", response.data);
     } catch (error) {
       console.error("Error loading user profile:", error);
     }
@@ -80,7 +83,7 @@ export default function ChatScreen() {
         },
       });
       setChats(response.data);
-
+      console.log("Fetched chats:", response.data);
       // Update the tab badge with total unread count
       const totalUnread = response.data.reduce(
         (sum: number, chat: Chat) => sum + (chat.unreadCount || 0),
@@ -100,12 +103,68 @@ export default function ChatScreen() {
   const getChatTitle = (chat: Chat) => {
     if (chat.isGroupChat) return chat.name;
     const otherParticipant = chat.participants.find((p) => p.id !== user?.id);
-    return otherParticipant?.name || "Unknown User";
+    if (otherParticipant) {
+      return `${otherParticipant.firstName} ${otherParticipant.lastName}`.trim();
+    }
+    return "Unknown User";
+  };
+
+  const handleChatPress = (chat: Chat) => {
+    const title = getChatTitle(chat);
+    const participants = chat.participants.map((p) => ({
+      id: p.id,
+      name: `${p.firstName} ${p.lastName}`.trim(),
+      avatarUrl: p.avatarUrl,
+    }));
+    
+    setChatTitle(chat.id, title, chat.isGroupChat, participants);
+    router.push(`/(modals)/chat/${chat.id}`);
+  };
+
+  const deleteEmptyChat = async (chatId: string) => {
+    try {
+      const token = await getAuthToken();
+      await axios.delete(`${BASE_URL}/chat/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  };
+
+  const getFilteredChats = () => {
+    // Filter out duplicate 1:1 chats, keeping only one per participant
+    // Prefer the chat with messages over empty ones
+    const participantChatMap = new Map<string, Chat>();
+
+    for (const chat of chats) {
+      if (chat.isGroupChat) {
+        // Always include group chats
+        participantChatMap.set(`group_${chat.id}`, chat);
+      } else {
+        // For 1:1 chats, keep only one per participant
+        const otherParticipant = chat.participants.find((p) => p.id !== user?.id);
+        if (otherParticipant) {
+          const participantId = otherParticipant.id;
+          const existingChat = participantChatMap.get(participantId);
+
+          // Replace if this chat has messages and the existing one doesn't
+          if (!existingChat || (chat.lastMessage && !existingChat.lastMessage)) {
+            participantChatMap.set(participantId, chat);
+          }
+        }
+      }
+    }
+
+    return Array.from(participantChatMap.values());
   };
 
   const renderChatItem = ({ item: chat }: { item: Chat }) => (
     <TouchableRipple
-      onPress={() => router.push(`/(modals)/chat/${chat.id}`)}
+      onPress={() => handleChatPress(chat)}
       rippleColor={theme.colors.primaryContainer}
     >
       <List.Item
@@ -122,29 +181,45 @@ export default function ChatScreen() {
             }}
           />
         )}
-        right={(props) => (
-          <View style={styles.rightContent}>
-            {chat.unreadCount > 0 && (
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: theme.colors.primary },
-                ]}
-              >
+        right={(props) => {
+          if (!chat.lastMessage) {
+            // Show delete button for empty chats
+            return (
+              <View style={styles.rightContent}>
                 <Text
-                  style={[styles.badgeText, { color: theme.colors.onPrimary }]}
+                  style={styles.deleteButton}
+                  onPress={(e) => {
+                    e?.stopPropagation();
+                    deleteEmptyChat(chat.id);
+                  }}
                 >
-                  {chat.unreadCount}
+                  ✕
                 </Text>
               </View>
-            )}
-            {chat.lastMessage && (
+            );
+          }
+          return (
+            <View style={styles.rightContent}>
+              {chat.unreadCount > 0 && (
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: theme.colors.primary },
+                  ]}
+                >
+                  <Text
+                    style={[styles.badgeText, { color: theme.colors.onPrimary }]}
+                  >
+                    {chat.unreadCount}
+                  </Text>
+                </View>
+              )}
               <Text {...props} style={styles.timestamp}>
                 {format(new Date(chat.lastMessage.sentAt), "HH:mm")}
               </Text>
-            )}
-          </View>
-        )}
+            </View>
+          );
+        }}
       />
     </TouchableRipple>
   );
@@ -160,7 +235,7 @@ export default function ChatScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={chats}
+        data={getFilteredChats()}
         renderItem={renderChatItem}
         keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={Divider}
@@ -217,5 +292,11 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: "bold",
+  },
+  deleteButton: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ff4444",
+    paddingHorizontal: 12,
   },
 });

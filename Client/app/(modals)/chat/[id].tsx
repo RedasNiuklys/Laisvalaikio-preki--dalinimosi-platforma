@@ -6,10 +6,9 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import {
   Avatar,
-  IconButton,
   TextInput,
   useTheme,
   Text,
@@ -20,6 +19,7 @@ import { format } from "date-fns";
 import { ChatMessage } from "@/src/types/ChatMessage";
 import { BASE_URL } from "@/src/utils/envConfig";
 import { useAuth } from "@/src/context/AuthContext";
+import { useChatContext } from "@/src/context/ChatContext";
 import axios from "axios";
 import { getAuthToken } from "@/src/utils/authUtils";
 
@@ -35,13 +35,47 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const navigation = useNavigation();
+  const { title, chatId: cachedChatId } = useChatContext();
   const flatListRef = useRef<FlatList>(null);
+
+  const MESSAGES_PER_PAGE = 50;
+
+  useEffect(() => {
+    // Set the header title from context cache
+    if (cachedChatId === id && title) {
+      navigation.setOptions({ 
+        // headerShown: true,
+        title: title 
+      });
+    }
+  }, [id, cachedChatId, title, navigation]);
+
+  useEffect(() => {
+    // Scroll to bottom when messages load and shouldScrollToBottom is true
+    if (shouldScrollToBottom && messages.length > 0 && !loadingMore && !loading) {
+      // Multiple attempts to ensure scroll reaches bottom
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 50);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 150);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 300);
+    }
+  }, [messages.length, shouldScrollToBottom, loadingMore, loading]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -55,7 +89,7 @@ export default function ChatScreen() {
 
         setUser(userData);
 
-        // First check if user is a participant
+        // Check if user is a participant
         const token = await getAuthToken();
         const participantsResponse = await axios.get(
           `${BASE_URL}/chat/${id}/participants`,
@@ -76,10 +110,10 @@ export default function ChatScreen() {
           return;
         }
 
-        // Load messages first
+        // Load messages
         await loadMessages(userData);
 
-        // Then join the chat and setup message listener
+        // Join the chat and setup message listener
         await chatService.joinChat(id);
         setupMessageListener(userData);
       } catch (error) {
@@ -99,7 +133,8 @@ export default function ChatScreen() {
         chatService.leaveChat(id);
       }
     };
-  }, [isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, id]);
 
   const loadUser = async () => {
     try {
@@ -116,19 +151,24 @@ export default function ChatScreen() {
     }
   };
 
-  const loadMessages = async (currentUser: User) => {
+  const loadMessages = async (currentUser: User, skipCount: number = 0) => {
     try {
+      if (skipCount === 0) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
       const token = await getAuthToken();
       const response = await axios.get(`${BASE_URL}/chat/${id}/messages`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          take: 50,
-          skip: 0,
+          take: MESSAGES_PER_PAGE,
+          skip: skipCount,
         },
       });
-
+      console.log("Loaded messages:", response.data, "for chat ID:", id, "with skip:", skipCount);
       if (response.data && Array.isArray(response.data)) {
         const formattedMessages = response.data
           .reverse()
@@ -137,8 +177,17 @@ export default function ChatScreen() {
             isMine: msg.sender.id === currentUser.id,
           }));
 
-        setMessages(formattedMessages);
-        //console.log
+        if (skipCount === 0) {
+          // Initial load - set messages and scroll to bottom
+          setMessages(formattedMessages);
+          setShouldScrollToBottom(true);
+          setHasMore(formattedMessages.length === MESSAGES_PER_PAGE);
+        } else {
+          // Loading more - prepend to existing messages
+          setMessages((prev) => [...formattedMessages, ...prev]);
+          setHasMore(formattedMessages.length === MESSAGES_PER_PAGE);
+          setShouldScrollToBottom(false);
+        }
       } else {
         console.error("Invalid message data received:", response.data);
         setError("Failed to load messages");
@@ -146,6 +195,12 @@ export default function ChatScreen() {
     } catch (error) {
       console.error("Error loading messages:", error);
       setError("Failed to load messages");
+    } finally {
+      if (skipCount === 0) {
+        setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
     }
   };
 
@@ -162,7 +217,18 @@ export default function ChatScreen() {
           }
           return [...prev, newMessage];
         });
-        scrollToBottom();
+        // Auto-scroll to bottom when new message arrives with multiple attempts
+        if (shouldScrollToBottom) {
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }, 50);
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: false });
+          }, 200);
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: false });
+          }, 400);
+        }
       }
     });
   };
@@ -172,10 +238,19 @@ export default function ChatScreen() {
 
     try {
       setSending(true);
-      //console.log
+      setShouldScrollToBottom(true);
       await chatService.sendMessage(Number(id), newMessage.trim());
       setNewMessage("");
-      scrollToBottom();
+      // Force scroll to bottom after sending with multiple attempts
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 300);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 500);
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -183,10 +258,27 @@ export default function ChatScreen() {
     }
   };
 
-  const scrollToBottom = () => {
-    if (flatListRef.current && messages.length > 0) {
-      flatListRef.current.scrollToEnd({ animated: true });
+  const loadMoreMessages = async (currentUser: User) => {
+    if (loadingMore || !hasMore) return;
+    
+    const newSkip = skip + MESSAGES_PER_PAGE;
+    await loadMessages(currentUser, newSkip);
+    setSkip(newSkip);
+  };
+
+  const onScroll = (event: any) => {
+    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+    
+    // Check if user scrolled near the top
+    if (contentOffset.y < 500 && hasMore && !loadingMore) {
+      if (user) {
+        loadMoreMessages(user);
+      }
     }
+    
+    // Check if user is near the bottom
+    const isAtBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+    setShouldScrollToBottom(isAtBottom);
   };
 
   const renderMessage = ({ item }: { item: ChatMessage }) => (
@@ -255,15 +347,48 @@ export default function ChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
     >
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.messagesList}
-        onContentSizeChange={scrollToBottom}
-        onLayout={scrollToBottom}
-      />
+      <View style={styles.chatContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.messagesList}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          ListHeaderComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.primary}
+                style={{ marginVertical: 10 }}
+              />
+            ) : null
+          }
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+          }}
+          onContentSizeChange={() => {
+            if (shouldScrollToBottom) {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }
+          }}
+          onLayout={() => {
+            if (shouldScrollToBottom && messages.length > 0) {
+              // Multiple scroll attempts with increasing delays for reliability
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: false });
+              }, 10);
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: false });
+              }, 100);
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: false });
+              }, 250);
+            }
+          }}
+        />
+      </View>
       <View
         style={[
           styles.inputContainer,
@@ -293,6 +418,10 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: "column",
+  },
+  chatContainer: {
+    flex: 1,
   },
   centerContainer: {
     flex: 1,
@@ -301,7 +430,6 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: 16,
-    paddingBottom: 80,
   },
   messageContainer: {
     flexDirection: "row",
@@ -335,10 +463,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   inputContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     padding: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0, 0, 0, 0.1)",
