@@ -4,6 +4,7 @@ import { PaperProvider } from "react-native-paper";
 import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
 import { SettingsProvider } from "@/src/context/SettingsContext";
 import { AuthProvider, useAuth } from "@/src/context/AuthContext";
+import { ChatProvider } from "@/src/context/ChatContext";
 import { ToastContainer } from "@/src/components/Toast";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { View, StyleSheet, Platform } from "react-native";
@@ -92,7 +93,9 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider>
         <SettingsProvider>
-          <RootLayoutNav />
+          <ChatProvider>
+            <RootLayoutNav />
+          </ChatProvider>
         </SettingsProvider>
       </ThemeProvider>
     </AuthProvider>

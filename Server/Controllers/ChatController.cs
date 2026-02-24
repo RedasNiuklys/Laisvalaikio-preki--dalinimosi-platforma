@@ -326,6 +326,55 @@ public class ChatController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok();
     }
+
+    [HttpDelete("{chatId}")]
+    public async Task<ActionResult> DeleteChat(int chatId)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var chat = await _context.Chats
+            .Include(c => c.Participants)
+            .Include(c => c.Messages)
+            .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        if (chat == null)
+        {
+            return NotFound("Chat not found");
+        }
+
+        // Verify user is a participant
+        var isParticipant = chat.Participants.Any(p => p.UserId == userId);
+        if (!isParticipant)
+        {
+            return Forbid();
+        }
+
+        // For 1:1 chats, only allow deletion if there are no messages
+        if (!chat.IsGroupChat && chat.Messages.Any())
+        {
+            return BadRequest("Cannot delete a chat with messages");
+        }
+
+        // Remove all participants first
+        _context.ChatParticipants.RemoveRange(chat.Participants);
+
+        // Remove all messages if any
+        if (chat.Messages.Any())
+        {
+            _context.Messages.RemoveRange(chat.Messages);
+        }
+
+        // Remove the chat
+        _context.Chats.Remove(chat);
+
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
 }
 
 public class UpdateParticipantsRequest
