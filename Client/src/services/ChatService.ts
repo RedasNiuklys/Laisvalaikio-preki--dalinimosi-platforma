@@ -3,7 +3,7 @@ import { getAuthToken } from '../utils/authUtils';
 import { BASE_URL, CHAT_ENDPOINT, CHAT_HUB_ENDPOINT } from '../utils/envConfig';
 
 export interface Message {
-    id: number;
+    id: string;
     content: string;
     senderId: string;
     chatId: number;
@@ -171,7 +171,7 @@ class ChatService {
         }
     }
 
-    public async markAsRead(messageId: number) {
+    public async markAsRead(messageId: string | number) {
         try {
             await this.ensureInitialized();
             
@@ -179,7 +179,9 @@ class ChatService {
                 await this.startConnection();
             }
 
-            await this.hubConnection?.invoke('MarkAsRead', messageId);
+            // Convert to string if it's a number (messageId should be a GUID string)
+            const messageIdStr = typeof messageId === 'number' ? messageId.toString() : messageId;
+            await this.hubConnection?.invoke('MarkAsRead', messageIdStr);
         } catch (error) {
             console.error('Error marking message as read:', error);
             throw error;
