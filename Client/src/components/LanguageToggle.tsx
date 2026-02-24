@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Menu, Divider } from 'react-native-paper';
-import { IconButton, useTheme } from 'react-native-paper';
+import { IconButton, useTheme, Menu, Divider} from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { spacing } from '@/src/styles/globalStyles';
 
 export default function LanguageToggle() {
     const theme = useTheme();
@@ -20,10 +20,12 @@ export default function LanguageToggle() {
 
     return (
         <Menu
+
             visible={visible}
             onDismiss={closeMenu}
             anchor={
                 <IconButton
+                    style={{ marginRight: spacing.sm }}
                     icon="translate"
                     onPress={openMenu}
                     size={24}

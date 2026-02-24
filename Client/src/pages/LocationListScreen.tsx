@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, FlatList, Platform, Linking } from "react-native";
 import { Text, Card, FAB, useTheme, Button } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { getLocations } from "../api/locationApi";
 import { showToast } from "../components/Toast";
 import { Location } from "../types/Location";
@@ -14,7 +14,7 @@ export default function LocationListScreen() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null
   );
-  const navigation = useNavigation();
+  const router = useRouter();
   const theme = useTheme();
   const mapRef = useRef<LocationMapRef>(null);
   const { t } = useTranslation();
@@ -38,10 +38,9 @@ export default function LocationListScreen() {
   };
 
   const handleLocationSelect = (location: Location) => {
-    navigation.navigate("Edit Location", {
-      location,
-      isEditing: true,
-      onSubmitSuccess: fetchLocations,
+    router.push({
+      pathname: "/(modals)/location/edit-location",
+      params: { locationId: location.id }
     });
   };
 
@@ -152,16 +151,7 @@ export default function LocationListScreen() {
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() =>
-          navigation.navigate("Add Location", {
-            initialCoordinates: {
-              latitude: 54.903929466398154,
-              longitude: 23.957888105144654,
-            },
-            isEditing: false,
-            onSubmitSuccess: fetchLocations,
-          })
-        }
+        onPress={() => router.push("/(modals)/location/add-location")}
       />
     </View>
   );

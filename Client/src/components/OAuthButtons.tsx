@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import { authApi } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
 
 interface OAuthButtonsProps {
     firstName?: string;
@@ -28,11 +29,16 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
 }) => {
     const [loadingGoogle, setLoadingGoogle] = useState(false);
     const [loadingFacebook, setLoadingFacebook] = useState(false);
+    const { oauthLogin } = useAuth();
 
     const handleGoogleLogin = async () => {
         try {
             setLoadingGoogle(true);
             const result = await authApi.googleLogin(firstName, lastName, theme);
+            
+            // Update auth context with OAuth login
+            await oauthLogin('Google');
+            
             onSuccess?.(result.user, result.token);
         } catch (error: any) {
             console.error('Google login error:', error);
@@ -50,6 +56,10 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
         try {
             setLoadingFacebook(true);
             const result = await authApi.facebookLogin(firstName, lastName, theme);
+            
+            // Update auth context with OAuth login
+            await oauthLogin('Facebook');
+            
             onSuccess?.(result.user, result.token);
         } catch (error: any) {
             console.error('Facebook login error:', error);

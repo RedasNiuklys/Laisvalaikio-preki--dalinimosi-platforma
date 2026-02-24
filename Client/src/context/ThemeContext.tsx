@@ -2,15 +2,12 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   ReactNode,
 } from "react";
-import { useColorScheme } from 'react-native';
-import { MD3DarkTheme, MD3LightTheme, MD3Theme } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 import { colors } from '@/src/styles/globalStyles';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "./AuthContext";
-import { getProfile, updateUserThemePreference } from "@/src/api/userApi";
+import { updateUserThemePreference } from "@/src/api/userApi";
 
 const lightTheme = {
   ...MD3LightTheme,
@@ -38,7 +35,6 @@ const darkTheme = {
   },
 };
 
-// 🌍 Define ThemeContext type
 type ThemeContextType = {
   theme: typeof MD3LightTheme;
   isDarkMode: boolean;
@@ -46,49 +42,10 @@ type ThemeContextType = {
   setThemeFromPreference: (isDark: boolean) => void;
 };
 
-// Create context with proper types
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// 🎯 Provider component
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const systemColorScheme = useColorScheme();
-  const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === "dark");
-  const { user, isAuthenticated } = useAuth();
-
-  // Load theme from AsyncStorage on mount
-  useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const savedTheme = await AsyncStorage.getItem("theme");
-        if (savedTheme) {
-          setIsDarkMode(savedTheme === "dark");
-        }
-      } catch (error) {
-        console.error("Error loading theme:", error);
-      }
-    };
-    loadTheme();
-  }, []);
-
-  // Load user's theme preference from database when authenticated
-  useEffect(() => {
-    const loadUserTheme = async () => {
-      if (isAuthenticated && user) {
-        try {
-          const response = await getProfile();
-
-          if (response?.theme) {
-            const isDark = response.theme === "dark";
-            setIsDarkMode(isDark);
-            await AsyncStorage.setItem("theme", response.theme);
-          }
-        } catch (error) {
-          console.error("Error loading user theme:", error);
-        }
-      }
-    };
-    loadUserTheme();
-  }, [isAuthenticated, user]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const toggleTheme = async () => {
     const newTheme = !isDarkMode;
@@ -97,9 +54,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
 
-      // Update theme in database if user is authenticated
-      if (isAuthenticated && user) {
+      // Try to update theme in database if user is authenticated
+      try {
         await updateUserThemePreference(newTheme ? "dark" : "light");
+      } catch (error) {
+        // User might not be authenticated yet - that's okay
+        console.debug("Theme sync skipped - user not authenticated");
       }
     } catch (error) {
       console.error("Error saving theme:", error);

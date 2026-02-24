@@ -7,6 +7,8 @@
             "type": "process",
             "args": [
                 "build",
+                "-c",
+                "Release",
                 "${workspaceFolder}/Server/Server.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
@@ -19,10 +21,30 @@
             "type": "process",
             "args": [
                 "run",
+                "-c",
+                "Release",
+                "--project",
+                "${workspaceFolder}/Server/Server.csproj",
+                "--no-build"
+            ],
+            "problemMatcher": "$msCompile",
+            "options": {
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development"
+                }
+            }
+        },
+        {
+            "label": "watch-server",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
                 "--project",
                 "${workspaceFolder}/Server/Server.csproj"
             ],
             "problemMatcher": "$msCompile",
+            "isBackground": true,
             "options": {
                 "env": {
                     "ASPNETCORE_ENVIRONMENT": "Development"

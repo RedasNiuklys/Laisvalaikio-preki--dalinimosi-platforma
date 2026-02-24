@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, Animated, Platform } from 'react-native';
+import { Animated } from 'react-native';
 import { IconButton, useTheme } from 'react-native-paper';
 import { useTheme as useAppTheme } from '@/src/context/ThemeContext';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -65,23 +65,14 @@ export default function ThemeToggle() {
     };
 
     return (
-        <TouchableOpacity
-            style={{
-                position: 'absolute',
-                top: 4,
-                right: 16,
-                zIndex: 1,
-            }}
-            onPress={handleThemeToggle}
-            disabled={isUpdating}
-        >
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <IconButton
-                    icon={isDarkMode ? 'weather-night' : 'weather-sunny'}
-                    size={24}
-                    iconColor={theme.colors.primary}
-                />
-            </Animated.View>
-        </TouchableOpacity>
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+            <IconButton
+                icon={isDarkMode ? 'weather-night' : 'weather-sunny'}
+                size={24}
+                iconColor={theme.colors.primary}
+                onPress={handleThemeToggle}
+                disabled={isUpdating}
+            />
+        </Animated.View>
     );
 } 

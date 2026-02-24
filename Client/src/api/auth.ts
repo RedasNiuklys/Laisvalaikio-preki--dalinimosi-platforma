@@ -177,11 +177,11 @@ export const authApi = {
             // Send to backend to create user record
             const backendResponse = await axios.post(LOGIN_ENDPOINT + "/firebase-register", {
                 firebaseToken: idToken,
-                email,
+                email: email,
                 uid: localId,
-                firstName,
-                lastName,
-                theme
+                firstName: firstName,
+                lastName: lastName,
+                theme: theme
             });
 
             console.log("Backend user creation successful");

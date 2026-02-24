@@ -3,14 +3,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useAuth } from "@/src/context/AuthContext";
 import { useTranslation } from "react-i18next";
-import { useSettings } from "@/src/context/SettingsContext";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AuthLayout from "../(auth)/_layout";
 
 export default function TabLayout() {
   const { t } = useTranslation();
-  const { settings } = useSettings();
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -37,7 +35,6 @@ export default function TabLayout() {
   } else {
     return (
       <Tabs
-        key={settings.language}
         screenOptions={{
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.onSurfaceDisabled,

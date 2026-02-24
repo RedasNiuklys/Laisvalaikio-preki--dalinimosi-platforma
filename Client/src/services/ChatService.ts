@@ -52,9 +52,12 @@ class ChatService {
     private readReceiptCallbacks: ((data: { messageId: number; userId: string; readAt: string }) => void)[] = [];
     private reconnectAttempts = 0;
     private readonly maxReconnectAttempts = 5;
+    private initialized = false;
 
-    constructor() {
-        this.initializeConnection();
+    async ensureInitialized() {
+        if (this.initialized) return;
+        this.initialized = true;
+        await this.initializeConnection();
     }
 
     private async initializeConnection() {
@@ -93,13 +96,11 @@ class ChatService {
 
             // Handle reconnection
             this.hubConnection.onreconnecting(() => {
-                //console.log
-                ('Attempting to reconnect to chat hub...');
+                console.log('Attempting to reconnect to chat hub...');
             });
 
             this.hubConnection.onreconnected(() => {
-                //console.log
-                ('Reconnected to chat hub');
+                console.log('Reconnected to chat hub');
                 this.reconnectAttempts = 0;
             });
 
@@ -114,8 +115,7 @@ class ChatService {
         try {
             if (this.hubConnection && this.hubConnection.state === 'Disconnected') {
                 await this.hubConnection.start();
-                //console.log
-                ('Connected to chat hub');
+                console.log('Connected to chat hub');
                 this.reconnectAttempts = 0;
             }
         } catch (error) {
@@ -140,8 +140,9 @@ class ChatService {
 
     public async sendMessage(chatId: number | string, content: string) {
         try {
+            await this.ensureInitialized();
+            
             if (!this.hubConnection || this.hubConnection.state === 'Disconnected') {
-                await this.initializeConnection();
                 await this.startConnection();
                 await this.joinChat(chatId); // Ensure we're in the chat room
             }
@@ -172,6 +173,8 @@ class ChatService {
 
     public async markAsRead(messageId: number) {
         try {
+            await this.ensureInitialized();
+            
             if (!this.hubConnection || this.hubConnection.state !== 'Connected') {
                 await this.startConnection();
             }
@@ -185,6 +188,8 @@ class ChatService {
 
     public async joinChat(chatId: number | string) {
         try {
+            await this.ensureInitialized();
+            
             if (!this.hubConnection || this.hubConnection.state !== 'Connected') {
                 await this.startConnection();
             }
@@ -199,6 +204,8 @@ class ChatService {
 
     public async leaveChat(chatId: number | string) {
         try {
+            await this.ensureInitialized();
+            
             if (!this.hubConnection || this.hubConnection.state !== 'Connected') {
                 await this.startConnection();
             }
@@ -232,7 +239,7 @@ class ChatService {
     }
 
     async sendMessageToAPI(chatId: number, content: string): Promise<void> {
-        await this.initializeConnection();
+        await this.ensureInitialized();
         if (!this.hubConnection) {
             throw new Error('SignalR connection not established');
         }
@@ -240,7 +247,7 @@ class ChatService {
     }
 
     subscribeToMessages(chatId: number, callback: (message: Message) => void) {
-        this.initializeConnection().then(() => {
+        this.ensureInitialized().then(() => {
             if (!this.hubConnection) {
                 throw new Error('SignalR connection not established');
             }

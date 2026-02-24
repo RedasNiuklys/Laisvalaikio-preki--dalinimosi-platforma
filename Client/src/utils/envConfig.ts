@@ -1,14 +1,19 @@
+import { Platform } from 'react-native';
+
 // Default values (will be overridden by server config)
 const LOCAL_IP = '10.51.21.135';
-const API_PORT = '8000';
+// Use HTTPS on port 8000 for web, HTTP on port 8001 for mobile
+const API_PORT = Platform.OS === 'web' ? '8000' : '8001';
+const API_PROTOCOL = Platform.OS === 'web' ? 'https' : 'http';
+const WS_PROTOCOL = Platform.OS === 'web' ? 'wss' : 'ws';
 
 const getBaseUrl = () => {
-    console.log(`http://${LOCAL_IP}:${API_PORT}/api`);
-    return `http://${LOCAL_IP}:${API_PORT}/api`;
+    console.log(`${API_PROTOCOL}://${LOCAL_IP}:${API_PORT}/api`);
+    return `${API_PROTOCOL}://${LOCAL_IP}:${API_PORT}/api`;
 };
 
 const getWebSocketUrl = () => {
-    return `ws://${LOCAL_IP}:${API_PORT}/chatHub`;
+    return `${WS_PROTOCOL}://${LOCAL_IP}:${API_PORT}/chatHub`;
 };
 
 export const BASE_URL = getBaseUrl();

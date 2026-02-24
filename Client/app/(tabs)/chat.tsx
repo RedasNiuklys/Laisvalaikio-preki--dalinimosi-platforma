@@ -45,9 +45,9 @@ interface Chat {
 export default function ChatScreen() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
-  const theme = useTheme();
-  const { isAuthenticated } = useAuth();
   const [user, setUser] = useState<User | null>(null);
+  const theme = useTheme();
+  // const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     loadChats();

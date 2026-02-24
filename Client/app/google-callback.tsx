@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { useRoute } from '@react-navigation/native';
 import { router, useGlobalSearchParams } from 'expo-router';
 
 /**
@@ -9,13 +8,11 @@ import { router, useGlobalSearchParams } from 'expo-router';
  * Called by: google.com/o/oauth2/v2/auth redirect
  */
 export default function GoogleCallbackScreen() {
-    const route = useRoute();
     const params = useGlobalSearchParams();
 
     useEffect(() => {
         console.log("=== GOOGLE CALLBACK SCREEN ===");
         console.log("Route params:", params);
-        console.log("Route name:", route.name);
 
         // The authorization code should be in the URL parameters
         // Deep link format: com.laisvalaikio.app://google-callback?code=AUTHORIZATION_CODE
@@ -25,7 +22,7 @@ export default function GoogleCallbackScreen() {
         // This screen might not be called in normal flow, but kept as fallback
         
         router.back();
-    }, [params, route.name]);
+    }, [params]);
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

@@ -5,21 +5,14 @@ import { useAuth } from "../context/AuthContext";
 import { getUsedDatesForUser } from "../api/usedDatesApi";
 import { UsedDates } from "../types/UsedDates";
 import { format } from "date-fns";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types/navigation";
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
->;
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const [usedDates, setUsedDates] = useState<UsedDates[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const theme = useTheme();
-  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const router = useRouter();
 
   const loadUsedDates = async () => {
     try {
@@ -83,7 +76,7 @@ export default function HomeScreen() {
       <FAB
         style={styles.fab}
         icon="plus"
-        onPress={() => navigation.navigate("Equipment")}
+        onPress={() => router.push("/(tabs)/equipment")}
       />
     </View>
   );

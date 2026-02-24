@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { usePathname } from 'expo-router';
 import ThemeToggle from './ThemeToggle';
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: spacing.lg,
+        paddingHorizontal: Platform.OS === 'web' ? spacing.lg : spacing.md,
         paddingVertical: spacing.md,
         minHeight: 64,
         borderBottomWidth: 1,
