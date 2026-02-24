@@ -170,6 +170,8 @@ export default function ChatScreen() {
       <List.Item
         title={getChatTitle(chat)}
         description={chat.lastMessage?.content || "No messages yet"}
+        titleStyle={chat.unreadCount > 0 ? styles.unreadTitle : undefined}
+        descriptionStyle={chat.unreadCount > 0 ? styles.unreadDescription : undefined}
         left={(props) => (
           <Avatar.Image
             {...props}
@@ -298,5 +300,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#ff4444",
     paddingHorizontal: 12,
+  },
+  unreadTitle: {
+    fontWeight: "bold",
+  },
+  unreadDescription: {
+    fontWeight: "600",
   },
 });

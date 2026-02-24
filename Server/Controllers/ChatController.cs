@@ -36,6 +36,7 @@ public class ChatController : ControllerBase
                 .ThenInclude(c => c.Participants)
                     .ThenInclude(p => p.User)
             .Include(p => p.Chat.Messages)
+                .ThenInclude(m => m.ReadReceipts)
             .Select(p => new ChatResponseDto
             {
                 Id = p.Chat.Id,
@@ -58,6 +59,9 @@ public class ChatController : ControllerBase
                         }
                     })
                     .FirstOrDefault(),
+                UnreadCount = p.Chat.Messages
+                    .Where(m => m.SenderId != userId && !m.ReadReceipts.Any(r => r.UserId == userId))
+                    .Count(),
                 Participants = p.Chat.Participants.Select(part => new ParticipantDto
                 {
                     Id = part.User.Id,

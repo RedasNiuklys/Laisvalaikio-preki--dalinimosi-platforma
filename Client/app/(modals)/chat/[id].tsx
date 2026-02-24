@@ -182,6 +182,15 @@ export default function ChatScreen() {
           setMessages(formattedMessages);
           setShouldScrollToBottom(true);
           setHasMore(formattedMessages.length === MESSAGES_PER_PAGE);
+          
+          // Mark all messages as read
+          formattedMessages.forEach((msg) => {
+            if (!msg.isMine) {
+              chatService.markAsRead(msg.id).catch((error) => {
+                console.error("Error marking message as read:", error);
+              });
+            }
+          });
         } else {
           // Loading more - prepend to existing messages
           setMessages((prev) => [...formattedMessages, ...prev]);
@@ -215,6 +224,14 @@ export default function ChatScreen() {
           if (prev.some((msg) => msg.id === newMessage.id)) {
             return prev;
           }
+          
+          // Mark as read if it's not from current user
+          if (!newMessage.isMine) {
+            chatService.markAsRead(newMessage.id).catch((error) => {
+              console.error("Error marking message as read:", error);
+            });
+          }
+          
           return [...prev, newMessage];
         });
         // Auto-scroll to bottom when new message arrives with multiple attempts
@@ -352,7 +369,7 @@ export default function ChatScreen() {
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messagesList}
           onScroll={onScroll}
           scrollEventThrottle={16}

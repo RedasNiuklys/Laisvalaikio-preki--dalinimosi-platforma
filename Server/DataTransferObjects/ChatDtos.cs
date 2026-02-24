@@ -11,6 +11,7 @@ namespace Server.DataTransferObjects
         public DateTime CreatedAt { get; set; }
         public MessageDto? LastMessage { get; set; }
         public List<ParticipantDto> Participants { get; set; } = new();
+        public int UnreadCount { get; set; }
     }
 
     public class MessageDto
