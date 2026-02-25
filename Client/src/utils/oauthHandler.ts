@@ -306,9 +306,11 @@ export const handleFacebookOAuth = async (firstName: string | undefined, lastNam
         const backendToken = backendResponse.data.token;
         console.log("Backend validation successful, received JWT token");
 
-        // Step 7: Store the backend JWT token
+        // Step 7: Store the backend JWT token and Facebook access token
         await AsyncStorage.setItem('firebaseToken', backendToken);
         await AsyncStorage.setItem('authProvider', 'facebook');
+        await AsyncStorage.setItem('facebookAccessToken', access_token);
+        await AsyncStorage.setItem('facebookId', userResponse.data.id);
 
         console.log("Facebook OAuth completed successfully");
         return {

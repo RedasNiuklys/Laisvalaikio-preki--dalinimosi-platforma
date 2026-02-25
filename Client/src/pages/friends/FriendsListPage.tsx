@@ -3,11 +3,15 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import { Text, Avatar, Button, ActivityIndicator, IconButton, FAB, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../../utils/envConfig';
 import { getAuthToken } from '../../utils/authUtils';
 import { globalStyles } from '../../styles/globalStyles';
 import { UserSearch } from '../../components/UserSearch';
 import { NewChatModal } from '../../components/NewChatModal';
+import { useAuth } from '../../context/AuthContext';
+import { useFacebookInvite } from '../../hooks/useFacebookInvite';
+import { showToast } from '../../components/Toast';
 
 interface Friend {
     id: string;
@@ -36,12 +40,29 @@ export const FriendsListPage: React.FC = () => {
     const [chats, setChats] = useState<Chat[]>([]);
     const [loading, setLoading] = useState(true);
     const [showNewChatModal, setShowNewChatModal] = useState(false);
+    const [hasFacebookToken, setHasFacebookToken] = useState(false);
     const theme = useTheme();
     const router = useRouter();
+    const { authProvider } = useAuth();
+    const { inviteFriends, loading: inviteLoading } = useFacebookInvite();
 
     useEffect(() => {
         loadFriends();
         loadChats();
+    }, []);
+
+    useEffect(() => {
+        const checkFacebookToken = async () => {
+            try {
+                const token = await AsyncStorage.getItem('facebookAccessToken');
+                setHasFacebookToken(Boolean(token));
+            } catch (error) {
+                console.warn('Failed to read facebookAccessToken:', error);
+                setHasFacebookToken(false);
+            }
+        };
+
+        checkFacebookToken();
     }, []);
 
     const loadFriends = async () => {
@@ -91,6 +112,18 @@ export const FriendsListPage: React.FC = () => {
         loadChats();
     };
 
+    const handleInviteFriends = async () => {
+        const result = await inviteFriends();
+        if (result.success) {
+            showToast(
+                'success',
+                `Invitations sent to ${result.invitedCount || 'friends'} friends!`
+            );
+        } else {
+            showToast('error', result.error || 'Failed to send invitations');
+        }
+    };
+
     const getInitials = (name: string) => {
         return name
             .split(' ')
@@ -111,6 +144,21 @@ export const FriendsListPage: React.FC = () => {
     return (
         <View style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
             <UserSearch onUserSelect={handleUserSelect} />
+
+            {(authProvider === 'facebook' || hasFacebookToken) && (
+                <View style={styles.inviteContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={handleInviteFriends}
+                        loading={inviteLoading}
+                        disabled={inviteLoading}
+                        style={styles.inviteButton}
+                        icon="facebook"
+                    >
+                        Invite Facebook Friends
+                    </Button>
+                </View>
+            )}
 
             <View style={styles.section}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>
@@ -229,5 +277,12 @@ const styles = StyleSheet.create({
     emptyText: {
         textAlign: 'center',
         marginTop: 16,
+    },
+    inviteContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    inviteButton: {
+        marginTop: 8,
     },
 }); 
