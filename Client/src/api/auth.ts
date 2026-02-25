@@ -210,6 +210,12 @@ export const authApi = {
             console.log("Clearing firebaseUid from AsyncStorage...");
             await AsyncStorage.removeItem('firebaseUid');
             console.log("✓ firebaseUid cleared");
+
+            // Clear Facebook tokens if they exist
+            console.log("Clearing Facebook auth tokens...");
+            await AsyncStorage.removeItem('facebookAccessToken');
+            await AsyncStorage.removeItem('facebookId');
+            console.log("✓ Facebook tokens cleared");
             
             console.log("Logout successful");
         } catch (error: any) {
