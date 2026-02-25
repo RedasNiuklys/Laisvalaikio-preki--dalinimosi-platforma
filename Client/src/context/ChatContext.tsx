@@ -7,24 +7,24 @@ interface ChatParticipant {
 }
 
 interface ChatContextData {
-  chatId: string | null;
+  chatId: number | null;
   title: string;
   isGroupChat: boolean;
   participants: ChatParticipant[];
-  setChatTitle: (chatId: string, title: string, isGroupChat: boolean, participants: ChatParticipant[]) => void;
+  setChatTitle: (chatId: number, title: string, isGroupChat: boolean, participants: ChatParticipant[]) => void;
   clearChatTitle: () => void;
 }
 
 const ChatContext = createContext<ChatContextData | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [chatId, setChatId] = useState<string | null>(null);
+  const [chatId, setChatId] = useState<number | null>(null);
   const [title, setTitle] = useState("Chat");
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
 
   const setChatTitle = (
-    id: string,
+    id: number,
     newTitle: string,
     groupChat: boolean,
     chatParticipants: ChatParticipant[]

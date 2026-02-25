@@ -118,6 +118,33 @@ public class ChatHub : Hub
             },
             ReadBy = new object[] { }
         });
+
+        // Notify other participants about unread count change
+        var chat = await _context.Chats
+            .Include(c => c.Participants)
+            .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        if (chat != null)
+        {
+            // Notify sender about chat update (for LastMessage in chat list)
+            await NotifyUserOfChatUpdate(userId, chatId);
+
+            // Notify other participants about chat update AND unread count change
+            foreach (var participant in chat.Participants.Where(p => p.UserId != userId))
+            {
+                // Notify about chat update (so they see the new lastMessage)
+                await NotifyUserOfChatUpdate(participant.UserId, chatId);
+
+                // Calculate unread count for this participant
+                var unreadCount = await _context.Messages
+                    .Where(m => m.ChatId == chatId && m.SenderId != participant.UserId)
+                    .Where(m => !m.ReadReceipts.Any(r => r.UserId == participant.UserId))
+                    .CountAsync();
+
+                // Notify about unread count change
+                await NotifyUnreadCountChanged(participant.UserId, chatId, unreadCount);
+            }
+        }
     }
 
     public async Task MarkAsRead(string messageId)
@@ -172,6 +199,14 @@ public class ChatHub : Hub
                 UserId = userId,
                 ReadAt = messageRead.ReadAt
             });
+
+            // Calculate and notify unread count for this user
+            var unreadCount = await _context.Messages
+                .Where(m => m.ChatId == message.ChatId && m.SenderId != userId)
+                .Where(m => !m.ReadReceipts.Any(r => r.UserId == userId))
+                .CountAsync();
+
+            await NotifyUnreadCountChanged(userId, message.ChatId, unreadCount);
         }
     }
 
@@ -223,5 +258,32 @@ public class ChatHub : Hub
     public async Task LeaveChat(int chatId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
+    }
+
+    // Notify a user about a new chat or chat update
+    public async Task NotifyUserOfChatUpdate(string userId, int chatId)
+    {
+        try
+        {
+            Console.WriteLine($"Notifying user {userId} of chat update {chatId}");
+            await Clients.User(userId).SendAsync("ChatUpdated", chatId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error notifying user of chat update: {ex.Message}");
+        }
+    }
+
+    // Notify a user about unread count change
+    public async Task NotifyUnreadCountChanged(string userId, int chatId, int unreadCount)
+    {
+        try
+        {
+            await Clients.User(userId).SendAsync("UnreadCountChanged", new { chatId, unreadCount });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error notifying unread count change: {ex.Message}");
+        }
     }
 }

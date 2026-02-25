@@ -49,7 +49,9 @@ export interface Chat {
 class ChatService {
     private hubConnection: HubConnection | null = null;
     private messageCallbacks: ((message: Message) => void)[] = [];
-    private readReceiptCallbacks: ((data: { messageId: number; userId: string; readAt: string }) => void)[] = [];
+    private readReceiptCallbacks: ((data: { messageId: string; userId: string; readAt: string }) => void)[] = [];
+    private chatUpdatedCallbacks: ((chatId: number) => void)[] = [];
+    private unreadCountCallbacks: ((data: { chatId: number; unreadCount: number }) => void)[] = [];
     private reconnectAttempts = 0;
     private readonly maxReconnectAttempts = 5;
     private initialized = false;
@@ -90,8 +92,18 @@ class ChatService {
             });
 
             // Set up read receipt handling
-            this.hubConnection.on('MessageRead', (data: { messageId: number; userId: string; readAt: string }) => {
+            this.hubConnection.on('MessageRead', (data: { messageId: string; userId: string; readAt: string }) => {
                 this.readReceiptCallbacks.forEach(callback => callback(data));
+            });
+
+            // Set up chat updated handling
+            this.hubConnection.on('ChatUpdated', (chatId: number) => {
+                this.chatUpdatedCallbacks.forEach(callback => callback(chatId));
+            });
+
+            // Set up unread count changed handling
+            this.hubConnection.on('UnreadCountChanged', (data: { chatId: number; unreadCount: number }) => {
+                this.unreadCountCallbacks.forEach(callback => callback(data));
             });
 
             // Handle reconnection
@@ -131,10 +143,24 @@ class ChatService {
         };
     }
 
-    public onReadReceipt(callback: (data: { messageId: number; userId: string; readAt: string }) => void) {
+    public onReadReceipt(callback: (data: { messageId: string; userId: string; readAt: string }) => void) {
         this.readReceiptCallbacks.push(callback);
         return () => {
             this.readReceiptCallbacks = this.readReceiptCallbacks.filter(cb => cb !== callback);
+        };
+    }
+
+    public onChatUpdated(callback: (chatId: number) => void) {
+        this.chatUpdatedCallbacks.push(callback);
+        return () => {
+            this.chatUpdatedCallbacks = this.chatUpdatedCallbacks.filter(cb => cb !== callback);
+        };
+    }
+
+    public onUnreadCountChanged(callback: (data: { chatId: number; unreadCount: number }) => void) {
+        this.unreadCountCallbacks.push(callback);
+        return () => {
+            this.unreadCountCallbacks = this.unreadCountCallbacks.filter(cb => cb !== callback);
         };
     }
 
@@ -175,7 +201,7 @@ class ChatService {
         try {
             await this.ensureInitialized();
             
-            if (!this.hubConnection || this.hubConnection.state !== 'Connected') {
+            if (!this.hubConnection || this.hubConnection.state === 'Disconnected') {
                 await this.startConnection();
             }
 
@@ -186,6 +212,22 @@ class ChatService {
             console.error('Error marking message as read:', error);
             throw error;
         }
+    }
+
+    public getConnectionState(): string {
+        return this.hubConnection?.state || 'Disconnected';
+    }
+
+    public async waitForConnection(timeoutMs: number = 10000): Promise<boolean> {
+        const startTime = Date.now();
+        
+        await this.ensureInitialized();
+        
+        while (this.hubConnection?.state !== 'Connected' && Date.now() - startTime < timeoutMs) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        return this.hubConnection?.state === 'Connected';
     }
 
     public async joinChat(chatId: number | string) {

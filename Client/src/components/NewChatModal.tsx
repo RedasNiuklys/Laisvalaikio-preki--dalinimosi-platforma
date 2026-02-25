@@ -12,11 +12,14 @@ import {
 import { UserSelector } from "./UserSelector";
 import axios from "axios";
 import { BASE_URL } from "../utils/envConfig";
+import { getAuthToken } from "../utils/authUtils";
 import { useTranslation } from "react-i18next";
 
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   email: string;
   avatar?: string;
 }
@@ -36,6 +39,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const theme = usePaperTheme();
   const { t } = useTranslation();
 
@@ -58,16 +62,34 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
 
     try {
       setLoading(true);
-      const response = await axios.post(`${BASE_URL}/chat/create`, {
-        name: isGroupChat ? groupName : "",
-        isGroupChat,
-        participantIds: selectedUsers.map((user) => user.id),
-      });
+      setError(null);
+      const token = await getAuthToken();
+      const response = await axios.post(
+        `${BASE_URL}/chat/create`,
+        {
+          name: isGroupChat ? groupName : "",
+          isGroupChat,
+          participantIds: selectedUsers.map((user) => user.id),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      onChatCreated(response.data.chatId);
+      // Backend returns the chat ID directly, not wrapped in an object
+      const chatId = response.data;
+      console.log("Chat created with ID:", chatId);
+      onChatCreated(chatId);
       handleDismiss();
     } catch (error) {
       console.error("Error creating chat:", error);
+      setError(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to create chat"
+      );
     } finally {
       setLoading(false);
     }
@@ -77,6 +99,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
     setSelectedUsers([]);
     setIsGroupChat(false);
     setGroupName("");
+    setError(null);
     onDismiss();
   };
 
@@ -104,6 +127,14 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
             <Switch value={isGroupChat} onValueChange={setIsGroupChat} />
           </View>
         </View>
+
+        {error && (
+          <View style={[styles.errorContainer, { backgroundColor: theme.colors.errorContainer }]}>
+            <Text style={{ color: theme.colors.error }}>
+              {error}
+            </Text>
+          </View>
+        )}
 
         {isGroupChat && (
           <TextInput
@@ -163,6 +194,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: {
+    marginBottom: 20,
+  },
+  errorContainer: {
+    padding: 12,
+    borderRadius: 8,
     marginBottom: 20,
   },
   footer: {

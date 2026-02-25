@@ -50,9 +50,8 @@ export default function NewChatModal() {
       );
       console.log("Chat creation response:", response.data);
       // Navigate to the new chat
-      router.push(`/chat/${response.data.chatId}`);
-      //console.log
-      ("Chat created successfully");
+      router.push(`/chat/${response.data}`);
+      console.log("Chat created successfully");
     } catch (error) {
       console.error("Error creating chat:", error);
     } finally {

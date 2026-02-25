@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { User } from "@/src/types/User";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { chatService } from "@/src/services/ChatService";
 
 interface ChatMessage {
   id: string;
@@ -25,12 +26,13 @@ interface ChatMessage {
   isRead: boolean;
   sender: {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
   };
 }
 
 interface Chat {
-  id: string;
+  id: number;
   name: string;
   participants: {
     id: string;
@@ -52,11 +54,34 @@ export default function ChatScreen() {
   // const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    loadChats();
     loadUser();
-    // Set up polling for unread messages
-    const interval = setInterval(loadChats, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
+    loadChats();
+    
+    // Set up SignalR listeners for real-time chat updates
+    const unsubscribeChatUpdated = chatService.onChatUpdated((chatId) => {
+      console.log("Chat updated via SignalR:", chatId);
+      // Reload the chat list when a chat is updated
+      loadChats();
+    });
+
+    const unsubscribeUnreadCount = chatService.onUnreadCountChanged((data) => {
+      console.log("Unread count changed via SignalR:", data);
+      // Update the unread count for a specific chat
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === data.chatId ? { ...chat, unreadCount: data.unreadCount } : chat
+        )
+      );
+      // Update the total unread count
+      updateTabBadge();
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      unsubscribeChatUpdated();
+      unsubscribeUnreadCount();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUser = async () => {
@@ -76,27 +101,37 @@ export default function ChatScreen() {
 
   const loadChats = async () => {
     try {
+      setLoading(true);
       const token = await getAuthToken();
       const response = await axios.get(`${BASE_URL}/chat`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log("Fetched chats from backend:", response.data);
+      console.log("Chat IDs:", response.data.map((c: Chat) => c.id));
+      
+      // Backend already filters to only return chats user is a participant in
       setChats(response.data);
-      console.log("Fetched chats:", response.data);
-      // Update the tab badge with total unread count
-      const totalUnread = response.data.reduce(
-        (sum: number, chat: Chat) => sum + (chat.unreadCount || 0),
-        0
-      );
-      if (typeof window !== "undefined") {
-        // Store the unread count in localStorage for the tab badge
-        AsyncStorage.setItem("unreadMessageCount", totalUnread.toString());
-      }
+      console.log("State updated with chats");
+      updateTabBadge(response.data);
     } catch (error) {
       console.error("Error loading chats:", error);
+      setChats([]); // Clear chats on error
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateTabBadge = (chatsToUpdate?: Chat[]) => {
+    const chatsForBadge = chatsToUpdate || chats;
+    const totalUnread = chatsForBadge.reduce(
+      (sum: number, chat: Chat) => sum + (chat.unreadCount || 0),
+      0
+    );
+    if (typeof window !== "undefined") {
+      // Store the unread count in localStorage for the tab badge
+      AsyncStorage.setItem("unreadMessageCount", totalUnread.toString());
     }
   };
 
@@ -121,7 +156,7 @@ export default function ChatScreen() {
     router.push(`/(modals)/chat/${chat.id}`);
   };
 
-  const deleteEmptyChat = async (chatId: string) => {
+  const deleteEmptyChat = async (chatId: number) => {
     try {
       const token = await getAuthToken();
       await axios.delete(`${BASE_URL}/chat/${chatId}`, {
@@ -138,6 +173,8 @@ export default function ChatScreen() {
   const getFilteredChats = () => {
     // Filter out duplicate 1:1 chats, keeping only one per participant
     // Prefer the chat with messages over empty ones
+    console.log("getFilteredChats - Input chats:", chats.map(c => ({ id: c.id, isGroup: c.isGroupChat, participants: c.participants.length })));
+    
     const participantChatMap = new Map<string, Chat>();
 
     for (const chat of chats) {
@@ -159,7 +196,9 @@ export default function ChatScreen() {
       }
     }
 
-    return Array.from(participantChatMap.values());
+    const filtered = Array.from(participantChatMap.values());
+    console.log("getFilteredChats - Output chat IDs:", filtered.map(c => c.id));
+    return filtered;
   };
 
   const renderChatItem = ({ item: chat }: { item: Chat }) => (
@@ -169,7 +208,7 @@ export default function ChatScreen() {
     >
       <List.Item
         title={getChatTitle(chat)}
-        description={chat.lastMessage?.content || "No messages yet"}
+        description={chat.lastMessage ? `${chat.lastMessage.sender.firstName} ${chat.lastMessage.sender.lastName}: ${chat.lastMessage.content}` : "No messages yet"}
         titleStyle={chat.unreadCount > 0 ? styles.unreadTitle : undefined}
         descriptionStyle={chat.unreadCount > 0 ? styles.unreadDescription : undefined}
         left={(props) => (

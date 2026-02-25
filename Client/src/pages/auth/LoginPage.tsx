@@ -165,8 +165,12 @@ export default function LoginPage() {
                             autoComplete="email"
                             textContentType="emailAddress"
                             autoCorrect={false}
-                            left={<TextInput.Icon icon="email" />}
+                            left={<TextInput.Icon icon="email" 
+                                                            pointerEvents="none"
+                                                            tabIndex={-1}/>}
                             right={<TextInput.Icon
+                                                            pointerEvents="none"
+                                                            tabIndex={-1}
                                 icon={isEmailValid ? "check" : "close"}
                                 color={isEmailValid ? colors.success : colors.danger} />} />
 
@@ -181,7 +185,9 @@ export default function LoginPage() {
                             secureTextEntry={!isPasswordVisible}
                             style={{ marginBottom: spacing.xs }}
                             outlineStyle={{ borderRadius: 8 }}
-                            left={<TextInput.Icon icon="lock" />}
+                            left={<TextInput.Icon icon="lock" 
+                                                            pointerEvents="none"
+                                                            tabIndex={-1}/>}
                             right={<TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
                                 onPress={() => setIsPasswordVisible(!isPasswordVisible)} />} />
