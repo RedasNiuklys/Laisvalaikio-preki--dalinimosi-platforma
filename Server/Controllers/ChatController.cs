@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
 using Server.DataTransferObjects;
+using Server.Hubs;
 using System.Security.Claims;
 
 namespace Server.Controllers;
@@ -13,11 +15,13 @@ namespace Server.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHubContext<ChatHub> _chatHubContext;
     // private readonly ILogger<ChatController> _logger;
 
-    public ChatController(ApplicationDbContext context)
+    public ChatController(ApplicationDbContext context, IHubContext<ChatHub> chatHubContext)
     {
         _context = context;
+        _chatHubContext = chatHubContext;
         // _logger = logger;
     }
 
@@ -29,6 +33,8 @@ public class ChatController : ControllerBase
         {
             return Unauthorized();
         }
+
+        Console.WriteLine($"GetUserChats - UserId: {userId}");
 
         var chats = await _context.ChatParticipants
             .Where(p => p.UserId == userId)
@@ -74,7 +80,74 @@ public class ChatController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(chats);
+        Console.WriteLine($"GetUserChats - Returned {chats.Count} chats (before deduplication)");
+        foreach (var chat in chats)
+        {
+            Console.WriteLine($"  Chat {chat.Id}: {chat.Name}, Participants: {chat.Participants.Count}");
+        }
+
+        // Deduplicate chats by ID (in case of multiple ChatParticipant records for same chat)
+        var uniqueChats = chats
+            .GroupBy(c => c.Id)
+            .Select(g => g.First())
+            .ToList();
+
+        if (uniqueChats.Count < chats.Count)
+        {
+            Console.WriteLine($"Removed {chats.Count - uniqueChats.Count} duplicate chats");
+            Console.WriteLine($"Final chat IDs: {string.Join(", ", uniqueChats.Select(c => c.Id))}");
+        }
+        else
+        {
+            Console.WriteLine($"No duplicates found. Final chat IDs: {string.Join(", ", uniqueChats.Select(c => c.Id))}");
+        }
+
+        return Ok(uniqueChats);
+    }
+
+    [HttpGet("debug/all")]
+    public async Task<ActionResult> DebugAllChats()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"\n=== DEBUG: User ID from claims: {userId} ===");
+
+        // Get all chats with participants
+        var allChats = await _context.Chats.Include(c => c.Participants).ToListAsync();
+        Console.WriteLine($"Total chats in database: {allChats.Count}");
+
+        foreach (var chat in allChats)
+        {
+            Console.WriteLine($"\nChat {chat.Id}: {chat.Name} (IsGroupChat: {chat.IsGroupChat})");
+            Console.WriteLine($"  Participants:");
+            foreach (var participant in chat.Participants)
+            {
+                var isCurrentUser = participant.UserId == userId;
+                Console.WriteLine($"    - UserId: '{participant.UserId}' (matches current user: {isCurrentUser})");
+            }
+        }
+
+        // Check for duplicate ChatParticipant records
+        Console.WriteLine($"\n=== Checking for duplicates for user {userId} ===");
+        var userParticipants = await _context.ChatParticipants
+            .Where(p => p.UserId == userId)
+            .GroupBy(p => p.ChatId)
+            .Where(g => g.Count() > 1)
+            .ToListAsync();
+
+        if (userParticipants.Any())
+        {
+            Console.WriteLine($"Found {userParticipants.Count} chats with duplicate participants for this user:");
+            foreach (var group in userParticipants)
+            {
+                Console.WriteLine($"  Chat {group.Key}: {group.Count()} participant records");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No duplicate participant records found");
+        }
+
+        return Ok(new { Message = "Check server console for debug output" });
     }
 
     [HttpGet("{chatId}")]
@@ -139,7 +212,7 @@ public class ChatController : ControllerBase
 
         var messages = await _context.Messages
             .Where(m => m.ChatId == chatId)
-            .OrderByDescending(m => m.SentAt)
+            .OrderBy(m => m.SentAt)
             .Skip(skip)
             .Take(take)
             .Include(m => m.Sender)
@@ -238,24 +311,43 @@ public class ChatController : ControllerBase
             CreatedAt = DateTime.UtcNow
         };
 
-        // Add creator as participant and admin
-        var participants = new List<ChatParticipant>
+        // Add participants
+        var participants = new List<ChatParticipant>();
+
+        if (request.IsGroupChat)
         {
-            new ChatParticipant
+            // For group chats: creator is admin, others are not
+            participants.Add(new ChatParticipant
             {
                 UserId = userId,
                 IsAdmin = true,
                 JoinedAt = DateTime.UtcNow
-            }
-        };
+            });
 
-        // Add other participants
-        participants.AddRange(request.ParticipantIds.Select(id => new ChatParticipant
+            participants.AddRange(request.ParticipantIds.Select(id => new ChatParticipant
+            {
+                UserId = id,
+                IsAdmin = false,
+                JoinedAt = DateTime.UtcNow
+            }));
+        }
+        else
         {
-            UserId = id,
-            IsAdmin = false,
-            JoinedAt = DateTime.UtcNow
-        }));
+            // For 1:1 chats: neither participant is admin (admin role not applicable)
+            participants.Add(new ChatParticipant
+            {
+                UserId = userId,
+                IsAdmin = false,
+                JoinedAt = DateTime.UtcNow
+            });
+
+            participants.AddRange(request.ParticipantIds.Select(id => new ChatParticipant
+            {
+                UserId = id,
+                IsAdmin = false,
+                JoinedAt = DateTime.UtcNow
+            }));
+        }
 
         chat.Participants = participants;
 
@@ -270,6 +362,20 @@ public class ChatController : ControllerBase
         if (savedChat == null || !savedChat.Participants.Any())
         {
             return BadRequest("Failed to create chat with participants");
+        }
+
+        // Notify other participants about the new chat
+        foreach (var participant in savedChat.Participants.Where(p => p.UserId != userId))
+        {
+            try
+            {
+                var chatHub = _chatHubContext.Clients.User(participant.UserId);
+                await chatHub.SendAsync("ChatUpdated", chat.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error notifying user {participant.UserId} about chat creation: {ex.Message}");
+            }
         }
 
         return Ok(chat.Id);
@@ -318,7 +424,7 @@ public class ChatController : ControllerBase
         if (request.ParticipantsToRemove != null)
         {
             var participantsToRemove = chat.Participants
-                .Where(p => request.ParticipantsToRemove.Contains(p.UserId))
+                .Where(p => request.ParticipantsToRemove.Contains(p.UserId) && !p.IsAdmin)
                 .ToList();
 
             foreach (var participant in participantsToRemove)
@@ -328,6 +434,21 @@ public class ChatController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+
+        // Notify all participants about the change
+        foreach (var participant in chat.Participants)
+        {
+            try
+            {
+                var chatHub = _chatHubContext.Clients.User(participant.UserId);
+                await chatHub.SendAsync("ChatUpdated", chat.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error notifying user {participant.UserId} about participant update: {ex.Message}");
+            }
+        }
+
         return Ok();
     }
 
@@ -363,6 +484,9 @@ public class ChatController : ControllerBase
             return BadRequest("Cannot delete a chat with messages");
         }
 
+        // Store participants list before deletion to notify them
+        var otherParticipants = chat.Participants.Where(p => p.UserId != userId).ToList();
+
         // Remove all participants first
         _context.ChatParticipants.RemoveRange(chat.Participants);
 
@@ -376,6 +500,20 @@ public class ChatController : ControllerBase
         _context.Chats.Remove(chat);
 
         await _context.SaveChangesAsync();
+
+        // Notify other participants about the deletion
+        foreach (var participant in otherParticipants)
+        {
+            try
+            {
+                var chatHub = _chatHubContext.Clients.User(participant.UserId);
+                await chatHub.SendAsync("ChatUpdated", chatId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error notifying user {participant.UserId} about chat deletion: {ex.Message}");
+            }
+        }
 
         return Ok();
     }

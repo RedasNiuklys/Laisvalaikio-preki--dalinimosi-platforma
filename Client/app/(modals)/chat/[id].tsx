@@ -42,6 +42,7 @@ export default function ChatScreen() {
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+  const [connectionReady, setConnectionReady] = useState(false);
   const theme = useTheme();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -51,15 +52,15 @@ export default function ChatScreen() {
 
   const MESSAGES_PER_PAGE = 50;
 
-  useEffect(() => {
-    // Set the header title from context cache
-    if (cachedChatId === id && title) {
-      navigation.setOptions({ 
-        // headerShown: true,
-        title: title 
-      });
-    }
-  }, [id, cachedChatId, title, navigation]);
+  // useEffect(() => {
+  //   // Set the header title from context cache
+  //   if (cachedChatId === id && title) {
+  //     navigation.setOptions({ 
+  //       // headerShown: true,
+  //       title: title 
+  //     });
+  //   }
+  // }, [id, cachedChatId, title, navigation]);
 
   useEffect(() => {
     // Scroll to bottom when messages load and shouldScrollToBottom is true
@@ -113,9 +114,22 @@ export default function ChatScreen() {
         // Load messages
         await loadMessages(userData);
 
-        // Join the chat and setup message listener
-        await chatService.joinChat(id);
-        setupMessageListener(userData);
+        // Wait for SignalR connection to be ready (max 2 seconds)
+        try {
+          const isConnected = await chatService.waitForConnection(2000);
+          if (!isConnected) {
+            console.warn("SignalR connection not ready after 2 seconds, will retry on demand");
+            setConnectionReady(false);
+          } else {
+            setConnectionReady(true);
+            // Join the chat and setup message listener
+            await chatService.joinChat(id);
+            setupMessageListener(userData);
+          }
+        } catch (connError) {
+          console.error("Error waiting for connection:", connError);
+          setConnectionReady(false);
+        }
       } catch (error) {
         console.error("Error loading chat data:", error);
         setError("Failed to load chat");
@@ -170,8 +184,10 @@ export default function ChatScreen() {
       });
       console.log("Loaded messages:", response.data, "for chat ID:", id, "with skip:", skipCount);
       if (response.data && Array.isArray(response.data)) {
+        // Backend returns messages in ascending order (oldest first)
+        // For a chat, we want to display newest at bottom, so reverse to descending
         const formattedMessages = response.data
-          .reverse()
+          // .reverse()
           .map((msg: ChatMessage) => ({
             ...msg,
             isMine: msg.sender.id === currentUser.id,
@@ -192,7 +208,7 @@ export default function ChatScreen() {
             }
           });
         } else {
-          // Loading more - prepend to existing messages
+          // Loading more (scrolling up) - append to beginning (older messages go before current ones)
           setMessages((prev) => [...formattedMessages, ...prev]);
           setHasMore(formattedMessages.length === MESSAGES_PER_PAGE);
           setShouldScrollToBottom(false);
@@ -256,6 +272,22 @@ export default function ChatScreen() {
     try {
       setSending(true);
       setShouldScrollToBottom(true);
+
+      // Ensure connection is ready before sending
+      if (!connectionReady) {
+        console.log("Connection not ready, attempting to connect...");
+        const isConnected = await chatService.waitForConnection(2000);
+        if (!isConnected) {
+          setError("Unable to connect to chat service. Please try again.");
+          setTimeout(() => {
+            router.back();
+          }, 1500);
+          return;
+        }
+        setConnectionReady(true);
+        await chatService.joinChat(id);
+      }
+
       await chatService.sendMessage(Number(id), newMessage.trim());
       setNewMessage("");
       // Force scroll to bottom after sending with multiple attempts
@@ -270,6 +302,7 @@ export default function ChatScreen() {
       }, 500);
     } catch (error) {
       console.error("Error sending message:", error);
+      setError("Failed to send message. Please check your connection.");
     } finally {
       setSending(false);
     }
@@ -412,17 +445,25 @@ export default function ChatScreen() {
           { backgroundColor: theme.colors.surface },
         ]}
       >
+        {!connectionReady && (
+          <View style={[styles.connectionBanner, { backgroundColor: theme.colors.secondary }]}>
+            <ActivityIndicator size="small" color={theme.colors.onSecondary} />
+            <Text style={[styles.connectionText, { color: theme.colors.onSecondary, marginLeft: 8 }]}>
+              Connecting to chat...
+            </Text>
+          </View>
+        )}
         <TextInput
           mode="flat"
           value={newMessage}
           onChangeText={setNewMessage}
-          placeholder="Type a message..."
+          placeholder={connectionReady ? "Type a message..." : "Connecting..."}
           style={styles.input}
-          disabled={sending}
+          disabled={sending || !connectionReady}
           right={
             <TextInput.Icon
               icon={sending ? () => <ActivityIndicator size={20} /> : "send"}
-              disabled={!newMessage.trim() || sending}
+              disabled={!newMessage.trim() || sending || !connectionReady}
               onPress={handleSend}
             />
           }
@@ -486,5 +527,16 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "transparent",
+  },
+  connectionBanner: {
+    flexDirection: "row",
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  connectionText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
