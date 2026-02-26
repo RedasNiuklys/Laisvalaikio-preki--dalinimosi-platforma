@@ -1,10 +1,10 @@
 import { Slot } from "expo-router";
+import "@/src/i18n";
 import { AuthProvider } from "@/src/context/AuthContext";
 import { ThemeProvider } from "@/src/context/ThemeContext";
 import { SettingsProvider } from "@/src/context/SettingsContext";
 import { ChatProvider } from "@/src/context/ChatContext";
-import { PaperProvider } from "react-native-paper";
-import { MD3LightTheme } from "react-native-paper";
+import { PaperProvider, MD3LightTheme } from "react-native-paper";
 
 // Static theme - no hooks
 const lightTheme = {

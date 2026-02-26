@@ -23,8 +23,8 @@ import OAuthWebHandler from "@/src/components/OAuthWebHandler";
 import OAuthMobileHandler from "@/src/components/OAuthMobileHandler";
 import { globalStyles, colors, spacing } from "@/src/styles/globalStyles";
 import { useTheme } from "@/src/context/ThemeContext";
+import { FIREBASE_REST_API, firebaseConfig } from "@/src/utils/firebaseConfig";
 import axios from "axios";
-import { FIREBASE_REST_API, firebaseConfig } from "@/src/config/firebaseConfig";
 import { OAuthButtons } from "@/src/components/OAuthButtons";
 export default function LoginPage() {
     const { theme } = useTheme();

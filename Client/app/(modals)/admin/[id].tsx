@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -73,32 +73,32 @@ export default function EditCategoryModal() {
     return categories.filter((cat) => !cat.categoryId);
   }, [categories]);
 
-  useEffect(() => {
-    loadCategory();
-    loadCategories();
+  const loadCategory = useCallback(async () => {
+    try {
+      const data = await getCategoryById(Number(id));
+      setCategory(data);
+      setName(data.name);
+      setSelectedIcon(data.iconName);
+      setSelectedParentId(data.categoryId ?? null);
+    } catch (error) {
+      console.error("Error loading category:", error);
+    }
   }, [id]);
 
-  
-    async function loadCategory() {
-      try {
-        const data = await getCategoryById(Number(id));
-        setCategory(data);
-        setName(data.name);
-        setSelectedIcon(data.iconName);
-        setSelectedParentId(data.categoryId ?? null);
-      } catch (error) {
-        console.error("Error loading category:", error);
-      }
-    }
-
-  async function loadCategories() {
+  const loadCategories = useCallback(async () => {
     try {
       const data = await getCategories();
       setCategories(data);
     } catch (error) {
       console.error("Error loading categories:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCategory();
+    loadCategories();
+  }, [loadCategory, loadCategories]);
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
