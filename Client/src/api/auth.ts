@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LOGIN_ENDPOINT, USER_ENDPOINT } from '../utils/envConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FIREBASE_REST_API } from '../config/firebaseConfig';
+import { FIREBASE_REST_API } from '../utils/firebaseConfig';
 import { handleGoogleOAuth, handleFacebookOAuth } from '../utils/oauthHandler';
 
 // Add axios interceptors for debugging and authentication

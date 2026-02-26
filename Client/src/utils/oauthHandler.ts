@@ -5,7 +5,7 @@ import * as Facebook from "expo-auth-session/providers/facebook";
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
-import { FIREBASE_REST_API, OAUTH_CONFIG } from '../config/firebaseConfig';
+import { FIREBASE_REST_API, OAUTH_CONFIG } from './firebaseConfig';
 import { LOGIN_ENDPOINT } from './envConfig';
 import { showToast } from '../components/Toast';
 

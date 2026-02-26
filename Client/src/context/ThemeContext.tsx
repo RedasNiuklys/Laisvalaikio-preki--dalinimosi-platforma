@@ -44,7 +44,16 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// 🎨 Custom hook for using the theme
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
+}
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const toggleTheme = async () => {
@@ -84,11 +93,3 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// 🎨 Custom hook for using the theme
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-}

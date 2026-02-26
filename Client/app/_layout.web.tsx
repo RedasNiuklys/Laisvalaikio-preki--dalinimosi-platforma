@@ -1,4 +1,4 @@
-import { Stack, useSegments, useRouter, Slot } from "expo-router";
+import { useSegments, useRouter, Slot } from "expo-router";
 import "@/src/i18n";
 import { PaperProvider } from "react-native-paper";
 import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
@@ -42,15 +42,20 @@ function NavigationStack() {
 
     const inAuthGroup = segments[0] === "(auth)";
 
-    // Redirect to login if not authenticated and not in auth group
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace("/(auth)/login");
-    }
-    // Redirect to tabs if authenticated and in auth group
-    else if (isAuthenticated && inAuthGroup) {
-      router.replace("/(tabs)");
-    }
-  }, [isAuthenticated, segments, navigationReady]);
+    // Use setTimeout to defer navigation until after initial render
+    const timeoutId = setTimeout(() => {
+      // Redirect to login if not authenticated and not in auth group
+      if (!isAuthenticated && !inAuthGroup) {
+        router.replace("/(auth)/login");
+      }
+      // Redirect to tabs if authenticated and in auth group
+      else if (isAuthenticated && inAuthGroup) {
+        router.replace("/(tabs)");
+      }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated, segments, navigationReady, router]);
 
   const showHeader = segments[0] !== "(auth)";
 

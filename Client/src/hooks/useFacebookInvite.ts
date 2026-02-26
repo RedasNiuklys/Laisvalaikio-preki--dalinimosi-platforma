@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import * as Facebook from 'expo-facebook';
+// import * as Facebook from 'expo-facebook';
 import { Platform, Share } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { OAUTH_CONFIG } from '../config/firebaseConfig';
+import { OAUTH_CONFIG } from '../utils/firebaseConfig';
 
 interface FacebookInviteResult {
   success: boolean;
@@ -28,16 +28,16 @@ export const useFacebookInvite = () => {
         }
 
         // Step 2: Try to initialize Facebook SDK (native only)
-        if (Platform.OS !== 'web') {
-          try {
-            await Facebook.initializeAsync({
-              appId: OAUTH_CONFIG.facebook.appId,
-            });
-          } catch (fbError) {
-            console.warn('Facebook SDK initialization warning:', fbError);
-            // Continue even if initialization fails - we can use Share API as fallback
-          }
-        }
+            // if (Platform.OS !== 'web') {
+            // try {
+            //     await Facebook.initializeAsync({
+            //     appId: OAUTH_CONFIG.facebook.appId,
+            //     });
+            // } catch (fbError) {
+            //     console.warn('Facebook SDK initialization warning:', fbError);
+            //     // Continue even if initialization fails - we can use Share API as fallback
+            // }
+            // }
 
         // Step 3: Share invite link
         const shareMessage =

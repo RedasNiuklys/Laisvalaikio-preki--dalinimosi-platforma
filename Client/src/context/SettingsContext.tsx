@@ -15,9 +15,7 @@ const defaultSettings: Settings = {
   startWeekOnMonday: true,
 };
 
-const SettingsContext = createContext<SettingsContextType | undefined>(
-  undefined
-);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
