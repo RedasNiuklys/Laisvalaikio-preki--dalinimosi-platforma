@@ -9,6 +9,8 @@ import { colors } from '@/src/styles/globalStyles';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateUserThemePreference } from "@/src/api/userApi";
 
+console.log('🎨 ThemeContext: Module loading...');
+
 const lightTheme = {
   ...MD3LightTheme,
   colors: {
@@ -53,6 +55,7 @@ export function useTheme() {
   return context;
 }
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  console.log('🎨 ThemeContext: ThemeProvider rendering...');
   
   const [isDarkMode, setIsDarkMode] = useState(false);
 

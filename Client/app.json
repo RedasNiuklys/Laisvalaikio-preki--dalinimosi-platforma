@@ -9,7 +9,7 @@
 
     "orientation": "portrait",
     "icon": "./src/assets/favicon.png",
-    "scheme": "myapp",
+    "scheme": "laisvalaikio",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./src/assets/favicon.png",

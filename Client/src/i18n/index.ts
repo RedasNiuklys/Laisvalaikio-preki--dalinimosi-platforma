@@ -1,6 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+console.log('🌍 i18n: Module loading...');
+
 // Import language files
 import en from './locales/en.json';
 import lt from './locales/lt.json';
@@ -16,6 +18,8 @@ const resources = {
 
 const DEFAULT_LANGUAGE = 'en';
 
+console.log('🌍 i18n: Initializing with default language:', DEFAULT_LANGUAGE);
+
 
 
 i18n
@@ -28,6 +32,8 @@ i18n
             escapeValue: false,
         },
     });
+
+console.log('✅ i18n: Initialization complete');
 
 // Function to change language
 export const changeLanguage = async (language: string) => {
