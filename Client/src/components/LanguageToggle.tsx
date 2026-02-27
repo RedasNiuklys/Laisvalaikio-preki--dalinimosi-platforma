@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { IconButton, useTheme, Menu, Divider} from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
+// import { initReactI18next, useTranslation } from 'react-i18next';
+// import {changeLanguage} from 'i18next';
+import i18n from '../i18n';
 import { spacing } from '@/src/styles/globalStyles';
 
 export default function LanguageToggle() {
     const theme = useTheme();
-    const { i18n } = useTranslation();
     const [visible, setVisible] = useState(false);
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
-    const currentLanguage = i18n.language;
+    const currentLanguage = i18n.language || 'en';
 
     const handleLanguageChange = async (lang: string) => {
         await i18n.changeLanguage(lang);

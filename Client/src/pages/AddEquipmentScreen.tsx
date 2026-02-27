@@ -51,7 +51,7 @@ export default function AddEquipmentScreen({
     description: "",
     locationId: "",
     condition: "Good",
-    category: { id: 0, name: "", iconName: "", categoryId: 0 },
+    category: { id: 0, name: "", iconName: "", parentCategoryId: 0 },
     IsAvailable: true,
   });
 
@@ -334,7 +334,7 @@ export default function AddEquipmentScreen({
       Toast.show({
         type: "error",
         text1: t("common.error"),
-        text2: t("equipment.form.errors.saveFailed"),
+        text2: `${error}  ${t("equipment.form.errors.saveFailed")}`,
       });
     } finally {
       setLoading(false);

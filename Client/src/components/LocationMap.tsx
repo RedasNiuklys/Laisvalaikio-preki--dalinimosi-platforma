@@ -21,6 +21,7 @@ export interface LocationMapRef {
 // This is just the interface file.
 // The actual implementation is in LocationMap.web.tsx and LocationMap.native.tsx
 const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
-  (props, ref) => null
+  (_props, _ref) => null
 );
+LocationMap.displayName = "LocationMap";
 export default LocationMap;

@@ -1,7 +1,4 @@
 import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from "expo-auth-session";
-import * as Google from "expo-auth-session/providers/google";
-import * as Facebook from "expo-auth-session/providers/facebook";
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
@@ -64,10 +61,6 @@ export const handleGoogleOAuth = async (firstName: string | undefined, lastName:
         googleAuthUrl.searchParams.set("response_type", "code");
         googleAuthUrl.searchParams.set("scope", "openid email profile");
         googleAuthUrl.searchParams.set("access_type", "offline");
-        // googleAuthUrl.searchParams.set("device_id", "ID");
-        // googleAuthUrl.searchParams.set("device_name", "Device");
-        // Don't set device_id/device_name - Google rejects these for browser-based OAuth
-        // (WebBrowser.openAuthSessionAsync uses browser, not native SDK)
 
         console.log("Opening Google auth URL:", googleAuthUrl.toString());
 

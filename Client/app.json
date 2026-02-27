@@ -6,29 +6,15 @@
     "currentFullName": "@redasn/client",
     "originalFullName": "@redasn/client",
     "version": "1.0.1",
+
     "orientation": "portrait",
     "icon": "./src/assets/favicon.png",
-    "scheme": "com.laisvalaikio.app",
+    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./src/assets/favicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "deepLinking": {
-      "url": "com.laisvalaikio.app",
-      "prefixes": [
-        "com.laisvalaikio.app://",
-        "https://laisvalaikio.app"
-      ],
-      "config": {
-        "screens": {
-          "google-callback": "google-callback/:code",
-          "facebook-callback": "facebook-callback/:code",
-          "login": "(auth)/login",
-          "register": "(auth)/register"
-        }
-      }
     },
     "assetBundlePatterns": [
       "**/*"
@@ -57,7 +43,8 @@
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "autolinkingModuleResolution" : true
     },
     "extra": {
       "router": {

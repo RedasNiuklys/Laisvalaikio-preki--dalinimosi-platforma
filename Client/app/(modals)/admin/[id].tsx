@@ -70,8 +70,9 @@ export default function EditCategoryModal() {
   }, [searchQuery]);
 
   const parentCategories = useMemo(() => {
-    return categories.filter((cat) => !cat.categoryId);
+    return categories.filter((cat) => !cat.parentCategoryId);
   }, [categories]);
+  // const parentCategories = categories.filter((cat) => !cat.parentCategoryId); 
 
   const loadCategory = useCallback(async () => {
     try {
@@ -79,7 +80,7 @@ export default function EditCategoryModal() {
       setCategory(data);
       setName(data.name);
       setSelectedIcon(data.iconName);
-      setSelectedParentId(data.categoryId ?? null);
+      setSelectedParentId(data.parentCategoryId ?? null);
     } catch (error) {
       console.error("Error loading category:", error);
     }

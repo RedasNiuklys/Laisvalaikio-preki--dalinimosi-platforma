@@ -166,10 +166,8 @@ export default function LoginPage() {
                             textContentType="emailAddress"
                             autoCorrect={false}
                             left={<TextInput.Icon icon="email" 
-                                                            pointerEvents="none"
                                                             tabIndex={-1}/>}
                             right={<TextInput.Icon
-                                                            pointerEvents="none"
                                                             tabIndex={-1}
                                 icon={isEmailValid ? "check" : "close"}
                                 color={isEmailValid ? colors.success : colors.danger} />} />
@@ -186,7 +184,6 @@ export default function LoginPage() {
                             style={{ marginBottom: spacing.xs }}
                             outlineStyle={{ borderRadius: 8 }}
                             left={<TextInput.Icon icon="lock" 
-                                                            pointerEvents="none"
                                                             tabIndex={-1}/>}
                             right={<TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
