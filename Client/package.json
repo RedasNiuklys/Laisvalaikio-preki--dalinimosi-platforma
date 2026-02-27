@@ -31,6 +31,7 @@
     "date-fns": "^4.1.0",
     "expo": "^55.0.0",
     "expo-auth-session": "^55.0.6",
+    "expo-dev-client": "~55.0.9",
     "expo-file-system": "~55.0.9",
     "expo-image": "~55.0.5",
     "expo-image-manipulator": "~55.0.9",

@@ -19,18 +19,20 @@ export function useAuth(): AuthContextType {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log('🔐 AuthContext: AuthProvider component rendering...');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authProvider, setAuthProvider] = useState<string>("");
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    console.log('🔐 AuthContext: useEffect running (initial auth check)...');
     // Singleton pattern: ensure initial auth check only happens once
     const performInitialLoad = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('firebaseToken');
         if (storedToken) {
-          console.log("AuthContext: Token found in AsyncStorage, fetching user data...");
+          console.log("🔐 AuthContext: Token found in AsyncStorage, fetching user data...");
           setToken(storedToken);
           
           // Fetch user before setting authenticated to avoid empty state
@@ -76,8 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, provider?: string) => {
     try {
-      console.log("AuthContext: Starting login...");
-      const response = await authApi.login(email, password);
+      console.log("🔐 AuthContext: Starting login...");
+      await authApi.login(email, password);
       
       console.log("AuthContext: Login returned, verifying token and fetching user...");
       // Verify token is actually in AsyncStorage before proceeding
@@ -116,10 +118,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light") => {
     try {
-      console.log("AuthContext: Starting register...");
-      const response = await authApi.register(email, password, firstName, lastName, theme);
+      console.log("🔐 AuthContext: Starting registration...");
+      await authApi.register(email, password, firstName, lastName, theme);
       
-      console.log("AuthContext: Register returned, verifying token and fetching user...");
+      console.log("🔐 AuthContext: Register returned, verifying token and fetching user...");
       // Verify token is actually in AsyncStorage before proceeding
       const storedToken = await AsyncStorage.getItem('firebaseToken');
       if (!storedToken) {

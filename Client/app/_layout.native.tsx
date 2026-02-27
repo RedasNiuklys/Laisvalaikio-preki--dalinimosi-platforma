@@ -6,6 +6,8 @@ import { SettingsProvider } from "@/src/context/SettingsContext";
 import { ChatProvider } from "@/src/context/ChatContext";
 import { PaperProvider, MD3LightTheme } from "react-native-paper";
 
+console.log('📱 _layout.native.tsx: Module loading...');
+
 // Static theme - no hooks
 const lightTheme = {
   ...MD3LightTheme,
@@ -20,6 +22,7 @@ const lightTheme = {
 };
 
 export default function RootLayout() {
+  console.log('📱 _layout.native.tsx: RootLayout rendering...');
   return (
     <AuthProvider>
       <ThemeProvider>

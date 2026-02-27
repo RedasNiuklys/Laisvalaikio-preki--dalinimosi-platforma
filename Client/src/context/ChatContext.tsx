@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 
+console.log('💬 ChatContext: Module loading...');
+
 interface ChatParticipant {
   id: string;
   name: string;
@@ -18,6 +20,7 @@ interface ChatContextData {
 const ChatContext = createContext<ChatContextData | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('💬 ChatContext: ChatProvider rendering...');
   const [chatId, setChatId] = useState<number | null>(null);
   const [title, setTitle] = useState("Chat");
   const [isGroupChat, setIsGroupChat] = useState(false);

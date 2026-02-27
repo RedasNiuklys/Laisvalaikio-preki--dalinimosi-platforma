@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+console.log('⚙️ SettingsContext: Module loading...');
+
 interface Settings {
   startWeekOnMonday: boolean;
   // Add more settings as needed
@@ -18,6 +20,7 @@ const defaultSettings: Settings = {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  console.log('⚙️ SettingsContext: SettingsProvider rendering...');
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   const updateSettings = (newSettings: Settings) => {
