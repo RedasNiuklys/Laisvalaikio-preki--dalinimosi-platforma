@@ -1,15 +1,14 @@
-/* eslint-disable react/display-name */
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { View } from "react-native";
 import WebMap from "./WebMap";
 import { LocationMapProps, LocationMapRef } from "./LocationMap";
 import { Location } from "../types/Location";
+import Map from "@types/google.maps"; // Import the Map type from the Google Maps types
 
 const defaultCoordinates = {
   latitude: 54.903929466398154,
   longitude: 23.957888105144654,
 };
-
 const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
   (
     {
@@ -54,5 +53,7 @@ const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
     );
   }
 );
+LocationMap.displayName = "LocationMap";
+
 
 export default LocationMap;

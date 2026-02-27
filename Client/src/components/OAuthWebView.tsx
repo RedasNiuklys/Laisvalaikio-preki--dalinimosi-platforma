@@ -2,6 +2,7 @@ import { WebView } from "react-native-webview";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useTheme as useAppTheme } from "../context/ThemeContext";
 import { useTheme as usePaperTheme } from "react-native-paper";
+import { darkTheme } from "../theme/PaperTheme";
 
 interface OAuthWebViewProps {
   url: string;
@@ -26,7 +27,7 @@ const OAuthWebView: React.FC<OAuthWebViewProps> = ({
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         )}
-        style={[styles.webview, { pointerEvents: "auto" }]}
+        style={[styles.webview, { backgroundColor: appTheme === darkTheme ? "#000" : "#fff" }]}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         incognito={true}

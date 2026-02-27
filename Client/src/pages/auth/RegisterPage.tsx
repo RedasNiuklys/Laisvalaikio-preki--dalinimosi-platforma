@@ -60,7 +60,7 @@ export default function RegisterPage() {
             await register(
                 email,
                 password,
-                firstName || null,
+                firstName,
                 lastName || null,
                 theme.dark ? "dark" : "light"
             );
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                         onChangeText={setFirstName}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="account" pointerEvents="none" tabIndex={-1} />}
+                        left={<TextInput.Icon icon="account" tabIndex={-1} />}
                     />
 
                     <TextInput
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                         onChangeText={setLastName}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="account" pointerEvents="none" tabIndex={-1} />}
+                        left={<TextInput.Icon icon="account" tabIndex={-1} />}
                     />
 
                     <TextInput
@@ -139,12 +139,11 @@ export default function RegisterPage() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoComplete="email"
-                        left={<TextInput.Icon icon="email" pointerEvents="none" tabIndex={-1} />}
+                        left={<TextInput.Icon icon="email" tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isEmailValid ? "check" : "close"}
                                 color={isEmailValid ? colors.success : colors.danger}
-                                pointerEvents="none"
                                 tabIndex={-1}
                             />
                         }
@@ -158,7 +157,7 @@ export default function RegisterPage() {
                         secureTextEntry={!isPasswordVisible}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="lock" pointerEvents="none" tabIndex={-1} />}
+                        left={<TextInput.Icon icon="lock"  tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
@@ -177,7 +176,7 @@ export default function RegisterPage() {
                         secureTextEntry={!isPasswordVisible}
                         style={{ marginBottom: spacing.md }}
                         outlineStyle={{ borderRadius: 8 }}
-                        left={<TextInput.Icon icon="lock-check" pointerEvents="none" tabIndex={-1} />}
+                        left={<TextInput.Icon icon="lock-check"  tabIndex={-1} />}
                         right={
                             <TextInput.Icon
                                 icon={isPasswordVisible ? "eye-off" : "eye"}
@@ -192,7 +191,7 @@ export default function RegisterPage() {
                         mode="contained"
                         onPress={handleRegister}
                         loading={isLoading}
-                        disabled={!isEmailValid || !password || !confirmPassword}
+                        disabled={!isEmailValid || !password || !confirmPassword || password !== confirmPassword || !firstName}
                         style={[
                             globalStyles.button,
                             {

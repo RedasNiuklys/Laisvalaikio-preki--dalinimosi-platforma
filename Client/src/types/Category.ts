@@ -2,8 +2,8 @@ export interface Category {
     id: number;
     name: string;
     iconName: string;
-    categoryId?: number;
-    category?: Category;
+    parentCategoryId?: number;
+    parentCategory?: Category;
     subcategories?: Category[];
     createdAt?: string;
     updatedAt?: string;

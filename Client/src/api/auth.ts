@@ -4,63 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_REST_API } from '../utils/firebaseConfig';
 import { handleGoogleOAuth, handleFacebookOAuth } from '../utils/oauthHandler';
 
-// Add axios interceptors for debugging and authentication
-// axios.interceptors.request.use(
-//     async (config) => {
-//         console.log('📤 Axios Request:', {
-//             method: config.method?.toUpperCase(),
-//             url: config.url,
-//             baseURL: config.baseURL,
-//             headers: config.headers,
-//             data: config.data ? (typeof config.data === 'string' ? config.data : JSON.stringify(config.data)) : 'None',
-//             originHeader: (config.headers as any)?.Origin || (config.headers as any)?.origin,
-//             refererHeader: (config.headers as any)?.Referer || (config.headers as any)?.referer,
-//             hostHeader: (config.headers as any)?.Host || (config.headers as any)?.host,
-//             clientOrigin: typeof window !== 'undefined' ? window.location?.origin : undefined,
-//             clientHost: typeof window !== 'undefined' ? window.location?.host : undefined
-//         });
-
-//         // Add Firebase token to all requests (except auth endpoints and Firebase REST endpoints)
-//         const isServerAuthEndpoint = config.url?.includes('/firebase-login') || config.url?.includes('/firebase-register');
-//         const isFirebaseRestEndpoint =
-//             config.url?.includes('identitytoolkit.googleapis.com') ||
-//             config.url?.includes('securetoken.googleapis.com');
-
-//         if (!isServerAuthEndpoint && !isFirebaseRestEndpoint) {
-//             const token = await AsyncStorage.getItem('firebaseToken');
-//             if (token) {
-//                 config.headers.Authorization = `Bearer ${token}`;
-//             }
-//         }
-
-//         return config;
-//     },
-//     (error) => {
-//         console.error('❌ Axios Request Error:', error);
-//         return Promise.reject(error);
-//     }
-// );
-
-// axios.interceptors.response.use(
-//     (response) => {
-//         console.log('📥 Axios Response:', {
-//             status: response.status,
-//             url: response.config.url,
-//             data: response.data ? 'Present' : 'None'
-//         });
-//         return response;
-//     },
-//     (error) => {
-//         console.error('❌ Axios Response Error:', {
-//             message: error.message,
-//             status: error.response?.status,
-//             url: error.config?.url,
-//             data: error.response?.data
-//         });
-//         return Promise.reject(error);
-//     }
-// );
-
 export const authApi = {
     login: async (email: string, password: string) => {
         try {
@@ -258,57 +201,6 @@ export const authApi = {
             return null;
         }
     },
-
-    // Diagnostic: Test Firebase endpoint directly
-    testFirebaseEndpoint: async () => {
-        try {
-            console.log("\n=== TESTING FIREBASE ENDPOINTS ===");
-            
-            // Test with a real user we know exists
-            const testEmail = "redas@redas.com";
-            const testPassword = "Redas123!";
-            
-            console.log("Testing signUp endpoint first (should succeed):"); 
-            try {
-                const signupResponse = await axios.post(FIREBASE_REST_API.signUp, {
-                    email: testEmail + ".test" + Date.now(), // new email to avoid conflict
-                    password: testPassword,
-                    returnSecureToken: true
-                }, { headers: { 'Content-Type': 'application/json' } });
-                console.log("✓ signUp endpoint works:", signupResponse.status);
-            } catch (e: any) {
-                console.log("✗ signUp failed:", e.response?.status, e.response?.data?.error?.message);
-            }
-            
-            console.log("\nTesting signIn endpoint:");
-            try {
-                const signinResponse = await axios.post(FIREBASE_REST_API.signIn, {
-                    email: testEmail,
-                    password: testPassword,
-                    returnSecureToken: true
-                }, { headers: { 'Content-Type': 'application/json' } });
-                console.log("✓ signIn endpoint works:", signinResponse.status);
-            } catch (e: any) {
-                console.log("✗ signIn failed:", e.response?.status, e.response?.data?.error?.message);
-            }
-            
-            console.log("\nTesting signIn alternative endpoint:");
-            try {
-                const signinAltResponse = await axios.post(FIREBASE_REST_API.signInAlt, {
-                    email: testEmail,
-                    password: testPassword,
-                    returnSecureToken: true
-                }, { headers: { 'Content-Type': 'application/json' } });
-                console.log("✓ signIn alt endpoint works:", signinAltResponse.status);
-            } catch (e: any) {
-                console.log("✗ signIn alt failed:", e.response?.status, e.response?.data?.error?.message);
-            }
-            
-        } catch (error: any) {
-            console.error("❌ Endpoint test error:", error);
-        }
-    },
-
     // Google OAuth Login (REST API approach with browser redirect)
     googleLogin: async (firstName: string | undefined, lastName: string | undefined, theme: string = "light") => {
         return handleGoogleOAuth(firstName, lastName, theme);

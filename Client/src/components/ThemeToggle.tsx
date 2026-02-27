@@ -17,7 +17,7 @@ export default function ThemeToggle() {
         Animated.timing(spinValue, {
             toValue: 1,
             duration: 500,
-            useNativeDriver: true,
+            useNativeDriver: false,
         }).start(() => {
             spinValue.setValue(0);
         });

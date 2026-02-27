@@ -6,7 +6,7 @@ import { SettingsProvider } from "@/src/context/SettingsContext";
 import { AuthProvider, useAuth } from "@/src/context/AuthContext";
 import { ChatProvider } from "@/src/context/ChatContext";
 import { ToastContainer } from "@/src/components/Toast";
-import GlobalHeader from "@/src/components/GlobalHeader";
+import GlobalHeader from "../src/components/GlobalHeader";
 import { View, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";

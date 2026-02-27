@@ -12,14 +12,6 @@ interface OAuthButtonsProps {
     onError?: (error: Error) => void;
 }
 
-/**
- * OAuth Login Buttons Component
- * 
- * Usage in LoginPage or RegisterPage:
- * 
-
- */
-
 export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
     firstName,
     lastName,
@@ -127,44 +119,3 @@ const styles = StyleSheet.create({
         marginTop: 10
     }
 });
-
-/**
- * EXAMPLE USAGE IN RegisterPage.tsx:
- * 
- * import { OAuthButtons } from '../components/OAuthButtons';
- * 
- * export default function RegisterPage() {
- *     const [firstName, setFirstName] = useState('');
- *     const [lastName, setLastName] = useState('');
- *     const { login } = useAuth();
- * 
- *     return (
- *         <ScrollView>
- *             <TextInput
- *                 label="First Name"
- *                 value={firstName}
- *                 onChangeText={setFirstName}
- *             />
- *             <TextInput
- *                 label="Last Name"
- *                 value={lastName}
- *                 onChangeText={setLastName}
- *             />
- * 
- *             // Email/Password form here
- * 
- *             <OAuthButtons
- *                 firstName={firstName}
- *                 lastName={lastName}
- *                 onSuccess={(user) => {
- *                     login(user);
- *                     router.replace('/(tabs)/');
- *                 }}
- *                 onError={(error) => {
- *                     Alert.alert('Error', error.message);
- *                 }}
- *             />
- *         </ScrollView>
- *     );
- * }
- */
