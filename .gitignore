@@ -19,4 +19,4 @@ Client/src/utils/firebaseConfig.ts
 Server/appsettings.json
 Server/appsettings.local.backup.json
 Server/appsettings.*.json
-Server/appsettings.example.json
+!Server/appsettings.example.json
