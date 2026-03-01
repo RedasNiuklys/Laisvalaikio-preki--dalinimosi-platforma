@@ -2,8 +2,8 @@ import { Platform } from 'react-native';
 
 // Firebase REST API configuration
 export const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyDkOSq9KU3n5lBoI6a-VDZtxhKpGYCTanQ",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "bakis-aea6d"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || ""
 };
 
 export const FIREBASE_REST_API = {
@@ -17,8 +17,8 @@ export const FIREBASE_REST_API = {
   base: `https://identitytoolkit.googleapis.com/v1/accounts`
 };
 
-const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://10.51.21.135:8000';
-const DEFAULT_PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || 'https://development-opt-specialist-plans.trycloudflare.com';
+const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || '';
+const DEFAULT_PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || '';
 const PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_OAUTH_BASE_URL || DEFAULT_PUBLIC_OAUTH_BASE_URL;
 const localhost = 'localhost';
 const WEB_REDIRECT_BASE = `https://${localhost}:8000`;
@@ -32,17 +32,17 @@ function getRedirectUrl(provider) {
 
 export const OAUTH_CONFIG = {
   google: {
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '816407630722-5jl350taiijr2dct3pj18tn3j38a0rj5.apps.googleusercontent.com',
-    clientSecret: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET || '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',
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET || '',
     redirectUrl: getRedirectUrl('google-callback'),
   },
   facebook: {
-    appId: process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || '2109372456101960',
-    appSecret: process.env.EXPO_PUBLIC_FACEBOOK_APP_SECRET || '3138c568f90e288682f80f9286ef6c7d',
+    appId: process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || '',
+    appSecret: process.env.EXPO_PUBLIC_FACEBOOK_APP_SECRET || '',
     redirectUrl: getRedirectUrl('facebook-callback'),
   },
 };
 
-export const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || 'https://10.51.21.135:8443';
+export const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || '';
 export const SERVER_URL = SERVER_BASE_URL;
 export const OAUTH_BASE_URL = PUBLIC_OAUTH_BASE_URL;

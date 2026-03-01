@@ -10,17 +10,18 @@ const path = require('path');
 
 const configPath = path.join(__dirname, '../src/utils/firebaseConfig.ts');
 
-// Get from environment or use defaults
-const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDkOSq9KU3n5lBoI6a-VDZtxhKpGYCTanQ';
-const projectId = process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || 'bakis-aea6d';
-const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '816407630722-5jl350taiijr2dct3pj18tn3j38a0rj5.apps.googleusercontent.com';
-const googleClientSecret = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET || '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';
-const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || '2109372456101960';
-const facebookAppSecret = process.env.EXPO_PUBLIC_FACEBOOK_APP_SECRET || '3138c568f90e288682f80f9286ef6c7d';
-const serverBaseUrl = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://10.51.21.135:8000';
-const defaultOAuthUrl = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || 'https://development-opt-specialist-plans.trycloudflare.com';
+// Get from environment or use placeholders
+// Users should set these via build scripts (build-android.cmd or build-android.ps1)
+const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '';
+const projectId = process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || '';
+const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
+const googleClientSecret = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_SECRET || '';
+const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || '';
+const facebookAppSecret = process.env.EXPO_PUBLIC_FACEBOOK_APP_SECRET || '';
+const serverBaseUrl = process.env.EXPO_PUBLIC_SERVER_BASE_URL || '';
+const defaultOAuthUrl = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || '';
 const oauthBaseUrl = process.env.EXPO_PUBLIC_OAUTH_BASE_URL || defaultOAuthUrl;
-const clientBaseUrl = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || 'https://10.51.21.135:8443';
+const clientBaseUrl = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || '';
 
 // Build the file content as a string (no template literals to avoid issues)
 const configContent = `import { Platform } from 'react-native';
