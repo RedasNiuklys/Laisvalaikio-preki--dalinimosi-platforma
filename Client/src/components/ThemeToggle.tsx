@@ -41,19 +41,19 @@ export default function ThemeToggle() {
             // Save to AsyncStorage
             await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
 
-            // If user is logged in, update their theme preference in the backend
-            if (user?.id) {
-                try {
-                    await updateUserThemePreference(newTheme ? "dark" : "light");
-                    // Reload user data to ensure sync
-                    await loadUser();
-                } catch (error) {
-                    console.error("Error updating theme in backend:", error);
-                    // Revert local changes if backend update fails
-                    toggleTheme();
-                    await AsyncStorage.setItem("theme", isDarkMode ? "dark" : "light");
-                }
-            }
+            // If user is logged in, update their theme preference in the backend                   // ThemeContext already does this
+            // if (user?.id) {
+            //     try {
+            //         await updateUserThemePreference(newTheme ? "dark" : "light");
+            //         // Reload user data to ensure sync
+            //         await loadUser();
+            //     } catch (error) {
+            //         console.error("Error updating theme in backend:", error);
+            //         // Revert local changes if backend update fails
+            //         toggleTheme();
+            //         await AsyncStorage.setItem("theme", isDarkMode ? "dark" : "light");
+            //     }
+            // }
         } catch (error) {
             console.error("Error saving theme preference:", error);
             // Revert local changes if anything fails

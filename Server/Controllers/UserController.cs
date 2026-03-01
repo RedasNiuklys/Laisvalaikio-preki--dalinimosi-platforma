@@ -37,27 +37,39 @@ public class UserController : ControllerBase
         // _logger = logger;
     }
 
-    private static string GetFullAvatarUrl(string relativeUrl, IConfiguration configuration)
+    private string GetFullAvatarUrl(string avatarUrl)
     {
-        if (string.IsNullOrEmpty(relativeUrl)) return null;
-        if (relativeUrl.StartsWith("http")) return relativeUrl; // Already a full URL
+        if (string.IsNullOrEmpty(avatarUrl)) return null;
 
-        var localIP = configuration["AppSettings:LocalIP"];
-        var apiPort = configuration["AppSettings:ApiPort"];
-        return $"http://{localIP}:{apiPort}/{relativeUrl}";
+        var normalizedUrl = avatarUrl.Replace("\\", "/");
+        var currentBaseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var absoluteUri))
+        {
+            var path = absoluteUri.AbsolutePath.TrimStart('/');
+            if (path.StartsWith("api/Storage/GetAvatar/", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"{currentBaseUrl}/{path}";
+            }
+
+            return normalizedUrl;
+        }
+
+        return $"{currentBaseUrl}/{normalizedUrl.TrimStart('/')}";
     }
 
-    private static string GetRelativeAvatarUrl(string fullUrl, IConfiguration configuration)
+    private static string GetRelativeAvatarUrl(string fullUrl)
     {
         if (string.IsNullOrEmpty(fullUrl)) return null;
 
-        var localIP = configuration["AppSettings:LocalIP"];
-        var apiPort = configuration["AppSettings:ApiPort"];
-        var baseUrl = $"http://{localIP}:{apiPort}/";
+        var normalizedUrl = fullUrl.Replace("\\", "/");
+        if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var absoluteUri))
+        {
+            return absoluteUri.AbsolutePath.TrimStart('/');
+        }
 
-        return fullUrl.StartsWith(baseUrl)
-            ? fullUrl.Substring(baseUrl.Length)
-            : fullUrl;
+        return normalizedUrl.TrimStart('/');
     }
 
     // GET: api/user
@@ -75,7 +87,7 @@ public class UserController : ControllerBase
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Theme = u.Theme,
-                AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
+                AvatarUrl = GetFullAvatarUrl(u.AvatarUrl)
             }).ToListAsync();
 
             return Ok(users);
@@ -108,7 +120,7 @@ public class UserController : ControllerBase
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Theme = user.Theme,
-                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
                 Roles = roles
             });
         }
@@ -141,7 +153,7 @@ public class UserController : ControllerBase
                 UserName = user.UserName,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
                 Theme = user.Theme,
                 Roles = roles
             });
@@ -221,7 +233,7 @@ public class UserController : ControllerBase
                 user.Theme = updateDto.Theme;
 
             if (!string.IsNullOrEmpty(updateDto.AvatarUrl))
-                user.AvatarUrl = GetRelativeAvatarUrl(updateDto.AvatarUrl, _configuration);
+                user.AvatarUrl = GetRelativeAvatarUrl(updateDto.AvatarUrl);
 
             if (!string.IsNullOrEmpty(updateDto.Email) && updateDto.Email != user.Email)
             {
@@ -246,7 +258,7 @@ public class UserController : ControllerBase
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Theme = user.Theme,
-                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
                 Roles = roles
             });
         }
@@ -291,7 +303,7 @@ public class UserController : ControllerBase
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Theme = user.Theme,
-                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl, _configuration),
+                AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
                 Roles = roles
             });
         }
@@ -434,7 +446,7 @@ public class UserController : ControllerBase
                     FirstName = u.FirstName,
                     LastName = u.LastName,
                     UserName = u.UserName,
-                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
+                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl)
                 })
                 .ToListAsync();
 
@@ -476,7 +488,7 @@ public class UserController : ControllerBase
                     UserName = u.UserName,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl, _configuration)
+                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl)
                 })
                 .ToArrayAsync();
 

@@ -23,7 +23,6 @@ namespace Server.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _baseUploadPath;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly string _baseUrl;
         private readonly HttpClient _httpClient;
 
         public StorageController(
@@ -35,7 +34,6 @@ namespace Server.Controllers
             _configuration = configuration;
             _userManager = userManager;
             _baseUploadPath = Path.Combine(_environment.WebRootPath, "uploads");
-            _baseUrl = $"{_configuration["AppSettings:LocalIP"]}:{_configuration["AppSettings:ApiPort"]}";
             _httpClient = new HttpClient();
 
             // Ensure upload directory exists
@@ -109,8 +107,8 @@ namespace Server.Controllers
                 // Save file
                 await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
 
-                // Create full URL for the avatar
-                var fullUrl = $"https://{_baseUrl}/api/Storage/GetAvatar/{userId}/{fileName}";
+                var relativeAvatarPath = $"api/Storage/GetAvatar/{userId}/{fileName}";
+                var fullUrl = $"{Request.Scheme}://{Request.Host}/{relativeAvatarPath}";
 
                 // Update user's avatar URL
                 var user = await _userManager.FindByIdAsync(userId);

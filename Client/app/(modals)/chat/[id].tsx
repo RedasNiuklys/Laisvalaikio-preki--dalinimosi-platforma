@@ -107,7 +107,16 @@ export default function ChatScreen() {
 
         if (!isParticipant) {
           setError("You are not a participant in this chat");
-          router.back();
+          try {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/');
+            }
+          } catch (error) {
+            console.warn('Navigation error:', error);
+            router.replace('/');
+          }
           return;
         }
 
@@ -280,7 +289,16 @@ export default function ChatScreen() {
         if (!isConnected) {
           setError("Unable to connect to chat service. Please try again.");
           setTimeout(() => {
-            router.back();
+            try {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/');
+              }
+            } catch (error) {
+              console.warn('Navigation error:', error);
+              router.replace('/');
+            }
           }, 1500);
           return;
         }
@@ -346,7 +364,7 @@ export default function ChatScreen() {
       {!item.isMine && (
         <Avatar.Image
           size={32}
-          source={{ uri: item.sender.avatarUrl }}
+          source={{ uri: item.sender.avatarUrl || '' }}
           style={styles.avatar}
         />
       )}

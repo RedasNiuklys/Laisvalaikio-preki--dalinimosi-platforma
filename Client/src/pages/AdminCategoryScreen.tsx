@@ -94,7 +94,16 @@ export default function AdminCategoryScreen({
         );
         showToast("success", t("category.createSuccess"));
       }
-      router.back();
+      try {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/');
+        }
+      } catch (error) {
+        console.warn('Navigation error:', error);
+        router.replace('/');
+      }
     } catch (error) {
       console.error("Failed to save category:", error);
       showToast("error", t("category.saveError"));
@@ -107,7 +116,16 @@ export default function AdminCategoryScreen({
     try {
       await deleteCategory(categoryId!);
       showToast("success", t("category.deleteSuccess"));
-      router.back();
+      try {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/');
+        }
+      } catch (error) {
+        console.warn('Navigation error:', error);
+        router.replace('/');
+      }
     } catch (error) {
       console.error("Failed to delete category:", error);
       showToast("error", t("category.deleteError"));

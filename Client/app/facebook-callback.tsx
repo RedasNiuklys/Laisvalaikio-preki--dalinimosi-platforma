@@ -20,8 +20,16 @@ export default function FacebookCallbackScreen() {
 
         // WebBrowser.openAuthSessionAsync handles the redirect automatically
         // This screen might not be called in normal flow, but kept as fallback
-        
-        router.back();
+        try {
+            if (router.canGoBack()) {
+                router.back();
+            } else {
+                router.replace('/');
+            }
+        } catch (error) {
+            console.warn('Facebook callback navigation fallback:', error);
+            router.replace('/');
+        }
     }, [params]);
 
     return (

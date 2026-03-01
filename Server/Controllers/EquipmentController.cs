@@ -28,31 +28,38 @@ namespace Server.Controllers
             _mapper = mapper;
         }
 
-        private static string GetFullImageUrl(string relativeUrl, IConfiguration configuration)
+        private string GetFullImageUrl(string imageUrl)
         {
-            if (string.IsNullOrEmpty(relativeUrl)) return null;
-            if (relativeUrl.StartsWith("http")) return relativeUrl; // Already a full URL
+            if (string.IsNullOrEmpty(imageUrl)) return null;
 
-            var localIP = configuration["AppSettings:LocalIP"];
-            var apiPort = configuration["AppSettings:ApiPort"];
-            Console.WriteLine(relativeUrl);
-            relativeUrl = relativeUrl.Replace("\\", "/");
-            return $"http://{localIP}:{apiPort}/{relativeUrl}";
+            var normalizedUrl = imageUrl.Replace("\\", "/");
+            var currentBaseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var absoluteUri))
+            {
+                var path = absoluteUri.AbsolutePath.TrimStart('/');
+                if (path.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"{currentBaseUrl}/{path}";
+                }
+
+                return normalizedUrl;
+            }
+
+            return $"{currentBaseUrl}/{normalizedUrl.TrimStart('/')}";
         }
 
-        private static string GetRelativeImageUrl(string fullUrl, IConfiguration configuration)
+        private static string GetRelativeImageUrl(string fullUrl)
         {
             if (string.IsNullOrEmpty(fullUrl)) return null;
 
-            var localIP = configuration["AppSettings:LocalIP"];
-            var apiPort = configuration["AppSettings:ApiPort"];
-            var baseUrl = $"http://{localIP}:{apiPort}/";
-            Console.WriteLine(fullUrl);
-            Console.WriteLine(baseUrl);
-            fullUrl = fullUrl.Replace("\\", "/");
-            return fullUrl.StartsWith(baseUrl)
-                ? fullUrl.Substring(baseUrl.Length)
-                : fullUrl;
+            var normalizedUrl = fullUrl.Replace("\\", "/");
+            if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var absoluteUri))
+            {
+                return absoluteUri.AbsolutePath.TrimStart('/');
+            }
+
+            return normalizedUrl.TrimStart('/');
         }
 
         // GET: api/Equipment
@@ -87,7 +94,7 @@ namespace Server.Controllers
                     {
                         foreach (var image in dto.Images)
                         {
-                            image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                            image.ImageUrl = GetFullImageUrl(image.ImageUrl);
                         }
                     }
                 }
@@ -126,7 +133,7 @@ namespace Server.Controllers
             {
                 foreach (var image in dto.Images)
                 {
-                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl);
                 }
             }
 
@@ -232,7 +239,7 @@ namespace Server.Controllers
                     var equipmentImage = new EquipmentImage
                     {
                         EquipmentId = equipment.Id,
-                        ImageUrl = GetRelativeImageUrl(image.ImageUrl, _configuration),
+                        ImageUrl = GetRelativeImageUrl(image.ImageUrl),
                         IsMainImage = image.IsMainImage,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -250,7 +257,7 @@ namespace Server.Controllers
             {
                 foreach (var image in responseDto.Images)
                 {
-                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl);
                 }
             }
 
@@ -299,7 +306,7 @@ namespace Server.Controllers
                     var equipmentImage = new EquipmentImage
                     {
                         EquipmentId = equipment.Id,
-                        ImageUrl = GetRelativeImageUrl(image.ImageUrl, _configuration),
+                        ImageUrl = GetRelativeImageUrl(image.ImageUrl),
                         IsMainImage = image.IsMainImage,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -369,7 +376,7 @@ namespace Server.Controllers
                 {
                     foreach (var image in dto.Images)
                     {
-                        image.ImageUrl = GetFullImageUrl(image.ImageUrl, _configuration);
+                        image.ImageUrl = GetFullImageUrl(image.ImageUrl);
                     }
                 }
             }

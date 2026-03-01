@@ -26,7 +26,16 @@ export default function EditProfileScreen() {
             const updatedUser = await updateUser(user?.id || '', formData);
             updateAuthUser(updatedUser);
             showToast('success', t('profile.updateSuccess'));
-            router.back();
+            try {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/');
+              }
+            } catch (error) {
+              console.warn('Navigation error:', error);
+              router.replace('/');
+            }
         } catch (error) {
             console.error('Error updating profile:', error);
             showToast('error', t('profile.updateError'));

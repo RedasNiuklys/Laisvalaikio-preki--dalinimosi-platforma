@@ -2,7 +2,8 @@ import axios from 'axios';
 import { LOGIN_ENDPOINT, USER_ENDPOINT } from '../utils/envConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_REST_API } from '../utils/firebaseConfig';
-import { handleGoogleOAuth, handleFacebookOAuth } from '../utils/oauthHandler';
+import { handleGoogleOAuthServer, handleFacebookOAuthServer } from '../utils/serverOAuthHandler';
+
 
 export const authApi = {
     login: async (email: string, password: string) => {
@@ -203,12 +204,12 @@ export const authApi = {
     },
     // Google OAuth Login (REST API approach with browser redirect)
     googleLogin: async (firstName: string | undefined, lastName: string | undefined, theme: string = "light") => {
-        return handleGoogleOAuth(firstName, lastName, theme);
+        return handleGoogleOAuthServer();
     },
 
     // Facebook OAuth Login (REST API approach with browser redirect)
     facebookLogin: async (firstName: string | undefined, lastName: string | undefined, theme: string = "light") => {
-        return handleFacebookOAuth(firstName, lastName, theme);
+        return handleFacebookOAuthServer();
     }
 };
  

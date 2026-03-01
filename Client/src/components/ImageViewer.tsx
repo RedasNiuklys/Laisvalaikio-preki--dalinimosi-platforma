@@ -8,6 +8,8 @@ type Props = {
 };
 
 export default function ImageViewer({ imgSource, selectedImage }: Props) {
-  const imageSource = selectedImage ? { uri: selectedImage } : imgSource;
+  const hasValidSelectedImage = Boolean(selectedImage?.trim());
+  const imageSource = hasValidSelectedImage ? { uri: selectedImage } : imgSource;
+
   return <Image source={imageSource} style={styles.image} />;
 }

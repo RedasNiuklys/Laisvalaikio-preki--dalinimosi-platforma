@@ -303,6 +303,7 @@ export const handleFacebookOAuth = async (firstName: string | undefined, lastNam
         await AsyncStorage.setItem('firebaseToken', backendToken);
         await AsyncStorage.setItem('authProvider', 'facebook');
         await AsyncStorage.setItem('facebookAccessToken', access_token);
+        console.log("Tokens stored in AsyncStorage", access_token);
         await AsyncStorage.setItem('facebookId', userResponse.data.id);
 
         console.log("Facebook OAuth completed successfully");

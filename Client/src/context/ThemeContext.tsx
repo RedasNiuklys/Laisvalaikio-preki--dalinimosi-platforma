@@ -65,13 +65,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     try {
       await AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
-
-      // Try to update theme in database if user is authenticated
-      try {
-        await updateUserThemePreference(newTheme ? "dark" : "light");
-      } catch (error) {
-        // User might not be authenticated yet - that's okay
-        console.debug("Theme sync skipped - user not authenticated");
+      if (await AsyncStorage.getItem("firebaseToken")) {
+        // Try to update theme in database if user is authenticated
+        try {
+          await updateUserThemePreference(newTheme ? "dark" : "light");
+        } catch (error) {
+          // User might not be authenticated yet - that's okay
+          console.debug("Theme sync skipped - user not authenticated");
+        }
       }
     } catch (error) {
       console.error("Error saving theme:", error);

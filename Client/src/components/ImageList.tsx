@@ -19,6 +19,8 @@ export const ImageList: React.FC<ImageListProps> = ({
   onAddImage,
   onRemoveImage,
 }) => {
+  const validImages = images.filter((imageUri) => Boolean(imageUri?.trim()));
+
   const renderItem = ({ item, index }: { item: string; index: number }) => (
     <View style={styles.imageContainer}>
       <Image source={{ uri: item }} style={styles.image} />
@@ -34,9 +36,9 @@ export const ImageList: React.FC<ImageListProps> = ({
   return (
     <View style={styles.container}>
       <FlatList
-        data={images}
+        data={validImages}
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item, index) => `${item}-${index}`}
         horizontal
         showsHorizontalScrollIndicator={false}
         ListHeaderComponent={

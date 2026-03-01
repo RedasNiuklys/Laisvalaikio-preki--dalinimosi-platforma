@@ -2,7 +2,9 @@ import { useState, useCallback } from 'react';
 // import * as Facebook from 'expo-facebook';
 import { Platform, Share } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { OAUTH_CONFIG } from '../utils/firebaseConfig';
+
+const DEFAULT_CLIENT_BASE_URL = 'http://10.51.21.135:8081';
+const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || DEFAULT_CLIENT_BASE_URL;
 
 interface FacebookInviteResult {
   success: boolean;
@@ -42,14 +44,19 @@ export const useFacebookInvite = () => {
         // Step 3: Share invite link
         const shareMessage =
           'Join me on Laisvalaikio! Sign in or register with Facebook and start sharing.';
-        const inviteUrl = 'https://localhost:8443/login';
+        let inviteBase = CLIENT_BASE_URL;
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
+          inviteBase = window.location.origin;
+        }
+        const inviteUrl = `${inviteBase.replace(/\/$/, '')}/login`;
+        const shareText = `${shareMessage}\n${inviteUrl}`;
 
         if (Platform.OS === 'web') {
           const webNavigator = globalThis.navigator as Navigator | undefined;
           if (webNavigator?.share) {
             await webNavigator.share({
               title: 'Invite Friends to Laisvalaikio',
-              text: shareMessage,
+              text: shareText,
               url: inviteUrl,
             });
             return {
@@ -71,7 +78,7 @@ export const useFacebookInvite = () => {
 
         const result = await Share.share(
           {
-            message: shareMessage,
+            message: shareText,
             url: inviteUrl,
             title: 'Invite Friends to Laisvalaikio',
           },

@@ -134,7 +134,16 @@ const LocationFormScreen = (
       if (params.onSubmitSuccess) {
         params.onSubmitSuccess();
       } else if (router) {
-        router.back();
+        try {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.replace('/');
+          }
+        } catch (error) {
+          console.warn('Navigation error:', error);
+          router.replace('/');
+        }
       }
     } catch (err) {
       setError(t("location.form.error.save"));

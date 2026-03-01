@@ -329,7 +329,16 @@ export default function AddEquipmentScreen({
         }
       }
 
-      router.back();
+      try {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/');
+        }
+      } catch (error) {
+        console.warn('Navigation error:', error);
+        router.replace('/');
+      }
     } catch (error) {
       Toast.show({
         type: "error",

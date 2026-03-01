@@ -11,7 +11,7 @@ export default function ProfileScreenWrapper() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    requestPermissions();
+    // requestPermissions();
   }, []);
 
   const requestPermissions = async () => {

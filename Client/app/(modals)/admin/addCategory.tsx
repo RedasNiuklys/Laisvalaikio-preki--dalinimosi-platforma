@@ -32,7 +32,16 @@ export default function AddCategoryModal() {
                 // description,
                 iconName: selectedIcon,
             });
-            router.back();
+            try {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/');
+              }
+            } catch (error) {
+              console.warn('Navigation error:', error);
+              router.replace('/');
+            }
         } catch (error) {
             console.error('Error adding category:', error);
         } finally {
