@@ -16,3 +16,7 @@ node_modules/
 *.suo
 bakis-aea6d-firebase-adminsdk-fbsvc-9964ba365b.json
 Client/src/utils/firebaseConfig.ts
+Server/appsettings.json
+Server/appsettings.local.backup.json
+Server/appsettings.*.json
+Server/appsettings.example.json
