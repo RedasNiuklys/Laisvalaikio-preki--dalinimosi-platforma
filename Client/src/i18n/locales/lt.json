@@ -1,4 +1,9 @@
 {
+  "appDownloadBanner": {
+    "title": "Atsisiųskite programėlę",
+    "subtitle": "Geresnė patirtis mobiliojoje programėlėje",
+    "download": "Atsisiųsti"
+  },
   "common": {
     "buttons": {
       "cancel": "Atšaukti",

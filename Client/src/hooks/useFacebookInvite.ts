@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
-// import * as Facebook from 'expo-facebook';
 import { Platform, Share } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { OAUTH_CONFIG } from '@/src/utils/firebaseConfig';
+import * as Facebook from 'expo-facebook';
 
 const DEFAULT_CLIENT_BASE_URL = 'http://10.51.21.135:8081';
 const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || DEFAULT_CLIENT_BASE_URL;
@@ -30,16 +31,16 @@ export const useFacebookInvite = () => {
         }
 
         // Step 2: Try to initialize Facebook SDK (native only)
-            // if (Platform.OS !== 'web') {
-            // try {
-            //     await Facebook.initializeAsync({
-            //     appId: OAUTH_CONFIG.facebook.appId,
-            //     });
-            // } catch (fbError) {
-            //     console.warn('Facebook SDK initialization warning:', fbError);
-            //     // Continue even if initialization fails - we can use Share API as fallback
-            // }
-            // }
+        if (Platform.OS !== 'web') {
+          try {
+            await Facebook.initializeAsync({
+              appId: OAUTH_CONFIG.facebook.appId,
+            });
+          } catch (fbError) {
+            console.warn('Facebook SDK initialization warning:', fbError);
+            // Continue - we can use fallback Share API
+          }
+        }
 
         // Step 3: Share invite link
         const shareMessage =
@@ -51,6 +52,35 @@ export const useFacebookInvite = () => {
         const inviteUrl = `${inviteBase.replace(/\/$/, '')}/login`;
         const shareText = `${shareMessage}\n${inviteUrl}`;
 
+        // Step 4: Use Facebook Share Dialog (native platforms only)
+        if (Platform.OS !== 'web') {
+          try {
+            // Use Facebook SDK share method
+            const shareParams = {
+              link: inviteUrl,
+              quote: shareMessage,
+            };
+            
+            const result = await (Facebook as any).shareAsync(shareParams);
+
+            if (result && result.postId) {
+              console.log('Successfully shared via Facebook:', result.postId);
+              return {
+                success: true,
+                invitedCount: 1,
+              };
+            }
+            return {
+              success: false,
+              error: 'Share cancelled or failed',
+            };
+          } catch (facebookError: any) {
+            console.warn('Facebook share error, falling back to standard Share:', facebookError.message);
+            // Continue to fallback
+          }
+        }
+
+        // Fallback: Use standard Share API
         if (Platform.OS === 'web') {
           const webNavigator = globalThis.navigator as Navigator | undefined;
           if (webNavigator?.share) {

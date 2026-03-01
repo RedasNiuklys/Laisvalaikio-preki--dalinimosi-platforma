@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/src/context/AuthContext";
 import { ChatProvider } from "@/src/context/ChatContext";
 import { ToastContainer } from "@/src/components/Toast";
 import GlobalHeader from "../src/components/GlobalHeader";
+import AppDownloadBanner from "@/src/components/AppDownloadBanner";
 import { View, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
@@ -61,6 +62,7 @@ function NavigationStack() {
 
   return (
     <View style={{ flex: 1 }}>
+      <AppDownloadBanner />
       <SafeAreaView style={{ backgroundColor: theme.colors.background }}>
         {showHeader && <GlobalHeader />}
         {!showHeader && (
