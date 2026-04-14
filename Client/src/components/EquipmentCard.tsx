@@ -14,9 +14,9 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
 }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      {equipment.images && equipment.images.length > 0 && (
+      {equipment.images && equipment.images.length > 0 && (equipment.images[0].imageUrl || equipment.images[0].url) && (
         <Image
-          source={{ uri: equipment.images[0].imageUrl }}
+          source={{ uri: equipment.images[0].imageUrl || equipment.images[0].url }}
           style={styles.image}
           resizeMode="cover"
         />

@@ -80,7 +80,7 @@ export const authApi = {
         }
     },
 
-    register: async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light") => {
+    register: async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light", referralUserId?: string) => {
         try {
             console.log("=== FIREBASE REST REGISTER ===");
             console.log("Email:", email);
@@ -125,7 +125,8 @@ export const authApi = {
                 uid: localId,
                 firstName: firstName,
                 lastName: lastName,
-                theme: theme
+                theme: theme,
+                referralUserId: referralUserId || null,
             });
 
             console.log("Backend user creation successful");

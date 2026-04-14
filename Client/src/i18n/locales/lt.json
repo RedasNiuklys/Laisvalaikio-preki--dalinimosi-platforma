@@ -87,6 +87,10 @@
     "startDateTime": "Pradžios data ir laikas",
     "endDateTime": "Pabaigos data ir laikas",
     "submit": "Rezervuoti",
+    "success": "Rezervacija sėkmingai sukurta",
+    "ownerSuccess": "Rezervacija sukurta ir automatiškai patvirtinta",
+    "ownerAutoApproval": "Kaip savininkas, jūsų rezervacija bus automatiškai patvirtinta",
+    "error": "Nepavyko sukurti rezervacijos",
     "startDate": "Pradžios data",
     "startTime": "Pradžios laikas",
     "endDate": "Pabaigos data",
@@ -108,8 +112,7 @@
       "pleaseSelectDates": "Prašome pasirinkti datas",
       "postFailed": "Nepavyko sukurti rezervacijos",
       "tryAgain": "Prašome bandyti dar kartą",
-      "noSelections": "Nėra pasirinkimų",
-      "pleaseSelectDates": "Prašome pasirinkti datas"
+      "noSelections": "Nėra pasirinkimų"
     },
     "success": {
       "title": "Sėkmė",
@@ -124,6 +127,10 @@
     "noResults": "Įrangos nerasta",
     "addNew": "Pridėti naują įrangą",
     "welcome": "Sveiki atvykę!"
+  },
+  "invite": {
+    "messageWithName": "{{inviterName}} pakvietė jus prisijungti prie Laisvalaikio! Prisijunkite arba užsiregistruokite su Facebook ir pradėkite dalintis.",
+    "defaultInviterName": "Draugas"
   },
   "navigation": {
     "home": "Pradžia",
@@ -207,6 +214,8 @@
       "email": "El. paštas",
       "firstName": "Vardas",
       "lastName": "Pavardė",
+      "invitedByFriend": "Jus pakvietė draugas",
+      "invitedByFriendName": "Jus pakvietė {{name}}",
       "password": "Slaptažodis",
       "confirmPassword": "Pakartokite slaptažodį",
       "submit": "Sukurti paskyrą",

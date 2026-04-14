@@ -116,6 +116,9 @@ namespace Server.Controllers
             booking.UserId = userId;
             booking.CreatedAt = DateTime.UtcNow;
 
+            // Auto-approve if the user is the equipment owner
+            booking.Status = (userId == equipment.OwnerId) ? BookingStatus.Approved : BookingStatus.Planning;
+
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 

@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Platform } from 'react-native';
-import { Modal, Portal, Text, Button, useTheme, IconButton, TextInput } from 'react-native-paper';
+import { Modal, Portal, Text, Button, useTheme, IconButton, TextInput, Surface } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface BookingModalProps {
     visible: boolean;
     onDismiss: () => void;
     onSubmit: (startDate: Date, endDate: Date, notes: string) => void;
     equipmentName: string;
+    initialDate?: Date;
+    isOwner?: boolean;
 }
 
-export default function BookingModal({ visible, onDismiss, onSubmit, equipmentName }: BookingModalProps) {
+export default function BookingModal({ visible, onDismiss, onSubmit, equipmentName, initialDate, isOwner }: BookingModalProps) {
     const { t } = useTranslation();
     const theme = useTheme();
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(initialDate || new Date());
+    const [endDate, setEndDate] = useState(initialDate || new Date());
     const [notes, setNotes] = useState('');
     const [showStartDate, setShowStartDate] = useState(false);
     const [showStartTime, setShowStartTime] = useState(false);
@@ -23,6 +26,14 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
     const [showEndTime, setShowEndTime] = useState(false);
 
     const isWeb = Platform.OS === 'web';
+
+    // Update dates when initialDate changes
+    React.useEffect(() => {
+        if (initialDate) {
+            setStartDate(initialDate);
+            setEndDate(initialDate);
+        }
+    }, [initialDate]);
 
     const handleStartDateChange = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || startDate;
@@ -164,6 +175,23 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                         {equipmentName}
                     </Text>
 
+                    {isOwner && (
+                        <Surface style={[styles.ownerBanner, { backgroundColor: theme.colors.primaryContainer }]}>
+                            <MaterialCommunityIcons 
+                                name="check-circle" 
+                                size={20} 
+                                color={theme.colors.primary} 
+                                style={styles.ownerBannerIcon}
+                            />
+                            <Text 
+                                variant="bodyMedium" 
+                                style={[styles.ownerBannerText, { color: theme.colors.onPrimaryContainer }]}
+                            >
+                                {t('booking.ownerAutoApproval')}
+                            </Text>
+                        </Surface>
+                    )}
+
                     {renderDateTimePicker()}
 
                     <View style={styles.notesSection}>
@@ -220,6 +248,19 @@ const styles = StyleSheet.create({
     },
     equipmentName: {
         marginBottom: 24,
+    },
+    ownerBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 16,
+    },
+    ownerBannerIcon: {
+        marginRight: 8,
+    },
+    ownerBannerText: {
+        flex: 1,
     },
     dateTimeSection: {
         marginBottom: 24,

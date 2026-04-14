@@ -35,6 +35,7 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showBookingsListModal, setShowBookingsListModal] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
     const loadBookings = async (equipmentId: string) => {
         try {
@@ -53,6 +54,8 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
             setLoading(true);
             const data = await equipmentApi.getById(id as string);
             console.log("Equipment details:", data);
+            console.log("Equipment images from API:", data.images);
+            console.log("Image URLs:", data.images?.map((img: any) => ({ id: img.id, imageUrl: img.imageUrl, url: img.url })));
             setEquipment(data);
             // Load bookings right after equipment is loaded
             await loadBookings(data.id);
@@ -84,18 +87,20 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
         if (!equipment) return;
 
         try {
+            // Server will auto-approve if the user is the owner
+            const isOwner = user?.id === equipment.ownerId;
+            console.log('Creating booking with startDate:', startDate, 'endDate:', endDate, 'notes:', notes, 'isOwner:', isOwner);
             const newBooking = {
                 equipmentId: equipment.id,
                 startDateTime: startDate.toISOString(),
                 endDateTime: endDate.toISOString(),
-                status: BookingStatus.Pending,
                 notes: notes.trim()
             };
 
             await createBooking(newBooking);
             // Reload bookings after creating a new one
             await loadBookings(equipment.id);
-            showToast("success", t("booking.success"));
+            showToast("success", isOwner ? t("booking.ownerSuccess") : t("booking.success"));
         } catch (error) {
             console.error("Error creating booking:", error);
             showToast("error", t("booking.error"));
@@ -155,13 +160,20 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                                     {t("equipment.details.images")}
                                 </Text>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    {equipment.images.map((image, index) => (
-                                        <Image
-                                            key={image.id}
-                                            source={{ uri: image.url }}
-                                            style={styles.image}
-                                        />
-                                    ))}
+                                    {equipment.images.map((image, index) => {
+                                        const imageUri = image.imageUrl || image.url;
+                                        if (!imageUri) {
+                                            return null;
+                                        }
+
+                                        return (
+                                            <Image
+                                                key={image.id || `${index}-${imageUri}`}
+                                                source={{ uri: imageUri }}
+                                                style={styles.image}
+                                            />
+                                        );
+                                    })}
                                 </ScrollView>
                             </Card.Content>
                         </Card>
@@ -220,16 +232,17 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                                         {t("booking.title")}
                                     </Text>
                                     <View style={styles.bookingActions}>
-                                        {equipment && equipment.ownerId !== user?.id && (
-                                            <Button
-                                                mode="contained-tonal"
-                                                onPress={() => setShowBookingModal(true)}
-                                                icon="plus"
-                                                style={styles.bookingButton}
-                                            >
-                                                {t("booking.create")}
-                                            </Button>
-                                        )}
+                                        <Button
+                                            mode="contained-tonal"
+                                            onPress={() => {
+                                                setSelectedDate(undefined);
+                                                setShowBookingModal(true);
+                                            }}
+                                            icon="plus"
+                                            style={styles.bookingButton}
+                                        >
+                                            {t("booking.create")}
+                                        </Button>
                                         <Button
                                             mode="outlined"
                                             onPress={() => setShowBookingsListModal(true)}
@@ -243,8 +256,8 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                                 <BookingsCalendar
                                     bookings={bookings}
                                     onDayPress={(date) => {
-                                        // You can add functionality here if needed
-                                        console.log("Selected date:", date);
+                                        setSelectedDate(new Date(date.dateString));
+                                        setShowBookingModal(true);
                                     }}
                                 />
                             </Card.Content>
@@ -277,6 +290,8 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                 onDismiss={() => setShowBookingModal(false)}
                 onSubmit={handleCreateBooking}
                 equipmentName={equipment?.name || ''}
+                initialDate={selectedDate}
+                isOwner={user?.id === equipment?.ownerId}
             />
 
             <BookingsListModal

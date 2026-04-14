@@ -49,15 +49,13 @@ export const getBookingsForUser = async (userId: string): Promise<Booking[]> => 
 
 export const createBooking = async (booking: CreateBookingDto): Promise<Booking> => {
     const token = await getAuthToken();
-
-    const response = await axios.post(`${BOOKING_ENDPOINT}`, {
-        ...booking,
-        status: booking.status ? bookingStatusToNumeric(booking.status as BookingStatus) : undefined
-    }, {
+    console.log("Creating booking with data:", booking);
+    const response = await axios.post(`${BOOKING_ENDPOINT}`, booking, {
         headers: {
             Authorization: `Bearer ${token}`
         }
     });
+    console.log("Created booking:", response.data);
 
     // Convert numeric status to string enum in response
     return {

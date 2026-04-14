@@ -48,7 +48,6 @@ public class FriendshipController : ControllerBase
                     f.Requester.AvatarUrl,
                     f.Requester.Email
                 },
-                f.CreatedAt
             })
             .ToListAsync();
 

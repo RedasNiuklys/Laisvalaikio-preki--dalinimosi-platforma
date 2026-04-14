@@ -15,7 +15,8 @@ import { showToast } from '../../components/Toast';
 
 interface Friend {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     avatarUrl?: string;
 }
@@ -26,7 +27,8 @@ interface Chat {
     isGroupChat: boolean;
     participants: {
         id: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         avatarUrl?: string;
     }[];
     lastMessage?: {
@@ -69,10 +71,15 @@ export const FriendsListPage: React.FC = () => {
         try {
             setLoading(true);
             const token = await getAuthToken();
-            const response = await axios.get(`${BASE_URL}/friendship/friends`, {
+            const response = await axios.get(`${BASE_URL}/friendship`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setFriends(response.data);
+            console.log('Friends loaded:', response.data);
+            const extractedFriends = (Array.isArray(response.data) ? response.data : [])
+                .map((item: any) => item?.friend ?? item?.Friend)
+                .filter(Boolean);
+            console.log('Friend list extracted:', extractedFriends);
+            setFriends(extractedFriends);
         } catch (error) {
             console.error('Error loading friends:', error);
         } finally {
@@ -101,7 +108,8 @@ export const FriendsListPage: React.FC = () => {
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            router.push(`/(modals)/chat/${response.data.chatId}`);
+            console.log('Chat created with ID:', response);
+            router.push(`/(modals)/chat/${response.data}`);
         } catch (error) {
             console.error('Error creating chat:', error);
         }
@@ -170,13 +178,13 @@ export const FriendsListPage: React.FC = () => {
                     renderItem={({ item }) => (
                         <View style={[globalStyles.listItem, { backgroundColor: theme.colors.surface }]}>
                             <Avatar.Text
-                                label={getInitials(item.name)}
+                                label={getInitials(`${item.firstName} ${item.lastName}`)}
                                 size={50}
                                 style={[globalStyles.avatar, { backgroundColor: theme.colors.primary }]}
                             />
                             <View style={globalStyles.itemInfo}>
                                 <Text style={[globalStyles.itemName, { color: theme.colors.onSurface }]}>
-                                    {item.name}
+                                    {item.firstName} {item.lastName}
                                 </Text>
                                 <Text style={[globalStyles.itemEmail, { color: theme.colors.onSurfaceVariant }]}>
                                     {item.email}

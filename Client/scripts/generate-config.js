@@ -22,6 +22,7 @@ const serverBaseUrl = process.env.EXPO_PUBLIC_SERVER_BASE_URL || '';
 const defaultOAuthUrl = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || '';
 const oauthBaseUrl = process.env.EXPO_PUBLIC_OAUTH_BASE_URL || defaultOAuthUrl;
 const clientBaseUrl = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || '';
+const dynamicLinkDomain = process.env.EXPO_PUBLIC_FIREBASE_DYNAMIC_LINK_DOMAIN || '';
 
 // Build the file content as a string (no template literals to avoid issues)
 const configContent = `import { Platform } from 'react-native';
@@ -41,6 +42,11 @@ export const FIREBASE_REST_API = {
   createAuthUri: \`https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=\${firebaseConfig.apiKey}\`,
   signInWithIdp: \`https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=\${firebaseConfig.apiKey}\`,
   base: \`https://identitytoolkit.googleapis.com/v1/accounts\`
+};
+
+export const FIREBASE_DYNAMIC_LINKS = {
+  domainUriPrefix: process.env.EXPO_PUBLIC_FIREBASE_DYNAMIC_LINK_DOMAIN || '${dynamicLinkDomain}',
+  shortLinksEndpoint: \`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=\${firebaseConfig.apiKey}\`,
 };
 
 const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || '${serverBaseUrl}';

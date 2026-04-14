@@ -57,7 +57,7 @@ export interface Equipment {
 export interface CreateEquipmentDto {
     name: string;
     description: string;
-    category: Category;
+    categoryId: number;
     condition: string;
     locationId: string;
     images?: EquipmentImage[];

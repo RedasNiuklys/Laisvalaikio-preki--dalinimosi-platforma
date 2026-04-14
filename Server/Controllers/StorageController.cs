@@ -1,15 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using System;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Server.Models;
-using System.Net.Http;
-using System.Net.Http.Headers;
 
 namespace Server.Controllers
 {
@@ -156,6 +149,45 @@ namespace Server.Controllers
 
                 if (!System.IO.File.Exists(filePath))
                     return NotFound("Avatar not found");
+
+                System.IO.File.Delete(filePath);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetEquipmentImage/{equipmentId}/{fileName}")]
+        [AllowAnonymous]
+        public IActionResult GetEquipmentImage(string equipmentId, string fileName)
+        {
+            try
+            {
+                var filePath = Path.Combine(_baseUploadPath, "equipment", fileName);
+
+                if (!System.IO.File.Exists(filePath))
+                    return NotFound("Equipment image not found");
+
+                var fileStream = System.IO.File.OpenRead(filePath);
+                return File(fileStream, "image/jpeg");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("DeleteEquipmentImage/{equipmentId}/{fileName}")]
+        public IActionResult DeleteEquipmentImage(string equipmentId, string fileName)
+        {
+            try
+            {
+                var filePath = Path.Combine(_baseUploadPath, "equipment", fileName);
+
+                if (!System.IO.File.Exists(filePath))
+                    return NotFound("Equipment image not found");
 
                 System.IO.File.Delete(filePath);
                 return Ok();

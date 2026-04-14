@@ -145,6 +145,10 @@
     "noResults": "No equipment found",
     "addNew": "Add New Equipment"
   },
+  "invite": {
+    "messageWithName": "{{inviterName}} invited you to join Laisvalaikio! Sign in or register with Facebook and start sharing.",
+    "defaultInviterName": "A friend"
+  },
   "auth": {
     "login": {
       "title": "Login",
@@ -186,6 +190,8 @@
       "password": "Password",
       "firstName": "First Name",
       "lastName": "Last Name",
+      "invitedByFriend": "You were invited by a friend",
+      "invitedByFriendName": "You were invited by {{name}}",
       "confirmPassword": "Confirm Password",
       "submit": "Create Account",
       "haveAccount": "Already have an account?",
@@ -230,6 +236,7 @@
       "location": "Location",
       "availability": "Availability",
       "price": "Price",
+      "images": "Images",
       "contact": "Contact Owner",
       "notFound": "Equipment not found",
       "loadError": "Failed to load equipment details",
@@ -296,6 +303,8 @@
     "endDateTime": "End Date & Time",
     "submit": "Create Booking",
     "success": "Booking created successfully",
+    "ownerSuccess": "Booking created and automatically approved",
+    "ownerAutoApproval": "As the owner, your booking will be automatically approved",
     "error": "Failed to create booking",
     "noBookings": "No bookings yet",
     "notes": "Notes",

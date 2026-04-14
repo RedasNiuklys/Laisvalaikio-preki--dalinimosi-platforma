@@ -470,17 +470,12 @@ public class UserController : ControllerBase
             {
                 return BadRequest("Search query cannot be empty");
             }
-
+            Console.WriteLine($"Searching users with query: {searchQuery}");
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            searchQuery = searchQuery.ToLower().Trim();
-
-            var users = await _userManager.Users
-                .Where(u => u.Id != currentUserId && (
-                    u.Email.ToLower().Contains(searchQuery) ||
-                    u.UserName.ToLower().Contains(searchQuery) ||
-                    u.FirstName.ToLower().Contains(searchQuery) ||
-                    u.LastName.ToLower().Contains(searchQuery)
-                ))
+            var normalizedQuery = searchQuery.Trim();
+            Console.WriteLine($"Current user ID: {currentUserId}");
+            var candidates = await _userManager.Users
+                .Where(u => u.Id != currentUserId)
                 .Select(u => new UserSearchResultDto
                 {
                     Id = u.Id,
@@ -488,15 +483,29 @@ public class UserController : ControllerBase
                     UserName = u.UserName,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    AvatarUrl = GetFullAvatarUrl(u.AvatarUrl)
+                    AvatarUrl = u.AvatarUrl
                 })
-                .ToArrayAsync();
+                .ToListAsync();
 
-            return Ok();
+            var users = candidates
+                .Where(u =>
+                    (u.Email ?? string.Empty).Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ||
+                    (u.UserName ?? string.Empty).Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ||
+                    (u.FirstName ?? string.Empty).Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) ||
+                    (u.LastName ?? string.Empty).Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                )
+                .Select(u =>
+                {
+                    u.AvatarUrl = GetFullAvatarUrl(u.AvatarUrl ?? string.Empty);
+                    return u;
+                })
+                .ToArray();
+
+            Console.WriteLine($"Found {users.Length} users matching query: {normalizedQuery}");
+            return Ok(users);
         }
         catch (Exception ex)
         {
-            // _logger.LogError(ex, "Error searching users with query: {SearchQuery}", searchQuery);
             return StatusCode(500, "Internal server error occurred while searching users");
         }
     }

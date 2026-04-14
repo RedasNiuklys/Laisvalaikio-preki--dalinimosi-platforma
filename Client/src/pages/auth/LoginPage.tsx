@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     TouchableOpacity,
@@ -15,7 +15,7 @@ import {
     Surface,
     useTheme as usePaperTheme,
 } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/src/context/AuthContext";
 import { showToast } from "@/src/components/Toast";
 import { useTranslation } from "react-i18next";
@@ -26,11 +26,13 @@ import { useTheme } from "@/src/context/ThemeContext";
 import { FIREBASE_REST_API, firebaseConfig } from "../../utils/firebaseConfig";
 import axios from "axios";
 import { OAuthButtons } from "@/src/components/OAuthButtons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function LoginPage() {
     const { theme } = useTheme();
     const { t } = useTranslation();
     const { login } = useAuth();
     const router = useRouter();
+    const { referrer, inviterName } = useLocalSearchParams<{ referrer?: string; inviterName?: string }>();
 
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -42,6 +44,25 @@ export default function LoginPage() {
     const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
     const [forgotPasswordEmail, setForgotPasswordEmail] = useState<string>("");
     const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        const referrerId = typeof referrer === "string" ? referrer : null;
+        if (!referrerId) {
+            return;
+        }
+
+        AsyncStorage.setItem("pendingReferrerId", referrerId).catch((error) => {
+            console.warn("Failed to persist referral id", error);
+        });
+
+        const inviterNameValue = typeof inviterName === "string" ? inviterName : null;
+        if (inviterNameValue) {
+            AsyncStorage.setItem("pendingReferrerName", inviterNameValue).catch((error) => {
+                console.warn("Failed to persist referrer name", error);
+            });
+        }
+    }, [inviterName, referrer]);
+
     const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -218,7 +239,22 @@ export default function LoginPage() {
                         </Button>
 
                         <TouchableOpacity
-                            onPress={() => router.push("/(auth)/register")}
+                            onPress={() => {
+                                const referrerId = typeof referrer === 'string' ? referrer : undefined;
+                                const referrerName = typeof inviterName === 'string' ? inviterName : undefined;
+                                if (referrerId) {
+                                    router.push({
+                                        pathname: "/(auth)/register",
+                                        params: {
+                                            referrer: referrerId,
+                                            ...(referrerName ? { inviterName: referrerName } : {}),
+                                        },
+                                    });
+                                    return;
+                                }
+
+                                router.push("/(auth)/register");
+                            }}
                             style={{ marginTop: spacing.lg }}
                         >
                             <Text style={{

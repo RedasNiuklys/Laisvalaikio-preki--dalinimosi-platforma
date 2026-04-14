@@ -11,6 +11,9 @@ import { useAuth } from '../context/AuthContext';
 export interface User {
     id: string;
     name: string;
+    firstName: string;
+        lastName: string;
+        userName: string;
     email: string;
     avatarUrl?: string;
     hasPendingRequest?: boolean;
@@ -102,11 +105,11 @@ export const UserSearch: React.FC<UserSearchProps> = ({ onUserSelect, loading: p
                     {users.map(user => (
                         <List.Item
                             key={user.id}
-                            title={user.name}
+                            title={`${user.firstName} ${user.lastName}`}
                             description={user.email}
                             left={() => (
                                 <Avatar.Text
-                                    label={getInitials(user.name)}
+                                    label={getInitials(`${user.firstName} ${user.lastName}`)}
                                     size={40}
                                     style={[styles.avatar, { backgroundColor: theme.colors.primary }]}
                                 />

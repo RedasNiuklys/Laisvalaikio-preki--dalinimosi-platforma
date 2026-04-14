@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     TouchableOpacity,
@@ -13,17 +13,23 @@ import {
     Surface,
     useTheme as usePaperTheme,
 } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/src/context/AuthContext";
 import { showToast } from "@/src/components/Toast";
 import { useTranslation } from "react-i18next";
 import { globalStyles, colors, spacing } from "@/src/styles/globalStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RegisterPage() {
     const theme = usePaperTheme();
     const { t } = useTranslation();
     const { register } = useAuth();
     const router = useRouter();
+    const { referrer, inviterName } = useLocalSearchParams<{ referrer?: string; inviterName?: string }>();
+    const hasReferral = typeof referrer === "string" && referrer.trim().length > 0;
+    const [resolvedInviterName, setResolvedInviterName] = useState<string>(
+        typeof inviterName === "string" ? inviterName : ""
+    );
 
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -33,6 +39,24 @@ export default function RegisterPage() {
     const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
+
+    useEffect(() => {
+        const inviterFromUrl = typeof inviterName === "string" ? inviterName : null;
+        if (inviterFromUrl) {
+            setResolvedInviterName(inviterFromUrl);
+            return;
+        }
+
+        AsyncStorage.getItem("pendingReferrerName")
+            .then((storedName) => {
+                if (storedName) {
+                    setResolvedInviterName(storedName);
+                }
+            })
+            .catch((error) => {
+                console.warn("Failed to read referrer name", error);
+            });
+    }, [inviterName]);
 
     const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,13 +81,24 @@ export default function RegisterPage() {
 
         try {
             setIsLoading(true);
+            const referrerFromUrl = typeof referrer === "string" ? referrer : null;
+            const pendingReferrer = await AsyncStorage.getItem("pendingReferrerId");
+            const referralUserId = referrerFromUrl || pendingReferrer;
+
             await register(
                 email,
                 password,
                 firstName,
                 lastName || null,
-                theme.dark ? "dark" : "light"
+                theme.dark ? "dark" : "light",
+                referralUserId || undefined
             );
+
+            if (referralUserId) {
+                await AsyncStorage.removeItem("pendingReferrerId");
+                await AsyncStorage.removeItem("pendingReferrerName");
+            }
+
             showToast("success", t("auth.register.success"));
             router.replace("/");
         } catch (err) {
@@ -107,6 +142,20 @@ export default function RegisterPage() {
                     >
                         {t("auth.register.title")}
                     </Text>
+
+                    {hasReferral && (
+                        <Text
+                            style={{
+                                color: theme.colors.primary,
+                                textAlign: "center",
+                                marginBottom: spacing.md,
+                            }}
+                        >
+                            {resolvedInviterName
+                                ? t("auth.register.invitedByFriendName", { name: resolvedInviterName })
+                                : t("auth.register.invitedByFriend")}
+                        </Text>
+                    )}
 
                     <TextInput
                         mode="outlined"

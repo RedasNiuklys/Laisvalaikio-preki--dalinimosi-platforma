@@ -22,6 +22,7 @@ set EXPO_PUBLIC_SERVER_BASE_URL=https://your-server-ip:8000
 set EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL=https://your-cloudflare-tunnel.trycloudflare.com
 set EXPO_PUBLIC_OAUTH_BASE_URL=https://your-cloudflare-tunnel.trycloudflare.com
 set EXPO_PUBLIC_CLIENT_BASE_URL=https://your-client-ip:8443
+set EXPO_PUBLIC_FIREBASE_DYNAMIC_LINK_DOMAIN=https://yourapp.page.link
 
 echo.
 echo Step 1: Generating firebaseConfig.ts...

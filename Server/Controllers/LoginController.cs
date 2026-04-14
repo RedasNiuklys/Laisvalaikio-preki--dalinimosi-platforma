@@ -23,6 +23,7 @@ public class LoginController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly FirebaseAuthService _firebaseAuth;
+    private readonly ApplicationDbContext _context;
 
     public LoginController(
         UserManager<ApplicationUser> userManager,
@@ -31,7 +32,8 @@ public class LoginController : ControllerBase
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
         RoleManager<IdentityRole> roleManager,
-        FirebaseAuthService firebaseAuth)
+        FirebaseAuthService firebaseAuth,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -40,6 +42,7 @@ public class LoginController : ControllerBase
         _configuration = configuration;
         _roleManager = roleManager;
         _firebaseAuth = firebaseAuth;
+        _context = context;
     }
 
     [HttpGet("ping")]
@@ -222,6 +225,9 @@ public class LoginController : ControllerBase
                 {
                     Console.WriteLine($"User already has Firebase UID: {existingUser.FirebaseUid}");
                 }
+
+                await CreateReferralFriendshipIfNeeded(existingUser.Id, request.ReferralUserId);
+
                 // Return user data
                 return Ok(new
                 {
@@ -270,6 +276,8 @@ public class LoginController : ControllerBase
                 await _userManager.AddToRoleAsync(user, "Admin");
             }
 
+            await CreateReferralFriendshipIfNeeded(user.Id, request.ReferralUserId);
+
             Console.WriteLine("Firebase register completed successfully");
             return Ok(new
             {
@@ -293,6 +301,48 @@ public class LoginController : ControllerBase
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
             return StatusCode(500, $"Internal server error during Firebase registration: {ex.Message}");
         }
+    }
+
+    private async Task CreateReferralFriendshipIfNeeded(string newUserId, string? referralUserId)
+    {
+        if (string.IsNullOrWhiteSpace(referralUserId) || referralUserId == newUserId)
+        {
+            return;
+        }
+
+        var referredByUser = await _userManager.FindByIdAsync(referralUserId);
+        if (referredByUser == null)
+        {
+            Console.WriteLine($"Referral user not found: {referralUserId}");
+            return;
+        }
+
+        var existingFriendship = await _context.Friendships.FirstOrDefaultAsync(f =>
+            (f.RequesterId == newUserId && f.AddresseeId == referralUserId) ||
+            (f.RequesterId == referralUserId && f.AddresseeId == newUserId));
+
+        if (existingFriendship != null)
+        {
+            if (existingFriendship.Status != FriendshipStatus.Accepted)
+            {
+                existingFriendship.Status = FriendshipStatus.Accepted;
+                existingFriendship.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+            return;
+        }
+
+        var friendship = new Friendship
+        {
+            RequesterId = referralUserId,
+            AddresseeId = newUserId,
+            Status = FriendshipStatus.Accepted,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        _context.Friendships.Add(friendship);
+        await _context.SaveChangesAsync();
     }
 
     [HttpPost("validate-facebook-oauth")]
@@ -689,6 +739,7 @@ public class LoginController : ControllerBase
         public string? LastName { get; set; }
         public string? Theme { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? ReferralUserId { get; set; }
     }
 
     public class CheckEmailRequest

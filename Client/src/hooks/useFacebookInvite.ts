@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Platform, Share } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { OAUTH_CONFIG } from '@/src/utils/firebaseConfig';
-import * as Facebook from 'expo-facebook';
+import axios from 'axios';
+import { useAuth } from '@/src/context/AuthContext';
+import { FIREBASE_DYNAMIC_LINKS } from '@/src/utils/firebaseConfig';
+import { useTranslation } from 'react-i18next';
 
 const DEFAULT_CLIENT_BASE_URL = 'http://10.51.21.135:8081';
 const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || DEFAULT_CLIENT_BASE_URL;
@@ -16,6 +18,50 @@ interface FacebookInviteResult {
 
 export const useFacebookInvite = () => {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const createInviteLink = useCallback(async (referrerId: string, inviterName?: string): Promise<string> => {
+    let inviteBase = CLIENT_BASE_URL;
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
+      inviteBase = window.location.origin;
+    }
+
+    const loginUrl = new URL(`${inviteBase.replace(/\/$/, '')}/login`);
+    loginUrl.searchParams.set('referrer', referrerId);
+    if (inviterName) {
+      loginUrl.searchParams.set('inviterName', inviterName);
+    }
+
+    const longLink = loginUrl.toString();
+
+    if (!FIREBASE_DYNAMIC_LINKS.domainUriPrefix || !FIREBASE_DYNAMIC_LINKS.shortLinksEndpoint) {
+      return longLink;
+    }
+
+    try {
+      const response = await axios.post(FIREBASE_DYNAMIC_LINKS.shortLinksEndpoint, {
+        dynamicLinkInfo: {
+          domainUriPrefix: FIREBASE_DYNAMIC_LINKS.domainUriPrefix,
+          link: longLink,
+          androidInfo: {
+            androidPackageName: 'com.redasn.Client',
+          },
+          iosInfo: {
+            iosBundleId: 'com.redasn.Client',
+          },
+        },
+        suffix: {
+          option: 'SHORT',
+        },
+      });
+
+      return response.data?.shortLink || longLink;
+    } catch (error) {
+      console.warn('Failed to create Firebase Dynamic Link, falling back to long link:', error);
+      return longLink;
+    }
+  }, []);
 
   const inviteFriends = useCallback(
     async (): Promise<FacebookInviteResult> => {
@@ -30,57 +76,19 @@ export const useFacebookInvite = () => {
           );
         }
 
-        // Step 2: Try to initialize Facebook SDK (native only)
-        if (Platform.OS !== 'web') {
-          try {
-            await Facebook.initializeAsync({
-              appId: OAUTH_CONFIG.facebook.appId,
-            });
-          } catch (fbError) {
-            console.warn('Facebook SDK initialization warning:', fbError);
-            // Continue - we can use fallback Share API
-          }
+        if (!user?.id) {
+          throw new Error('User information not loaded. Please try again in a moment.');
         }
 
-        // Step 3: Share invite link
-        const shareMessage =
-          'Join me on Laisvalaikio! Sign in or register with Facebook and start sharing.';
-        let inviteBase = CLIENT_BASE_URL;
-        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
-          inviteBase = window.location.origin;
-        }
-        const inviteUrl = `${inviteBase.replace(/\/$/, '')}/login`;
+        // Step 2: Create share message and invite link
+        const inviterName = user.firstName || user.userName || t('invite.defaultInviterName');
+        const shareMessage = t('invite.messageWithName', {
+          inviterName,
+        });
+        const inviteUrl = await createInviteLink(user.id, inviterName);
         const shareText = `${shareMessage}\n${inviteUrl}`;
 
-        // Step 4: Use Facebook Share Dialog (native platforms only)
-        if (Platform.OS !== 'web') {
-          try {
-            // Use Facebook SDK share method
-            const shareParams = {
-              link: inviteUrl,
-              quote: shareMessage,
-            };
-            
-            const result = await (Facebook as any).shareAsync(shareParams);
-
-            if (result && result.postId) {
-              console.log('Successfully shared via Facebook:', result.postId);
-              return {
-                success: true,
-                invitedCount: 1,
-              };
-            }
-            return {
-              success: false,
-              error: 'Share cancelled or failed',
-            };
-          } catch (facebookError: any) {
-            console.warn('Facebook share error, falling back to standard Share:', facebookError.message);
-            // Continue to fallback
-          }
-        }
-
-        // Fallback: Use standard Share API
+        // Step 3: Share using native Share API
         if (Platform.OS === 'web') {
           const webNavigator = globalThis.navigator as Navigator | undefined;
           if (webNavigator?.share) {
@@ -139,7 +147,7 @@ export const useFacebookInvite = () => {
         setLoading(false);
       }
     },
-    []
+    [createInviteLink, t, user?.firstName, user?.id, user?.userName]
   );
 
   return {

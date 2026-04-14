@@ -42,7 +42,7 @@ export default function AddEquipmentScreen({
   const [locations, setLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string>("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>();
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [equipmentImages, setEquipmentImages] = useState<EquipmentImage[]>([]);
@@ -51,39 +51,72 @@ export default function AddEquipmentScreen({
     description: "",
     locationId: "",
     condition: "Good",
-    category: { id: 0, name: "", iconName: "", parentCategoryId: 0 },
+    categoryId: 1,
     IsAvailable: true,
   });
 
+  // Load categories first
   useEffect(() => {
     loadCategories();
-    if (equipmentId) {
-      loadEquipment();
-    }
-  }, [equipmentId]);
+  }, []);
 
+  // Load locations
   useEffect(() => {
     loadLocations();
-  }, []);
+  }, [user?.id]);
+
+  // Set default location when locations are loaded (for new equipment)
+  useEffect(() => {
+    if (!equipmentId && locations.length > 0 && !selectedLocationId) {
+      setSelectedLocationId(locations[0].id || "");
+    }
+  }, [locations, equipmentId, selectedLocationId]);
+
+  // Load equipment after categories and locations are available
+  useEffect(() => {
+    if (equipmentId && categories.length > 0 && locations.length > 0) {
+      loadEquipment();
+    }
+  }, [equipmentId, categories, locations]);
 
   const loadEquipment = async () => {
     try {
       const data = await getById(equipmentId!);
+      console.log("Loaded equipment data:", data);
+      console.log("Equipment locationId from API:", data.locationId);
+      console.log("Available locations:", locations.map(l => ({ id: l.id, name: l.name })));
+      console.log("Equipment images:", data.images);
+      console.log("Image URLs:", data.images?.map((img) => ({ imageUrl: img.imageUrl, url: img.url })));
+      
       setEquipment({
         name: data.name,
         description: data.description,
         locationId: data.locationId,
         condition: data.condition,
-        category: data.category,
+        categoryId: data.category.id,
         IsAvailable: data.IsAvailable,
       });
-      setSelectedLocationId(data.locationId);
-      setSelectedCategoryId(
-        categories.findIndex((c) => c.name === data.category.name) + 1
-      );
+      
+      // Verify location exists in the locations array before setting it
+      const locationExists = locations.find(loc => loc.id === data.locationId);
+      if (locationExists) {
+        console.log("Setting selectedLocationId to:", data.locationId);
+        setSelectedLocationId(data.locationId);
+      } else {
+        console.warn("Location not found in locations array:", data.locationId);
+        // If location doesn't exist, try to find it
+        if (locations.length > 0) {
+          setSelectedLocationId(locations[0].id);
+        }
+      }
+      
+      // Use the category ID directly, not the index
+      setSelectedCategoryId(data.category.id);
       if (data.images) {
         setEquipmentImages(data.images);
-        setImageUrls(data.images.map((img) => img.url));
+        const urls = data.images.map((img) => img.imageUrl || img.url).filter(Boolean) as string[];
+        console.log("Setting image URLs:", urls);
+        setImageUrls(urls);
       }
     } catch (error) {
       console.error("Failed to load equipment:", error);
@@ -100,6 +133,8 @@ export default function AddEquipmentScreen({
       if (user?.id) {
         const data = await getByOwner(user.id);
         setLocations(data);
+        setSelectedLocationId(equipment.locationId || data[0].id || "");
+
       }
     } catch (error) {
       console.error("Failed to load locations:", error);
@@ -111,7 +146,7 @@ export default function AddEquipmentScreen({
       const data = await getCategories();
       setCategories(data);
       if (data.length > 0) {
-        setSelectedCategoryId(data[0].id);
+        setSelectedCategoryId(equipment.categoryId || data[0].id);
       }
     } catch (error) {
       console.error("Failed to load categories:", error);
@@ -241,7 +276,15 @@ export default function AddEquipmentScreen({
   };
 
   const handleSubmit = async () => {
-    console.log("handleSubmit");
+    console.log("handleSubmit called");
+    console.log("Current state:", {
+      selectedLocationId,
+      selectedCategoryId,
+      equipmentName: equipment.name,
+      equipmentDescription: equipment.description,
+      equipmentLocationId: equipment.locationId
+    });
+    
     if (
       !equipment.name ||
       !equipment.description ||
@@ -249,6 +292,7 @@ export default function AddEquipmentScreen({
       !user?.id ||
       !selectedCategoryId
     ) {
+      console.log("Validation failed - missing required fields");
       Toast.show({
         type: "error",
         text1: t("common.error"),
@@ -274,7 +318,7 @@ export default function AddEquipmentScreen({
         name: equipment.name,
         description: equipment.description,
         locationId: selectedLocationId,
-        category: selectedCategory,
+        categoryId: selectedCategory.id,
         condition: equipment.condition,
         IsAvailable: equipment.IsAvailable,
       };
@@ -388,7 +432,9 @@ export default function AddEquipmentScreen({
               setSelectedCategoryId(value);
               const selectedCategory = categories.find((c) => c.id === value);
               if (selectedCategory) {
-                setEquipment({ ...equipment, category: selectedCategory });
+                console.log("Selected category:", selectedCategory);
+                console.log("Updating equipment with categoryId:", selectedCategory.id);
+                setEquipment({ ...equipment, categoryId: selectedCategory.id });
               }
             }}
             style={[styles.picker, { color: theme.colors.onSurface }]}
@@ -415,6 +461,7 @@ export default function AddEquipmentScreen({
           <Picker
             selectedValue={selectedLocationId}
             onValueChange={(value) => {
+              console.log("Location picker changed to:", value);
               setSelectedLocationId(value);
               setEquipment({ ...equipment, locationId: value });
             }}

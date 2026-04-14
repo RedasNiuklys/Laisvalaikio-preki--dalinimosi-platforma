@@ -28,7 +28,7 @@ export const MAINTENANCE_RECORD_ENDPOINT = `${BASE_URL}/maintenance-record`;
 export const EQUIPMENT_IMAGE_ENDPOINT = `${BASE_URL}/equipment-image`;
 export const BOOKING_ENDPOINT = `${BASE_URL}/booking`;
 // Google Maps API Key
-export const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || 'AIzaSyBxLGeEKwJmr4coW9FDHVGTUFnIbkk4oqw';
+export const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || 'AIzaSyDkOSq9KU3n5lBoI6a-VDZtxhKpGYCTanQ';
 
 // SignalR connection URL
 export const WEBSOCKET_URL = getWebSocketUrl();

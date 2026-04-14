@@ -116,10 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light") => {
+  const register = async (email: string, password: string, firstName: string | null, lastName: string | null, theme: string = "light", referralUserId?: string) => {
     try {
       console.log("🔐 AuthContext: Starting registration...");
-      await authApi.register(email, password, firstName, lastName, theme);
+      await authApi.register(email, password, firstName, lastName, theme, referralUserId);
       
       console.log("🔐 AuthContext: Register returned, verifying token and fetching user...");
       // Verify token is actually in AsyncStorage before proceeding

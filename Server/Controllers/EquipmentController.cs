@@ -28,25 +28,19 @@ namespace Server.Controllers
             _mapper = mapper;
         }
 
-        private string GetFullImageUrl(string imageUrl)
+        private string GetFullImageUrl(string imageUrl, string equipmentId)
         {
             if (string.IsNullOrEmpty(imageUrl)) return null;
 
             var normalizedUrl = imageUrl.Replace("\\", "/");
+
+            // Extract filename from the path (e.g., "uploads/equipment/filename.jpg" -> "filename.jpg")
+            var fileName = Path.GetFileName(normalizedUrl);
+
             var currentBaseUrl = $"{Request.Scheme}://{Request.Host}";
 
-            if (Uri.TryCreate(normalizedUrl, UriKind.Absolute, out var absoluteUri))
-            {
-                var path = absoluteUri.AbsolutePath.TrimStart('/');
-                if (path.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
-                {
-                    return $"{currentBaseUrl}/{path}";
-                }
-
-                return normalizedUrl;
-            }
-
-            return $"{currentBaseUrl}/{normalizedUrl.TrimStart('/')}";
+            // Return API endpoint URL instead of direct file path
+            return $"{currentBaseUrl}/api/Storage/GetEquipmentImage/{equipmentId}/{fileName}";
         }
 
         private static string GetRelativeImageUrl(string fullUrl)
@@ -94,7 +88,7 @@ namespace Server.Controllers
                     {
                         foreach (var image in dto.Images)
                         {
-                            image.ImageUrl = GetFullImageUrl(image.ImageUrl);
+                            image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
                         }
                     }
                 }
@@ -133,7 +127,7 @@ namespace Server.Controllers
             {
                 foreach (var image in dto.Images)
                 {
-                    image.ImageUrl = GetFullImageUrl(image.ImageUrl);
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
                 }
             }
 
@@ -238,6 +232,7 @@ namespace Server.Controllers
                 {
                     var equipmentImage = new EquipmentImage
                     {
+                        Id = Guid.NewGuid().ToString(),
                         EquipmentId = equipment.Id,
                         ImageUrl = GetRelativeImageUrl(image.ImageUrl),
                         IsMainImage = image.IsMainImage,
@@ -245,10 +240,14 @@ namespace Server.Controllers
                     };
                     _context.EquipmentImages.Add(equipmentImage);
                 }
+                // Save images to database
+                await _context.SaveChangesAsync();
             }
+
             // Reload equipment with related data for response
             await _context.Entry(equipment).Reference(e => e.Location).LoadAsync();
             await _context.Entry(equipment).Reference(e => e.Category).LoadAsync();
+            await _context.Entry(equipment).Collection(e => e.Images).LoadAsync();
 
             var responseDto = _mapper.Map<EquipmentResponseDto>(equipment);
 
@@ -257,7 +256,7 @@ namespace Server.Controllers
             {
                 foreach (var image in responseDto.Images)
                 {
-                    image.ImageUrl = GetFullImageUrl(image.ImageUrl);
+                    image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
                 }
             }
 
@@ -288,6 +287,10 @@ namespace Server.Controllers
 
             equipment.Name = updateDto.Name ?? equipment.Name;
             equipment.Description = updateDto.Description ?? equipment.Description;
+            if (updateDto.CategoryId != 0)
+            {
+                equipment.CategoryId = updateDto.CategoryId;
+            }
             equipment.Category = updateDto.Category ?? equipment.Category;
             equipment.Condition = updateDto.Condition ?? equipment.Condition;
             equipment.LocationId = updateDto.LocationId;
@@ -305,6 +308,7 @@ namespace Server.Controllers
                 {
                     var equipmentImage = new EquipmentImage
                     {
+                        Id = Guid.NewGuid().ToString(),
                         EquipmentId = equipment.Id,
                         ImageUrl = GetRelativeImageUrl(image.ImageUrl),
                         IsMainImage = image.IsMainImage,
@@ -376,7 +380,7 @@ namespace Server.Controllers
                 {
                     foreach (var image in dto.Images)
                     {
-                        image.ImageUrl = GetFullImageUrl(image.ImageUrl);
+                        image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Modal, Portal, Text, useTheme, IconButton, Button, ActivityIndicator } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -27,22 +27,46 @@ export default function BookingsListModal({
     const theme = useTheme();
     const { user, loadUser } = useAuth();
     const [isLoadingUser, setIsLoadingUser] = useState(true);
+    const hasLoadedForOpenRef = useRef(false);
+    const loadUserRef = useRef(loadUser);
 
     useEffect(() => {
-        // Set a timeout to avoid infinite loading state\
-        loadUser();
-        const timer = setTimeout(() => {
-            setIsLoadingUser(false);
-        }, 1000);
+        loadUserRef.current = loadUser;
+    }, [loadUser]);
 
-        return () => clearTimeout(timer);
+    useEffect(() => {
+        if (!visible) {
+            hasLoadedForOpenRef.current = false;
+            setIsLoadingUser(false);
+            return;
+        }
+
+        if (hasLoadedForOpenRef.current) {
+            return;
+        }
+
+        hasLoadedForOpenRef.current = true;
+        setIsLoadingUser(true);
+
+        const loadCurrentUser = async () => {
+            try {
+                await loadUserRef.current();
+            } finally {
+                setIsLoadingUser(false);
+            }
+        };
+
+        loadCurrentUser();
     }, [visible]);
 
     const isOwner = user?.id === equipmentOwnerId;
+    console.log('User ID:', user?.id);
+    console.log('Equipment Owner ID:', equipmentOwnerId);
+    console.log('Is Owner:', isOwner);
 
     const renderStatusActions = (booking: Booking) => {
-        console.log('Current status', onStatusChange);
         if (!onStatusChange) return null;
+        const isBookingCreator = booking.userId === user?.id;
 
         const getAvailableActions = (currentStatus: BookingStatus) => {
             console.log('Current status:', currentStatus);
@@ -64,7 +88,10 @@ export default function BookingsListModal({
                         return [];
                 }
             } else {
-                // Non-owner actions
+                // Non-owner actions (only for their own bookings)
+                if (!isBookingCreator) {
+                    return [];
+                }
                 switch (currentStatus) {
                     case BookingStatus.Planning:
                         return [

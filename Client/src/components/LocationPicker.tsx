@@ -51,7 +51,7 @@ const LocationPicker = ({
       );
       const result = response.results[0];
       const addressComponents = result.address_components;
-
+      console.log("Reverse geocoding result:", result);
       let streetNumber = "";
       let route = "";
       let city = "";
@@ -88,10 +88,11 @@ const LocationPicker = ({
         streetAddress: `${streetNumber} ${route}`.trim(),
         city,
         country,
-        state: "",
-        postalCode: "",
+        state: state,
+        postalCode: zipCode,
         userId: "",
       };
+      console.log("Selected location:", newLocation);
 
       setSelectedLocation(newLocation);
       handleMapUpdate(newLocation);
@@ -106,6 +107,7 @@ const LocationPicker = ({
 
   const handleSearch = async () => {
     try {
+      console.log("Searching for:", searchQuery);
       const response = await Geocoding.from(searchQuery);
       const { lat, lng } = response.results[0].geometry.location;
       await handleLocationSelect({

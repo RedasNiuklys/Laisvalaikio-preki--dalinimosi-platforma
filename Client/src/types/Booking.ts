@@ -59,7 +59,6 @@ export interface CreateBookingDto {
     equipmentId: string;
     startDateTime: string;
     endDateTime: string;
-    status: BookingStatus;
     notes?: string;
 }
 

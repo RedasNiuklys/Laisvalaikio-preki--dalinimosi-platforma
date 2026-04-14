@@ -84,6 +84,7 @@ const LocationFormScreen = (
     streetAddress: string;
     city: string;
     state: string;
+    postalCode: string;
     country: string;
   }) => {
     setFormData((prev) => ({
@@ -219,6 +220,7 @@ const LocationFormScreen = (
                   streetAddress: location.streetAddress || "",
                   city: location.city || "",
                   state: location.state || "",
+                  postalCode: location.postalCode || "",
                   country: location.country || "",
                 });
               }}
