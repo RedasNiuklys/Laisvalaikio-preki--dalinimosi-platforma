@@ -11,7 +11,13 @@ import { EquipmentImage } from "../types/EquipmentImage";
 import { Location } from "../types/Location";
 import { Category } from "../types/Category";
 import { getByOwner } from "../api/locationApi";
-import { create, uploadImage, getById, update } from "../api/equipmentApi";
+import {
+  create,
+  uploadImage,
+  getById,
+  update,
+  deleteImage as deleteEquipmentImage,
+} from "../api/equipmentApi";
 import { getCategories } from "../api/categoryApi";
 import { useAuth } from "../context/AuthContext";
 import { Picker } from "@react-native-picker/picker";
@@ -19,6 +25,7 @@ import LocationFormScreen from "./LocationFormScreen";
 import { ImageList } from "../components/ImageList";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
 
@@ -41,11 +48,12 @@ export default function AddEquipmentScreen({
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
+  const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>();
   const [showLocationForm, setShowLocationForm] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [equipmentImages, setEquipmentImages] = useState<EquipmentImage[]>([]);
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<UpdateEquipmentDto>({
     name: "",
     description: "",
@@ -83,7 +91,7 @@ export default function AddEquipmentScreen({
     try {
       const data = await getById(equipmentId!);
       console.log("Loaded equipment data:", data);
-      console.log("Equipment locationId from API:", data.locationId);
+      console.log("Equipment locationId from API:", data.location.id);
       console.log("Available locations:", locations.map(l => ({ id: l.id, name: l.name })));
       console.log("Equipment images:", data.images);
       console.log("Image URLs:", data.images?.map((img) => ({ imageUrl: img.imageUrl, url: img.url })));
@@ -91,19 +99,19 @@ export default function AddEquipmentScreen({
       setEquipment({
         name: data.name,
         description: data.description,
-        locationId: data.locationId,
+        locationId: data.location.id,
         condition: data.condition,
         categoryId: data.category.id,
         IsAvailable: data.IsAvailable,
       });
       
       // Verify location exists in the locations array before setting it
-      const locationExists = locations.find(loc => loc.id === data.locationId);
+      const locationExists = locations.find(loc => loc.id === data.location.id);
       if (locationExists) {
-        console.log("Setting selectedLocationId to:", data.locationId);
-        setSelectedLocationId(data.locationId);
+        console.log("Setting selectedLocationId to:", data.location.id);
+        setSelectedLocationId(data.location.id);
       } else {
-        console.warn("Location not found in locations array:", data.locationId);
+        console.warn("Location not found in locations array:", data.location.id);
         // If location doesn't exist, try to find it
         if (locations.length > 0) {
           setSelectedLocationId(locations[0].id);
@@ -113,8 +121,13 @@ export default function AddEquipmentScreen({
       // Use the category ID directly, not the index
       setSelectedCategoryId(data.category.id);
       if (data.images) {
-        setEquipmentImages(data.images);
-        const urls = data.images.map((img) => img.imageUrl || img.url).filter(Boolean) as string[];
+        const normalizedImages = data.images.map((img) => ({
+          ...img,
+          url: img.url || img.imageUrl || "",
+        }));
+        setRemovedImageIds([]);
+        setEquipmentImages(normalizedImages);
+        const urls = normalizedImages.map((img) => img.url).filter(Boolean) as string[];
         console.log("Setting image URLs:", urls);
         setImageUrls(urls);
       }
@@ -206,19 +219,31 @@ export default function AddEquipmentScreen({
 
       if (!result.canceled && result.assets.length > 0) {
         const newImages = await Promise.all(
-          result.assets.map(async (asset) => {
-            let imageUrl = asset.uri;
+          result.assets.map(async (asset, index) => {
+            const manipulatedImage = await ImageManipulator.manipulate(asset.uri);
+            manipulatedImage.resize({ width: 500, height: 500 });
 
-            // Only handle file system operations on native platforms
+            const imageRef = await manipulatedImage.renderAsync();
+            const imageResult = await imageRef.saveAsync({
+              compress: 0.7,
+              format: SaveFormat.JPEG,
+              base64: false,
+            });
+
+            let imageUrl = imageResult.uri;
             if (Platform.OS !== "web") {
-              const fileName = `tempimage.jpg`;
-              const filePath = `${FileSystem.cacheDirectory}${fileName}`;
+              const fileName = `equipment_${Date.now()}_${index}.jpg`;
+              const filePath = `${FileSystem.Paths.cache.uri}${fileName}`;
 
-              // Copy the image to cache directory
               await FileSystem.copyAsync({
-                from: asset.uri,
+                from: imageResult.uri,
                 to: filePath,
               });
+
+              const fileInfo = await FileSystem.getInfoAsync(filePath);
+              if (!fileInfo.exists) {
+                throw new Error("Failed to create temporary image file");
+              }
 
               imageUrl = filePath;
             }
@@ -227,7 +252,7 @@ export default function AddEquipmentScreen({
               id: "", // This will be set by the server
               equipmentId: "", // This will be set when equipment is created
               url: imageUrl,
-              isMain: equipmentImages.length === 0, // First image is main by default
+              isMain: equipmentImages.length === 0 && index === 0,
               createdAt: new Date(),
               updatedAt: new Date(),
             };
@@ -252,13 +277,20 @@ export default function AddEquipmentScreen({
   const handleRemoveImage = async (index: number) => {
     try {
       const imageToRemove = equipmentImages[index];
+      const imagePath = imageToRemove?.url || imageToRemove?.imageUrl || "";
+
+      if (imageToRemove?.id) {
+        setRemovedImageIds((prev) =>
+          prev.includes(imageToRemove.id) ? prev : [...prev, imageToRemove.id]
+        );
+      }
 
       // Only handle file system operations on native platforms
       if (
         Platform.OS !== "web" &&
-        imageToRemove.url.startsWith(FileSystem.cacheDirectory || "")
+        imagePath.startsWith(FileSystem.Paths.cache.uri)
       ) {
-        await FileSystem.deleteAsync(imageToRemove.url, {
+        await FileSystem.deleteAsync(imagePath, {
           idempotent: true,
         });
       }
@@ -340,22 +372,36 @@ export default function AddEquipmentScreen({
         // "Equipment images length:", equipmentImages.length;
         await update(equipmentId, equipmentData);
 
-        // Handle image updates
-        //console.log
-        // "Equipment images:", equipmentImages;
-        if (equipmentImages.length > 0) {
+        // Persist removed server images.
+        if (removedImageIds.length > 0) {
           await Promise.all(
-            equipmentImages.map(async (image, index) => {
-              image.equipmentId = equipmentId;
+            removedImageIds.map((imageId) =>
+              deleteEquipmentImage(equipmentId, imageId)
+            )
+          );
+        }
+
+        // Handle new image uploads only (existing images already live on server)
+        const newImages = equipmentImages.filter((image) => !image.id);
+        if (newImages.length > 0) {
+          const existingImagesCount = equipmentImages.length - newImages.length;
+
+          await Promise.all(
+            newImages.map(async (image, index) => {
               console.log("image", image);
-              //console.log
-              if (image.id.length > 0) {
-                // New image
-                await uploadImage(equipmentId, image.url, index === 0);
-              }
+              const imageUri = image.url || image.imageUrl;
+              if (!imageUri) return;
+
+              await uploadImage(
+                equipmentId,
+                imageUri,
+                existingImagesCount === 0 && index === 0
+              );
             })
           );
         }
+
+        setRemovedImageIds([]);
       } else {
         // Create new equipment
         const createdEquipment = await create(equipmentData);
@@ -366,8 +412,10 @@ export default function AddEquipmentScreen({
             equipmentImages.map(async (image, index) => {
               //console.log
               image.equipmentId = createdEquipment.id || "";
+              const imageUri = image.url || image.imageUrl;
+              if (!imageUri) return;
               //console.log
-              await uploadImage(createdEquipment.id, image.url, index === 0);
+              await uploadImage(createdEquipment.id, imageUri, index === 0);
             })
           );
         }
@@ -375,7 +423,7 @@ export default function AddEquipmentScreen({
 
       try {
         if (router.canGoBack()) {
-          router.back();
+          router.push(`/equipment/${equipmentId || ""}`);
         } else {
           router.replace('/');
         }

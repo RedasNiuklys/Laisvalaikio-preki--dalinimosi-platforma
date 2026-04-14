@@ -115,11 +115,11 @@ const server = https.createServer(options, (req, res) => {
 
 const PORT = 8081;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n✓ Expo web HTTPS dev server running on https://10.51.21.135:${PORT}`);
+  console.log(`\n✓ Expo web HTTPS dev server running on https://10.233.192.135:${PORT}`);
   console.log('  Using certificate: Server/certs/devcert.pfx');
   console.log('\n⚠️  First time? Add this redirect to Google Cloud & Facebook:');
-  console.log('  https://10.51.21.135:8081/google-callback');
-  console.log('  https://10.51.21.135:8081/facebook-callback\n');
+  console.log('  https://10.233.192.135:8081/google-callback');
+  console.log('  https://10.233.192.135:8081/facebook-callback\n');
 });
 
 server.on('error', (err) => {

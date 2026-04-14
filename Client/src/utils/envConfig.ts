@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 // Default values (will be overridden by server config)
-const LOCAL_IP = '10.51.21.135';
+const LOCAL_IP = '10.233.192.135';
 // Use HTTPS on port 8000 for web, HTTP on port 8001 for mobile
 const API_PORT = Platform.OS === 'web' ? '8000' : '8001';
 const API_PROTOCOL = Platform.OS === 'web' ? 'https' : 'http';

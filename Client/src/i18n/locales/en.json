@@ -97,6 +97,7 @@
   },
   "navigation": {
     "home": "Home",
+    "myEquipment": "My equipments",
     "equipment": "Equipment",
     "profile": "Profile",
     "locations": "Locations",

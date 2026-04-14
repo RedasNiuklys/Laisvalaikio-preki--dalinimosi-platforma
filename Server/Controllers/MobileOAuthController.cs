@@ -26,7 +26,7 @@ namespace Server.Controllers
 
         /// <summary>
         /// Mobile Google OAuth callback - Handles authorization code from Google
-        /// URL: https://10.51.21.135:8000/api/MobileOAuth/google-callback?code=xxx
+        /// URL: https://10.233.192.135:8000/api/MobileOAuth/google-callback?code=xxx
         /// Note: Device ID and name required for private IP testing
         /// </summary>
         [HttpGet("google-callback")]
@@ -114,7 +114,7 @@ namespace Server.Controllers
 
         /// <summary>
         /// Mobile Facebook OAuth callback - Handles authorization code from Facebook
-        /// URL: https://10.51.21.135:8000/api/MobileOAuth/facebook-callback?code=xxx
+        /// URL: https://10.233.192.135:8000/api/MobileOAuth/facebook-callback?code=xxx
         /// </summary>
         [HttpGet("facebook-callback")]
         public async Task<IActionResult> FacebookCallback([FromQuery] string code, [FromQuery] string? error, [FromQuery] string? platform, [FromQuery] string? state)

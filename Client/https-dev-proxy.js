@@ -100,14 +100,14 @@ proxy.on('upgrade', (req, socket, head) => {
 });
 
 proxy.listen(PROXY_PORT, '0.0.0.0', () => {
-  console.log(`\n✓ HTTPS dev proxy running on https://10.51.21.135:${PROXY_PORT}`);
+  console.log(`\n✓ HTTPS dev proxy running on https://10.233.192.135:${PROXY_PORT}`);
   console.log(`  → Forwarding to Expo dev server at http://${EXPO_DEV_HOST}:${EXPO_DEV_PORT}`);
   console.log('\n📱 Usage:');
   console.log('  Terminal 1: npm start                 (Expo dev server on port 8081)');
   console.log('  Terminal 2: npm run web:dev:https     (This HTTPS proxy)');
   console.log('\n🌐 Then visit:');
-  console.log(`  Web:      https://10.51.21.135:${PROXY_PORT}     (browser with OAuth)`);
-  console.log('  Expo Go:  exp://10.51.21.135:8081     (connects directly to Metro)\n');
+  console.log(`  Web:      https://10.233.192.135:${PROXY_PORT}     (browser with OAuth)`);
+  console.log('  Expo Go:  exp://10.233.192.135:8081     (connects directly to Metro)\n');
 });
 
 proxy.on('error', (err) => {

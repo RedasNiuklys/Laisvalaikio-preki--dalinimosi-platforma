@@ -25,7 +25,15 @@ import BookingModal from "@/src/components/BookingModal";
 import BookingsCalendar from "@/src/components/BookingsCalendar";
 import BookingsListModal from "@/src/components/BookingsListModal";
 
-export default function EquipmentDetailsPage({ id }: { id: string }) {
+type EquipmentDetailsPageProps = {
+    id: string;
+    openBookingsListOnLoad?: boolean;
+};
+
+export default function EquipmentDetailsPage({
+    id,
+    openBookingsListOnLoad = false,
+}: EquipmentDetailsPageProps) {
     const [equipment, setEquipment] = useState<Equipment | null>(null);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
@@ -36,6 +44,7 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showBookingsListModal, setShowBookingsListModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [didAutoOpenBookings, setDidAutoOpenBookings] = useState(false);
 
     const loadBookings = async (equipmentId: string) => {
         try {
@@ -71,12 +80,24 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
         fetchEquipmentDetails();
     }, [id]);
 
+    useEffect(() => {
+        if (
+            openBookingsListOnLoad &&
+            !loading &&
+            !!equipment &&
+            !didAutoOpenBookings
+        ) {
+            setShowBookingsListModal(true);
+            setDidAutoOpenBookings(true);
+        }
+    }, [openBookingsListOnLoad, loading, equipment, didAutoOpenBookings]);
+
     const handleDelete = async () => {
         if (!equipment) return;
 
         try {
             await deleteEquipment(equipment.id);
-            router.push('/equipment');
+            router.back();
         } catch (error) {
             console.error('Error deleting equipment:', error);
             // You might want to show an error message to the user here
@@ -267,7 +288,7 @@ export default function EquipmentDetailsPage({ id }: { id: string }) {
                             <View style={styles.actions}>
                                 <Button
                                     mode="contained"
-                                    onPress={() => router.push(`/equipment/edit/${equipment.id}`)}
+                                    onPress={() => router.push({ pathname: "/(modals)/equipment/edit/[id]", params: { id: equipment.id } })}
                                     style={styles.editButton}
                                 >
                                     {t("equipment.actions.edit")}

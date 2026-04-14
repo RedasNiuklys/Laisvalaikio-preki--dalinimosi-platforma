@@ -117,9 +117,17 @@ export const uploadImage = async (equipmentId: string, imageUri: string, isMainI
 
 export const deleteImage = async (equipmentId: string, imageId: string): Promise<void> => {
     const token = await getAuthToken();
-    await axios.delete(`${EQUIPMENT_ENDPOINT}/${equipmentId}/images/${imageId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+        await axios.delete(`${EQUIPMENT_ENDPOINT}/${equipmentId}/images/${imageId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            // Treat as already deleted to keep edit flow idempotent.
+            return;
+        }
+        throw error;
+    }
 }
 
 // Add maintenance record

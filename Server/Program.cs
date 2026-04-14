@@ -16,30 +16,7 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-var sqlitePathFromEnv = Environment.GetEnvironmentVariable("SQLITE_PATH");
-var homePath = Environment.GetEnvironmentVariable("HOME") ?? Environment.GetEnvironmentVariable("HOME_PATH");
-var isAzureAppService = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
-
-var dbPath = !string.IsNullOrWhiteSpace(sqlitePathFromEnv)
-    ? sqlitePathFromEnv
-    : isAzureAppService && !string.IsNullOrWhiteSpace(homePath)
-        ? Path.Combine(homePath, "data", "database.db")
-        : Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
-
-var dbDirectory = Path.GetDirectoryName(dbPath);
-if (!string.IsNullOrWhiteSpace(dbDirectory))
-{
-    Directory.CreateDirectory(dbDirectory);
-}
-
-// If we ship an initial SQLite file with the app, copy it once on first start.
-var bundledDbPath = Path.Combine(AppContext.BaseDirectory, "Data", "database.db");
-if (!string.Equals(dbPath, bundledDbPath, StringComparison.OrdinalIgnoreCase) &&
-    !File.Exists(dbPath) &&
-    File.Exists(bundledDbPath))
-{
-    File.Copy(bundledDbPath, dbPath);
-}
+var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
 
 Console.WriteLine("Database path: " + dbPath);
 
@@ -47,17 +24,30 @@ Console.WriteLine("Database path: " + dbPath);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite($"Data Source={dbPath}");
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
+    options.EnableSensitiveDataLogging();
+    options.EnableDetailedErrors();
 });
 
 // Identity + EF Core
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+// Configure URLs - Listen on both HTTP (mobile) and HTTPS (web)
+// Using port 8000 to avoid FortiClient blocking common ports
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(8000, listenOptions =>
+    {
+        // HTTP for mobile dev (Expo Go doesn't trust self-signed certs)
+        // HTTPS for web (where cert is trusted)
+        listenOptions.UseHttps(); // HTTPS on 8000
+    });
+    serverOptions.ListenAnyIP(8001, listenOptions =>
+    {
+        // HTTP fallback for mobile
+    });
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -211,12 +201,6 @@ builder.Services.AddSwaggerGen(c =>
 System.Console.WriteLine("Building app");
 var app = builder.Build();
 System.Console.WriteLine("Building app done");
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-}
 
 // Use CORS before any other middleware
 app.UseCors("CorsPolicy");

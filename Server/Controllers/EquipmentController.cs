@@ -38,7 +38,6 @@ namespace Server.Controllers
             var fileName = Path.GetFileName(normalizedUrl);
 
             var currentBaseUrl = $"{Request.Scheme}://{Request.Host}";
-
             // Return API endpoint URL instead of direct file path
             return $"{currentBaseUrl}/api/Storage/GetEquipmentImage/{equipmentId}/{fileName}";
         }
@@ -128,6 +127,7 @@ namespace Server.Controllers
                 foreach (var image in dto.Images)
                 {
                     image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
+                    System.Console.WriteLine($"Transformed image URL: {image.ImageUrl}");
                 }
             }
 
@@ -164,7 +164,7 @@ namespace Server.Controllers
             {
                 // Generate unique filename
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                var filePath = Path.Combine("wwwroot", "uploads", "equipment", fileName);
+                var filePath = Path.Combine("wwwroot", "uploads", "equipment", id, fileName);
 
                 // Ensure directory exists
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -180,7 +180,7 @@ namespace Server.Controllers
                 {
                     Id = Guid.NewGuid().ToString(),
                     EquipmentId = id,
-                    ImageUrl = Path.Combine("uploads", "equipment", fileName),
+                    ImageUrl = Path.Combine("uploads", "equipment", id, fileName),
                     IsMainImage = isMainImage,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -190,6 +190,61 @@ namespace Server.Controllers
                 await _context.SaveChangesAsync();
 
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/Equipment/{id}/images/{imageId}
+        [HttpDelete("{id}/images/{imageId}")]
+        public async Task<IActionResult> DeleteEquipmentImage([FromRoute] string id, [FromRoute] string imageId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var equipment = await _context.Equipment.FirstOrDefaultAsync(e => e.Id == id);
+            if (equipment == null)
+            {
+                return NotFound("Equipment not found");
+            }
+
+            if (equipment.OwnerId != userId)
+            {
+                return Forbid();
+            }
+
+            var image = await _context.EquipmentImages
+                .FirstOrDefaultAsync(i => i.Id == imageId && i.EquipmentId == id);
+
+            if (image == null)
+            {
+                // Idempotent delete for retries/race conditions.
+                return NoContent();
+            }
+
+            try
+            {
+                var relativePath = GetRelativeImageUrl(image.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(relativePath))
+                {
+                    var normalizedPath = relativePath.Replace("/", Path.DirectorySeparatorChar.ToString());
+                    var physicalPath = Path.Combine("wwwroot", normalizedPath);
+
+                    if (System.IO.File.Exists(physicalPath))
+                    {
+                        System.IO.File.Delete(physicalPath);
+                    }
+                }
+
+                _context.EquipmentImages.Remove(image);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -297,26 +352,9 @@ namespace Server.Controllers
             equipment.IsAvailable = updateDto.Status == "Available";
             equipment.UpdatedAt = DateTime.UtcNow;
 
-            // Update images if provided
-            if (updateDto.Images != null)
-            {
-                // Remove existing images
-                _context.EquipmentImages.RemoveRange(equipment.Images);
-
-                // Add new images
-                foreach (var image in updateDto.Images)
-                {
-                    var equipmentImage = new EquipmentImage
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        EquipmentId = equipment.Id,
-                        ImageUrl = GetRelativeImageUrl(image.ImageUrl),
-                        IsMainImage = image.IsMainImage,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.EquipmentImages.Add(equipmentImage);
-                }
-            }
+            // Images are managed via dedicated endpoints:
+            // POST /api/Equipment/{id}/images and DELETE /api/Equipment/{id}/images/{imageId}
+            // Keep update endpoint metadata-only.
 
             try
             {
@@ -340,6 +378,7 @@ namespace Server.Controllers
         {
             var equipment = await _context.Equipment
                 .Include(e => e.Images)
+                .Include(e => e.Bookings)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (equipment == null)
@@ -354,6 +393,7 @@ namespace Server.Controllers
             }
 
             _context.EquipmentImages.RemoveRange(equipment.Images);
+            _context.Bookings.RemoveRange(equipment.Bookings);
             _context.Equipment.Remove(equipment);
             await _context.SaveChangesAsync();
 

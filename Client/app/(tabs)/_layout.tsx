@@ -32,6 +32,7 @@ export default function TabLayout() {
     <Tabs
         screenOptions={{
           headerShown: false,
+          lazy: false,
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.onSurfaceDisabled,
           tabBarStyle: {
@@ -46,7 +47,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: t("navigation.home"),
+            title: t("navigation.myEquipment", { defaultValue: "My equipments" }),
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="home" size={size} color={color} />
             ),

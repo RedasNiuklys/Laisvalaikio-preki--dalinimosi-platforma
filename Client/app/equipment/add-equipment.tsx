@@ -39,7 +39,7 @@ export default function AddEquipmentModal() {
   return (
     <View style={{ flex: 1 }}>
       <Appbar.Header>
-        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.BackAction onPress={() => { if (router.canGoBack()) router.push('/equipment/[id]'); }} />
         <Appbar.Content title="Add Equipment" />
       </Appbar.Header>
       <AddEquipmentScreen

@@ -36,7 +36,7 @@ export interface Equipment {
     tags: string[];
     condition: string;
     IsAvailable: boolean;
-    locationId: string;
+    locationId?: string;
     location: Location;
     createdAt: string;
     updatedAt?: string;
@@ -59,7 +59,7 @@ export interface CreateEquipmentDto {
     description: string;
     categoryId: number;
     condition: string;
-    locationId: string;
+    locationId?: string;
     images?: EquipmentImage[];
 }
 

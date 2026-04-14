@@ -165,8 +165,7 @@ namespace Server.Controllers
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "equipment", fileName);
-
+                var filePath = Path.Combine(_baseUploadPath, "equipment", equipmentId, fileName);
                 if (!System.IO.File.Exists(filePath))
                     return NotFound("Equipment image not found");
 
@@ -184,7 +183,7 @@ namespace Server.Controllers
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "equipment", fileName);
+                var filePath = Path.Combine(_baseUploadPath, "equipment", equipmentId, fileName);
 
                 if (!System.IO.File.Exists(filePath))
                     return NotFound("Equipment image not found");

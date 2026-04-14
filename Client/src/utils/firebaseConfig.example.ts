@@ -27,7 +27,7 @@ export const FIREBASE_REST_API = {
 // OAuth callback base URLs
 // - For mobile/native Google OAuth use a public HTTPS domain (Cloudflare tunnel)
 // - EXPO_PUBLIC_OAUTH_BASE_URL example: https://oauth.yourdomain.com
-const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://10.51.21.135:8000';
+const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://10.233.192.135:8000';
 const DEFAULT_PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || 'https://your-tunnel-url.trycloudflare.com';
 const PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_OAUTH_BASE_URL || DEFAULT_PUBLIC_OAUTH_BASE_URL;
 

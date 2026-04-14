@@ -22,7 +22,7 @@ export const FIREBASE_DYNAMIC_LINKS = {
   shortLinksEndpoint: `https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${firebaseConfig.apiKey}`,
 };
 
-const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://readily-prefers-summaries-devon.trycloudflare.com';
+const SERVER_BASE_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL || 'https://urban-brilliant-door-very.trycloudflare.com';
 // const DEFAULT_PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_DEFAULT_OAUTH_BASE_URL || 'https://factors-burning-enabled-identified.trycloudflare.com/api/MobileOAuth/facebook-callback';
 // const PUBLIC_OAUTH_BASE_URL = process.env.EXPO_PUBLIC_OAUTH_BASE_URL || DEFAULT_PUBLIC_OAUTH_BASE_URL;
 const localhost = 'localhost';

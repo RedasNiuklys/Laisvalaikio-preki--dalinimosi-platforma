@@ -1,11 +1,10 @@
 import { useCallback } from "react";
-import { View, StyleSheet, BackHandler, Alert, Platform } from "react-native";
+import { BackHandler, Alert, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import EquipmentListPage from "@/src/pages/equipment/EquipmentListPage";
 
 export default function HomeScreen() {
-  const theme = useTheme();
   const { t } = useTranslation();
 
   useFocusEffect(
@@ -44,24 +43,5 @@ export default function HomeScreen() {
     }, [t])
   );
 
-  return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <Text
-        variant="headlineMedium"
-        style={{ color: theme.colors.onBackground }}
-      >
-        {t("home.welcome")}
-      </Text>
-    </View>
-  );
+  return <EquipmentListPage ownerOnly pageTitle={t("navigation.myEquipment", { defaultValue: "My equipments" })} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

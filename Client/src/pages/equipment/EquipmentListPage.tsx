@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, FlatList, Platform, Image, useWindowDimensions } from "react-native";
+import { View, StyleSheet, FlatList, useWindowDimensions, Pressable } from "react-native";
 import {
     Text,
     Card,
@@ -7,39 +7,56 @@ import {
     useTheme,
     Button,
     ActivityIndicator,
-    IconButton,
     Chip,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import * as equipmentApi from "@/src/api/equipmentApi";
 import * as categoryApi from "@/src/api/categoryApi";
-import { Location as LocationType } from "@/src/types/Location";
 import { Equipment } from "@/src/types/Equipment";
 import { Category } from "@/src/types/Category";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { OUTDOOR_ICONS } from "@/src/assets/CategoryIcons";
 
-export default function EquipmentListPage() {
+type EquipmentListPageProps = {
+    ownerOnly?: boolean;
+    pageTitle?: string;
+};
+
+export default function EquipmentListPage({
+    ownerOnly = false,
+    pageTitle,
+}: EquipmentListPageProps) {
     const [equipment, setEquipment] = useState<Equipment[]>([]);
     const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
-    const [locations, setLocations] = useState<LocationType[]>([]);
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [showCategories, setShowCategories] = useState(true);
     const theme = useTheme();
     const { t } = useTranslation();
     const { user } = useAuth();
     const router = useRouter();
     const { width } = useWindowDimensions();
     const isNarrowScreen = width < 420;
+    const isMidWidth = width >= 420 && width <= 1025;
+    const showChipLabels = !isMidWidth;
+    const showCardActionLabels = !isMidWidth;
+    const numColumns = isNarrowScreen ? 1 : 3;
+    const listHorizontalPadding = 16;
+    const cardGap = 12;
+    const cardWidth =
+        (width - listHorizontalPadding * 2 - cardGap * (numColumns - 1)) /
+        numColumns;
 
     useEffect(() => {
         fetchCategories();
-        fetchEquipment();
     }, []);
+
+    useEffect(() => {
+        fetchEquipment();
+    }, [user?.id, ownerOnly]);
 
     useEffect(() => {
         filterEquipment();
@@ -64,10 +81,10 @@ export default function EquipmentListPage() {
                 (c) => c.name === selectedCategory
             );
             if (selectedCategoryObj) {
-                if (selectedCategoryObj.categoryId === null) {
+                if (!selectedCategoryObj.parentCategoryId) {
                     // If parent category is selected, show all its children
                     const childCategories = categories
-                        .filter((c) => c.categoryId === selectedCategoryObj.id)
+                        .filter((c) => c.parentCategoryId === selectedCategoryObj.id)
                         .map((c) => c.name);
                     filtered = filtered.filter(
                         (item) =>
@@ -90,10 +107,19 @@ export default function EquipmentListPage() {
     const fetchEquipment = async () => {
         try {
             setLoading(true);
-            const data = await equipmentApi.getAll();
+            let data: Equipment[] = [];
+
+            if (ownerOnly) {
+                data = user?.id ? await equipmentApi.getByOwner(user.id) : [];
+            } else {
+                const allEquipment = await equipmentApi.getAll();
+                data = user?.id
+                    ? allEquipment.filter((item) => item.ownerId !== user.id)
+                    : allEquipment;
+            }
+
             setEquipment(data);
-            console.log("equipment", equipment);
-            // setLocations(data.map((item) => item.location));
+            console.log("equipment", data);
         } catch (error) {
             console.error("Error fetching equipment:", error);
             showToast("error", t("equipment.errors.fetchFailed"));
@@ -117,10 +143,9 @@ export default function EquipmentListPage() {
                         />
                     )}
                 >
-                    {t("common.all")}
+                    {showChipLabels ? t("common.all") : ""}
                 </Chip>
                 {categories.map((category) => {
-                    const iconInfo = OUTDOOR_ICONS.find(icon => icon.label.toLowerCase() === category.name.toLowerCase());
                     return (
                         <Chip
                             key={category.id}
@@ -128,7 +153,7 @@ export default function EquipmentListPage() {
                             onPress={() => setSelectedCategory(category.name)}
                             style={[
                                 styles.categoryChip,
-                                category.categoryId === null && {
+                                !category.parentCategoryId && {
                                     backgroundColor: theme.colors.primaryContainer,
                                 },
                                 selectedCategory === category.name && {
@@ -144,7 +169,7 @@ export default function EquipmentListPage() {
                                 />
                             )}
                         >
-                            {isNarrowScreen ? "" : category.name}
+                            {showChipLabels ? category.name : ""}
                         </Chip>
                     );
                 })}
@@ -152,59 +177,65 @@ export default function EquipmentListPage() {
         );
     };
 
-    // Calculate optimal card width and number of columns
-    const calculateGridLayout = () => {
-        const minCardWidth = 120;
-        const maxCardWidth = 170;
-        const containerPadding = 16; // 8px padding on each side
-        const cardSpacing = 8; // 4px margin on each side of card
-        const availableWidth = width - containerPadding;
-
-        // Calculate how many cards can fit with minimum width
-        const maxColumns = Math.floor(availableWidth / (minCardWidth + cardSpacing));
-
-        // Calculate actual card width based on number of columns
-        const cardWidth = Math.min(
-            maxCardWidth,
-            Math.max(
-                minCardWidth,
-                (availableWidth - (maxColumns - 1) * cardSpacing) / maxColumns
-            )
-        );
-
-        return {
-            numColumns: maxColumns,
-            cardWidth,
-        };
-    };
-
-    const { numColumns, cardWidth } = calculateGridLayout();
-
     const renderEquipmentItem = ({ item }: { item: Equipment }) => {
-        const mainImage = item.images?.find(img => img.isMain)?.url || item.images?.[0]?.url;
+        const isOwner = item.ownerId === user?.id;
+        const mainImage =
+            item.images?.find((img) => img.isMainImage || img.isMain)?.imageUrl ||
+            item.images?.find((img) => img.isMainImage || img.isMain)?.url ||
+            item.images?.[0]?.imageUrl ||
+            item.images?.[0]?.url;
+
         return (
-            <Card
-                style={[styles.equipmentCard, { width: cardWidth }]}
-                onPress={() => router.push(`/equipment/${item.id}`)}
-            >
-                <Card.Cover
-                    source={{ uri: mainImage }}
-                    style={styles.cardImage}
-                />
-                <Card.Title
-                    title={item.name}
-                    subtitle={item.category.name}
-                    titleStyle={styles.cardTitle}
-                    subtitleStyle={styles.cardSubtitle}
-                    right={(props) => (
-                        <IconButton
-                            {...props}
-                            icon="chevron-right"
-                            size={20}
-                            onPress={() => router.push(`/equipment/${item.id}`)}
-                        />
-                    )}
-                />
+            <Card style={[styles.equipmentCard, { width: cardWidth }]}>
+                <Pressable
+                    onPress={() => router.push({ pathname: "/equipment/[id]", params: { id: item.id } })}
+                    style={{ flex: 1 }}
+                >
+                    <Card.Cover
+                        source={{ uri: mainImage }}
+                        style={styles.cardImage}
+                    />
+                    <Card.Title
+                        title={item.name}
+                        subtitle={item.category.name}
+                        titleStyle={styles.cardTitle}
+                        subtitleStyle={styles.cardSubtitle}
+                    />
+                </Pressable>
+                {isOwner ? (
+                    <Card.Actions style={styles.cardActions}>
+                        <Button
+                            mode="outlined"
+                            compact
+                            icon="pencil"
+                            style={[
+                                styles.actionButton,
+                                !showCardActionLabels && styles.iconOnlyActionButton,
+                            ]}
+                            contentStyle={!showCardActionLabels ? styles.iconOnlyButtonContent : undefined}
+                            labelStyle={!showCardActionLabels ? styles.iconOnlyButtonLabel : undefined}
+                            accessibilityLabel={t("equipment.actions.edit")}
+                            onPress={() => router.push({ pathname: "/(modals)/equipment/edit/[id]", params: { id: item.id } })}
+                        >
+                            {showCardActionLabels ? t("equipment.actions.edit") : undefined}
+                        </Button>
+                        <Button
+                            mode="contained-tonal"
+                            compact
+                            icon="calendar-month"
+                            style={[
+                                styles.actionButton,
+                                !showCardActionLabels && styles.iconOnlyActionButton,
+                            ]}
+                            contentStyle={!showCardActionLabels ? styles.iconOnlyButtonContent : undefined}
+                            labelStyle={!showCardActionLabels ? styles.iconOnlyButtonLabel : undefined}
+                            accessibilityLabel={t("booking.title")}
+                            onPress={() => router.push({ pathname: "/(modals)/equipment/[id]", params: { id: item.id, open: "bookings" } })}
+                        >
+                            {showCardActionLabels ? t("booking.title") : undefined}
+                        </Button>
+                    </Card.Actions>
+                ) : null}
             </Card>
         );
     };
@@ -219,6 +250,12 @@ export default function EquipmentListPage() {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            {pageTitle ? (
+                <Text style={[styles.pageTitle, { color: theme.colors.onBackground }]} variant="headlineSmall">
+                    {pageTitle}
+                </Text>
+            ) : null}
+
             <View style={styles.mapButtonContainer}>
                 <Button
                     mode="contained"
@@ -233,12 +270,23 @@ export default function EquipmentListPage() {
                 >
                     {t("location.showMap")}
                 </Button>
+
+                <Button
+                    mode="outlined"
+                    icon="filter-variant"
+                    onPress={() => setShowCategories((prev) => !prev)}
+                    style={styles.categoriesToggleButton}
+                >
+                    {showCategories
+                        ? t("equipment.filters.hideCategories", { defaultValue: "Hide Categories" })
+                        : t("equipment.filters.showCategories", { defaultValue: "Show Categories" })}
+                </Button>
             </View>
 
-            {renderCategoryChips()}
+            {showCategories ? renderCategoryChips() : null}
 
             <FlatList
-                key={width.toString() + filteredEquipment.length.toString()}
+                key={`${numColumns}-${width}-${filteredEquipment.length}`}
                 data={filteredEquipment}
                 renderItem={renderEquipmentItem}
                 keyExtractor={(item) => item.id}
@@ -260,6 +308,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    pageTitle: {
+        marginTop: 12,
+        marginHorizontal: 16,
+    },
     loadingContainer: {
         flex: 1,
         justifyContent: "center",
@@ -271,6 +323,9 @@ const styles = StyleSheet.create({
     mapButton: {
         width: '100%',
     },
+    categoriesToggleButton: {
+        marginTop: 10,
+    },
     filtersContainer: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -281,14 +336,16 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     listContainer: {
-        padding: 8,
+        paddingHorizontal: 16,
+        paddingBottom: 96,
+        paddingTop: 8,
     },
     row: {
         justifyContent: 'flex-start',
-        gap: 8,
+        gap: 12,
     },
     equipmentCard: {
-        marginBottom: 8,
+        marginBottom: 12,
     },
     cardImage: {
         height: 120,
@@ -298,6 +355,32 @@ const styles = StyleSheet.create({
     },
     cardSubtitle: {
         fontSize: 12,
+    },
+    cardActions: {
+        justifyContent: "space-between",
+        paddingHorizontal: 8,
+        paddingBottom: 8,
+    },
+    actionButton: {
+        flex: 1,
+        marginHorizontal: 4,
+    },
+    iconOnlyActionButton: {
+        flex: 0,
+        width: 44,
+        minWidth: 44,
+        marginHorizontal: 4,
+        paddingHorizontal: 0,
+    },
+    iconOnlyButtonContent: {
+        justifyContent: "center",
+        alignItems: "center",
+        marginHorizontal: 0,
+        paddingHorizontal: 0,
+    },
+    iconOnlyButtonLabel: {
+        width: 0,
+        margin: 0,
     },
     fab: {
         position: "absolute",

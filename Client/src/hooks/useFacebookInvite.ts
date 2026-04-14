@@ -6,7 +6,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { FIREBASE_DYNAMIC_LINKS } from '@/src/utils/firebaseConfig';
 import { useTranslation } from 'react-i18next';
 
-const DEFAULT_CLIENT_BASE_URL = 'http://10.51.21.135:8081';
+const DEFAULT_CLIENT_BASE_URL = 'http://10.233.192.135:8081';
 const CLIENT_BASE_URL = process.env.EXPO_PUBLIC_CLIENT_BASE_URL || DEFAULT_CLIENT_BASE_URL;
 
 interface FacebookInviteResult {
