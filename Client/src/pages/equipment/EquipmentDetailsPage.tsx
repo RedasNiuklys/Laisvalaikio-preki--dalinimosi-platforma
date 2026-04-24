@@ -12,6 +12,7 @@ import {
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import axios from "axios";
 import LocationMap from "@/src/components/LocationMap";
 import * as equipmentApi from "@/src/api/equipmentApi";
 import { Equipment } from "@/src/types/Equipment";
@@ -24,6 +25,9 @@ import { deleteEquipment } from '../../api/equipmentApi';
 import BookingModal from "@/src/components/BookingModal";
 import BookingsCalendar from "@/src/components/BookingsCalendar";
 import BookingsListModal from "@/src/components/BookingsListModal";
+import { BASE_URL } from "@/src/utils/envConfig";
+import { getAuthToken } from "@/src/utils/authUtils";
+import { chatService } from "@/src/services/ChatService";
 
 type EquipmentDetailsPageProps = {
     id: string;
@@ -104,7 +108,39 @@ export default function EquipmentDetailsPage({
         }
     };
 
-    const handleCreateBooking = async (startDate: Date, endDate: Date, notes: string) => {
+    const createOrGetDirectChat = async (ownerId: string): Promise<number> => {
+        const token = await getAuthToken();
+        const response = await axios.post(
+            `${BASE_URL}/chat/create`,
+            {
+                name: "",
+                isGroupChat: false,
+                participantIds: [ownerId],
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        return response.data;
+    };
+
+    const buildBookingNotificationMessage = (equipmentName: string, equipmentId: string, startDate: Date, endDate: Date, notes: string): string => {
+        const starters = [
+            "Hi! I just sent a booking request.",
+            "Hey! I am interested in your equipment and sent a booking request.",
+            "Hello! I placed a booking request and wanted to reach out directly.",
+        ];
+        const conversationStarter = starters[Math.floor(Math.random() * starters.length)];
+        const rangeText = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+        const notesPart = notes.trim() ? `\nNotes: ${notes.trim()}` : "";
+
+        return `${conversationStarter}\n\nBooking request for \"${equipmentName}\" (${rangeText}).${notesPart}\n[BOOKINGS_LINK:${equipmentId}]`;
+    };
+
+    const handleCreateBooking = async (startDate: Date, endDate: Date, notes: string, notifyOwner: boolean) => {
         if (!equipment) return;
 
         try {
@@ -133,6 +169,24 @@ export default function EquipmentDetailsPage({
             };
 
             await createBooking(newBooking);
+
+            if (notifyOwner && !isOwner) {
+                try {
+                    const chatId = await createOrGetDirectChat(equipment.ownerId);
+                    const message = buildBookingNotificationMessage(
+                        equipment.name,
+                        equipment.id,
+                        startDate,
+                        endDate,
+                        notes
+                    );
+                    await chatService.sendMessage(chatId, message);
+                } catch (notifyError) {
+                    console.error("Failed to notify owner via chat:", notifyError);
+                    showToast("info", "Booking was created, but chat notification could not be sent.");
+                }
+            }
+
             // Reload bookings after creating a new one
             await loadBookings(equipment.id);
             showToast("success", isOwner ? t("booking.ownerSuccess") : t("booking.success"));

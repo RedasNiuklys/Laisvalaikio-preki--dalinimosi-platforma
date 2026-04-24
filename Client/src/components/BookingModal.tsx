@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Platform } from 'react-native';
-import { Modal, Portal, Text, Button, useTheme, IconButton, TextInput, Surface } from 'react-native-paper';
+import { Modal, Portal, Text, Button, useTheme, IconButton, TextInput, Surface, Checkbox } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 interface BookingModalProps {
     visible: boolean;
     onDismiss: () => void;
-    onSubmit: (startDate: Date, endDate: Date, notes: string) => void;
+    onSubmit: (startDate: Date, endDate: Date, notes: string, notifyOwner: boolean) => void;
     equipmentName: string;
     initialDate?: Date;
     isOwner?: boolean;
@@ -20,6 +20,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
     const [startDate, setStartDate] = useState(initialDate || new Date());
     const [endDate, setEndDate] = useState(initialDate || new Date());
     const [notes, setNotes] = useState('');
+    const [notifyOwner, setNotifyOwner] = useState(true);
     const [showStartDate, setShowStartDate] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
 
@@ -54,7 +55,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
     };
 
     const handleSubmit = () => {
-        onSubmit(startDate, endDate, notes);
+        onSubmit(startDate, endDate, notes, notifyOwner);
         onDismiss();
     };
 
@@ -194,6 +195,18 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                             style={styles.notesInput}
                         />
                     </View>
+
+                    {!isOwner && (
+                        <View style={styles.notifySection}>
+                            <Checkbox
+                                status={notifyOwner ? 'checked' : 'unchecked'}
+                                onPress={() => setNotifyOwner((prev) => !prev)}
+                            />
+                            <Text style={[styles.notifyText, { color: theme.colors.onSurface }]}>
+                                Notify owner via message
+                            </Text>
+                        </View>
+                    )}
                 </ScrollView>
 
                 <View style={styles.footer}>
@@ -270,6 +283,14 @@ const styles = StyleSheet.create({
     },
     notesInput: {
         backgroundColor: 'transparent',
+    },
+    notifySection: {
+        marginTop: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    notifyText: {
+        flex: 1,
     },
     footer: {
         padding: 16,

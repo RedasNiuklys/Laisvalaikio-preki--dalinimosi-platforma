@@ -10,6 +10,7 @@ import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import {
   Avatar,
   TextInput,
+  Button,
   useTheme,
   Text,
   ActivityIndicator,
@@ -31,6 +32,8 @@ interface User {
 }
 
 export default function ChatScreen() {
+  const BOOKING_LINK_REGEX = /\[BOOKINGS_LINK:([^\]]+)\]/;
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -350,6 +353,12 @@ export default function ChatScreen() {
   };
 
   const renderMessage = ({ item }: { item: ChatMessage }) => (
+    (() => {
+      const match = item.content.match(BOOKING_LINK_REGEX);
+      const bookingEquipmentId = match?.[1];
+      const displayContent = item.content.replace(BOOKING_LINK_REGEX, '').trim();
+
+      return (
     <View
       style={[
         styles.messageContainer,
@@ -384,13 +393,30 @@ export default function ChatScreen() {
             },
           ]}
         >
-          {item.content}
+          {displayContent}
         </Text>
+        {bookingEquipmentId && (
+          <Button
+            mode="outlined"
+            compact
+            style={styles.bookingActionButton}
+            onPress={() =>
+              router.push({
+                pathname: "/(modals)/equipment/[id]",
+                params: { id: bookingEquipmentId, open: "bookings" },
+              })
+            }
+          >
+            Open bookings
+          </Button>
+        )}
         <Text variant="labelSmall" style={styles.timestamp}>
           {format(new Date(item.sentAt), "MMM d, yyyy HH:mm")}
         </Text>
       </View>
     </View>
+      );
+    })()
   );
 
   if (loading || !user) {
@@ -532,6 +558,10 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  bookingActionButton: {
+    marginTop: 6,
+    alignSelf: "flex-start",
   },
   timestamp: {
     alignSelf: "flex-end",
