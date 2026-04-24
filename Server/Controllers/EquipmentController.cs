@@ -6,6 +6,7 @@ using Server.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Cors;
 using AutoMapper;
+using Server.Services.Storage;
 
 namespace Server.Controllers
 {
@@ -14,18 +15,24 @@ namespace Server.Controllers
     [Route("api/[controller]")]
     public class EquipmentController : ControllerBase
     {
+        public class AddEquipmentImageForm
+        {
+            public IFormFile File { get; set; }
+            public bool IsMainImage { get; set; }
+        }
+
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly IObjectStorageService _objectStorage;
 
         public EquipmentController(
             ApplicationDbContext context,
-            IConfiguration configuration,
-            IMapper mapper)
+            IMapper mapper,
+            IObjectStorageService objectStorage)
         {
             _context = context;
-            _configuration = configuration;
             _mapper = mapper;
+            _objectStorage = objectStorage;
         }
 
         private string GetFullImageUrl(string imageUrl, string equipmentId)
@@ -52,7 +59,7 @@ namespace Server.Controllers
                 return absoluteUri.AbsolutePath.TrimStart('/');
             }
 
-            return normalizedUrl.TrimStart('/');
+            return StorageKeyHelper.StripLegacyUploadsPrefix(normalizedUrl.TrimStart('/'));
         }
 
         // GET: api/Equipment
@@ -135,7 +142,8 @@ namespace Server.Controllers
         }
         // POST: api/Equipment/{id}/images
         [HttpPost("{id}/images")]
-        public async Task<ActionResult> AddEquipmentImage([FromRoute] string id, [FromForm] IFormFile file, [FromForm] bool isMainImage = false)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> AddEquipmentImage([FromRoute] string id, [FromForm] AddEquipmentImageForm form)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -155,7 +163,7 @@ namespace Server.Controllers
             //     return Forbid();
             // }
 
-            if (file == null || file.Length == 0)
+            if (form?.File == null || form.File.Length == 0)
             {
                 return BadRequest("No file uploaded");
             }
@@ -163,16 +171,12 @@ namespace Server.Controllers
             try
             {
                 // Generate unique filename
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                var filePath = Path.Combine("wwwroot", "uploads", "equipment", id, fileName);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(form.File.FileName)}";
+                var objectKey = StorageKeyHelper.Build("equipment", id, fileName);
 
-                // Ensure directory exists
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                // Save file
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = form.File.OpenReadStream())
                 {
-                    await file.CopyToAsync(stream);
+                    await _objectStorage.SaveAsync(objectKey, stream, form.File.ContentType ?? "application/octet-stream");
                 }
 
                 // Create equipment image record
@@ -180,8 +184,8 @@ namespace Server.Controllers
                 {
                     Id = Guid.NewGuid().ToString(),
                     EquipmentId = id,
-                    ImageUrl = Path.Combine("uploads", "equipment", id, fileName),
-                    IsMainImage = isMainImage,
+                    ImageUrl = objectKey,
+                    IsMainImage = form.IsMainImage,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -232,13 +236,7 @@ namespace Server.Controllers
                 var relativePath = GetRelativeImageUrl(image.ImageUrl);
                 if (!string.IsNullOrWhiteSpace(relativePath))
                 {
-                    var normalizedPath = relativePath.Replace("/", Path.DirectorySeparatorChar.ToString());
-                    var physicalPath = Path.Combine("wwwroot", normalizedPath);
-
-                    if (System.IO.File.Exists(physicalPath))
-                    {
-                        System.IO.File.Delete(physicalPath);
-                    }
+                    await _objectStorage.DeleteIfExistsAsync(relativePath);
                 }
 
                 _context.EquipmentImages.Remove(image);

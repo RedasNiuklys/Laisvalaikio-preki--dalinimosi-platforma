@@ -1,19 +1,27 @@
 import { Platform } from 'react-native';
 
-// Default values (will be overridden by server config)
-const LOCAL_IP = '10.233.192.135';
-// Use HTTPS on port 8000 for web, HTTP on port 8001 for mobile
-const API_PORT = Platform.OS === 'web' ? '8000' : '8001';
-const API_PROTOCOL = Platform.OS === 'web' ? 'https' : 'http';
-const WS_PROTOCOL = Platform.OS === 'web' ? 'wss' : 'ws';
+const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP || '10.233.192.135';
+const LOCAL_API_PORT = Platform.OS === 'web' ? '8000' : '8001';
+const LOCAL_API_PROTOCOL = Platform.OS === 'web' ? 'https' : 'http';
+
+const getOriginUrl = () => {
+    if (process.env.EXPO_PUBLIC_API_ORIGIN) {
+        return process.env.EXPO_PUBLIC_API_ORIGIN;
+    }
+
+    return `${LOCAL_API_PROTOCOL}://${LOCAL_IP}:${LOCAL_API_PORT}`;
+};
 
 const getBaseUrl = () => {
-    console.log(`${API_PROTOCOL}://${LOCAL_IP}:${API_PORT}/api`);
-    return `${API_PROTOCOL}://${LOCAL_IP}:${API_PORT}/api`;
+    const origin = getOriginUrl();
+    console.log(`${origin}/api`);
+    return `${origin}/api`;
 };
 
 const getWebSocketUrl = () => {
-    return `${WS_PROTOCOL}://${LOCAL_IP}:${API_PORT}/chatHub`;
+    const origin = getOriginUrl();
+    const wsOrigin = origin.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
+    return `${wsOrigin}/chatHub`;
 };
 
 export const BASE_URL = getBaseUrl();

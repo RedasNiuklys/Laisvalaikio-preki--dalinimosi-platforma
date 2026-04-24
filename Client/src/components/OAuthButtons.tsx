@@ -21,6 +21,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
 }) => {
     const [loadingGoogle, setLoadingGoogle] = useState(false);
     const [loadingFacebook, setLoadingFacebook] = useState(false);
+    const [loadingMicrosoft, setLoadingMicrosoft] = useState(false);
     const { oauthLogin } = useAuth();
 
     const handleGoogleLogin = async () => {
@@ -65,6 +66,27 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
         }
     };
 
+    const handleMicrosoftLogin = async () => {
+        try {
+            setLoadingMicrosoft(true);
+            const result = await authApi.microsoftLogin(firstName, lastName, theme);
+
+            // Update auth context with OAuth login
+            await oauthLogin('Microsoft');
+
+            onSuccess?.(result.user, result.token);
+        } catch (error: any) {
+            console.error('Microsoft login error:', error);
+            onError?.(error);
+            Alert.alert(
+                'Microsoft Login Failed',
+                error.message || 'An unexpected error occurred'
+            );
+        } finally {
+            setLoadingMicrosoft(false);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.divider} />
@@ -72,7 +94,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
             <Button
                 mode="outlined"
                 onPress={handleGoogleLogin}
-                disabled={loadingGoogle || loadingFacebook}
+                disabled={loadingGoogle || loadingFacebook || loadingMicrosoft}
                 loading={loadingGoogle}
                 style={styles.button}
                 icon="google"
@@ -83,7 +105,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
             <Button
                 mode="outlined"
                 onPress={handleFacebookLogin}
-                disabled={loadingGoogle || loadingFacebook}
+                disabled={loadingGoogle || loadingFacebook || loadingMicrosoft}
                 loading={loadingFacebook}
                 style={styles.button}
                 icon="facebook"
@@ -91,7 +113,18 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
                 {loadingFacebook ? 'Connecting...' : 'Login with Facebook'}
             </Button>
 
-            {(loadingGoogle || loadingFacebook) && (
+            <Button
+                mode="outlined"
+                onPress={handleMicrosoftLogin}
+                disabled={loadingGoogle || loadingFacebook || loadingMicrosoft}
+                loading={loadingMicrosoft}
+                style={styles.button}
+                icon="microsoft-windows"
+            >
+                {loadingMicrosoft ? 'Connecting...' : 'Login with Microsoft'}
+            </Button>
+
+            {(loadingGoogle || loadingFacebook || loadingMicrosoft) && (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="small" color="#0000ff" />
                 </View>

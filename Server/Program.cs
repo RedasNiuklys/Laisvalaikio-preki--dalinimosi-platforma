@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Amazon;
+using Amazon.S3;
 using System.Text;
 using Server.Services;
+using Server.Services.Storage;
 using Microsoft.AspNetCore.SignalR;
 using Server.Models;
 using Server.Hubs;
@@ -16,38 +19,69 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
+// Use SQL Server when a connection string is configured (cloud/AWS RDS),
+// otherwise fall back to SQLite for local development.
+var sqlConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-Console.WriteLine("Database path: " + dbPath);
-
-// Use SQLite instead of SQL Server
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+if (!string.IsNullOrWhiteSpace(sqlConnectionString))
 {
-    options.UseSqlite($"Data Source={dbPath}");
-    options.EnableSensitiveDataLogging();
-    options.EnableDetailedErrors();
-});
+    Console.WriteLine("Database: SQL Server (connection string present)");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    {
+        options.UseSqlServer(sqlConnectionString, sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        });
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    });
+}
+else
+{
+    var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "database.db");
+    Console.WriteLine("Database: SQLite at " + dbPath);
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    {
+        options.UseSqlite($"Data Source={dbPath}");
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    });
+}
 
 // Identity + EF Core
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure URLs - Listen on both HTTP (mobile) and HTTPS (web)
-// Using port 8000 to avoid FortiClient blocking common ports
-builder.WebHost.ConfigureKestrel(serverOptions =>
+// In local development: listen on 8000 (HTTPS) and 8001 (HTTP) with the dev cert.
+// In cloud (Elastic Beanstalk / any non-Development env): let the platform handle
+// HTTPS at the edge; the app binds to HTTP only on the PORT env var or 5000.
+if (builder.Environment.IsDevelopment())
 {
-    serverOptions.ListenAnyIP(8000, listenOptions =>
+    builder.WebHost.ConfigureKestrel(serverOptions =>
     {
-        // HTTP for mobile dev (Expo Go doesn't trust self-signed certs)
-        // HTTPS for web (where cert is trusted)
-        listenOptions.UseHttps(); // HTTPS on 8000
+        serverOptions.ListenAnyIP(8000, listenOptions =>
+        {
+            listenOptions.UseHttps(); // HTTPS on 8000
+        });
+        serverOptions.ListenAnyIP(8001, listenOptions =>
+        {
+            // HTTP fallback for mobile
+        });
     });
-    serverOptions.ListenAnyIP(8001, listenOptions =>
+}
+else
+{
+    // Elastic Beanstalk sets PORT env var; default to 5000.
+    var port = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 5000;
+    builder.WebHost.ConfigureKestrel(serverOptions =>
     {
-        // HTTP fallback for mobile
+        serverOptions.ListenAnyIP(port);
     });
-});
+}
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -165,6 +199,26 @@ builder.Services.AddCors(options =>
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddHttpClient();
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+
+var storageProvider = builder.Configuration["Storage:Provider"] ?? "Local";
+if (string.Equals(storageProvider, "S3", StringComparison.OrdinalIgnoreCase))
+{
+    var s3Region = builder.Configuration["Storage:S3Region"];
+    if (string.IsNullOrWhiteSpace(s3Region))
+    {
+        throw new InvalidOperationException("Storage:S3Region is required when Storage:Provider is S3.");
+    }
+
+    builder.Services.AddSingleton<IAmazonS3>(_ =>
+        new AmazonS3Client(RegionEndpoint.GetBySystemName(s3Region)));
+    builder.Services.AddSingleton<IObjectStorageService, S3ObjectStorageService>();
+}
+else
+{
+    builder.Services.AddSingleton<IObjectStorageService, LocalObjectStorageService>();
+}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Server.Models;
 using Server.Services;
 using System.Security.Claims;
+using System.Linq;
 
 namespace Server.Controllers
 {
@@ -47,7 +48,7 @@ namespace Server.Controllers
                 Console.WriteLine($"=== MOBILE GOOGLE CALLBACK === Code: {code}");
 
                 // Exchange authorization code for tokens
-                var callbackRedirectUri = $"{Request.Scheme}://{Request.Host}/api/MobileOAuth/google-callback";
+                var callbackRedirectUri = BuildPublicCallbackUrl("google-callback");
                 var tokenResponse = await ExchangeGoogleCodeForTokens(code, callbackRedirectUri);
                 if (tokenResponse == null)
                 {
@@ -134,7 +135,7 @@ namespace Server.Controllers
                 Console.WriteLine($"=== MOBILE FACEBOOK CALLBACK === Code: {code}");
 
                 // Exchange authorization code for tokens
-                var callbackRedirectUri = $"{Request.Scheme}://{Request.Host}/api/MobileOAuth/facebook-callback";
+                var callbackRedirectUri = BuildPublicCallbackUrl("facebook-callback");
                 var tokenResponse = await ExchangeFacebookCodeForTokens(code, callbackRedirectUri);
                 if (tokenResponse == null)
                 {
@@ -162,7 +163,7 @@ namespace Server.Controllers
                         EmailConfirmed = true,
                         FirstName = userInfo.FirstName,
                         LastName = userInfo.LastName,
-                        AvatarUrl = userInfo.Picture?.Data?.Url
+                        AvatarUrl = userInfo.Picture?.Data?.Url ?? "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
                     };
 
                     var result = await _userManager.CreateAsync(user);
@@ -195,6 +196,107 @@ namespace Server.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Mobile Facebook OAuth error: {ex.Message}");
+                return Content(GetErrorHtml($"Authentication failed: {ex.Message}"), "text/html");
+            }
+        }
+
+        /// <summary>
+        /// Mobile Microsoft OAuth callback - Handles authorization code from Microsoft
+        /// URL: https://10.233.192.135:8000/api/MobileOAuth/microsoft-callback?code=xxx
+        /// </summary>
+        [HttpGet("microsoft-callback")]
+        public async Task<IActionResult> MicrosoftCallback([FromQuery] string code, [FromQuery] string? error, [FromQuery] string? platform, [FromQuery] string? state)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(error))
+                {
+                    return Content(GetErrorHtml($"OAuth Error: {error}"), "text/html");
+                }
+
+                if (string.IsNullOrEmpty(code))
+                {
+                    return Content(GetErrorHtml("No authorization code received"), "text/html");
+                }
+
+                Console.WriteLine($"=== MOBILE MICROSOFT CALLBACK === Code: {code}");
+
+                // Exchange authorization code for tokens
+                var callbackRedirectUri = BuildPublicCallbackUrl("microsoft-callback");
+                var tokenResponse = await ExchangeMicrosoftCodeForTokens(code, callbackRedirectUri);
+                if (tokenResponse == null)
+                {
+                    return Content(GetErrorHtml("Failed to exchange code for tokens"), "text/html");
+                }
+
+                // Get user info from Microsoft Graph
+                var userInfo = await GetMicrosoftUserInfo(tokenResponse.AccessToken);
+                if (userInfo == null)
+                {
+                    return Content(GetErrorHtml("Failed to get user info from Microsoft"), "text/html");
+                }
+
+                var email = userInfo.Mail;
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    email = userInfo.UserPrincipalName;
+                }
+
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    return Content(GetErrorHtml("Microsoft account did not return an email"), "text/html");
+                }
+
+                // Find or create user
+                var user = await _userManager.FindByEmailAsync(email);
+                bool isNewUser = false;
+
+                if (user == null)
+                {
+                    isNewUser = true;
+                    user = new ApplicationUser
+                    {
+                        UserName = userInfo.GivenName + userInfo.Surname,
+                        Email = email,
+                        EmailConfirmed = true,
+                        FirstName = userInfo.GivenName,
+                        LastName = userInfo.Surname,
+                        AvatarUrl = "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                    };
+                    var result = await _userManager.CreateAsync(user);
+                    if (!result.Succeeded)
+                    {
+                        foreach (var errorLoc in result.Errors)
+                        {
+                            System.Console.WriteLine(errorLoc.Description);
+                        }
+                        return Content(GetErrorHtml("Failed to create user"), "text/html");
+                    }
+                }
+
+                // Generate JWT token
+                var jwtToken = await _tokenService.CreateTokenAsync(user);
+
+                Console.WriteLine($"✅ Mobile Microsoft OAuth success - User: {user.Email}");
+
+                // For web testing, return HTML page with token
+                // For mobile/native, redirect to app's custom scheme
+                var isWebFlow = string.Equals(platform, "web", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(state, "web", StringComparison.OrdinalIgnoreCase);
+
+                if (isWebFlow)
+                {
+                    return Content(GetSuccessHtml(jwtToken, isNewUser, "microsoft"), "text/html");
+                }
+                else
+                {
+                    var redirectUrl = $"laisvalaikio://oauth-callback?token={Uri.EscapeDataString(jwtToken)}&isNewUser={isNewUser}&provider=microsoft";
+                    return Redirect(redirectUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Mobile Microsoft OAuth error: {ex.Message}");
                 return Content(GetErrorHtml($"Authentication failed: {ex.Message}"), "text/html");
             }
         }
@@ -339,6 +441,104 @@ namespace Server.Controllers
             }
         }
 
+        private async Task<MicrosoftTokenResponse?> ExchangeMicrosoftCodeForTokens(string code, string redirectUri)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                var clientId = _configuration["Authentication:Microsoft:ClientId"];
+                var clientSecret = _configuration["Authentication:Microsoft:ClientSecret"];
+                var tenantId = _configuration["Authentication:Microsoft:TenantId"];
+
+                var tokenRequest = new Dictionary<string, string>
+                {
+                    { "code", code },
+                    { "client_id", clientId },
+                    { "client_secret", clientSecret },
+                    { "redirect_uri", redirectUri },
+                    { "grant_type", "authorization_code" }
+                };
+
+                Console.WriteLine("🔗 === MICROSOFT TOKEN EXCHANGE ===");
+                Console.WriteLine($"  Tenant ID: {tenantId}");
+                Console.WriteLine($"  Client ID: {clientId}");
+                Console.WriteLine($"  Client Secret: {(string.IsNullOrEmpty(clientSecret) ? "❌ NOT SET" : "✓ SET")}");
+                Console.WriteLine($"  Redirect URI: {tokenRequest["redirect_uri"]}");
+                Console.WriteLine($"  Code: {code.Substring(0, Math.Min(20, code.Length))}...");
+
+                var tokenEndpoint = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token";
+                var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(tokenRequest));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"📡 Status: {response.StatusCode}");
+                Console.WriteLine($"📡 Response: {responseContent}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("❌ Microsoft token exchange failed!");
+                    return null;
+                }
+
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<MicrosoftTokenResponse>(responseContent, options);
+                Console.WriteLine("✅ Microsoft token exchange successful");
+                return tokenResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception during Microsoft token exchange: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async Task<MicrosoftUserInfo?> GetMicrosoftUserInfo(string accessToken)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+                Console.WriteLine("🔗 Fetching Microsoft User Info...");
+                var response = await client.GetAsync("https://graph.microsoft.com/v1.0/me");
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"📡 Status: {response.StatusCode}");
+                Console.WriteLine($"📡 Response: {responseContent}");
+
+                if (!response.IsSuccessStatusCode) return null;
+
+                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return System.Text.Json.JsonSerializer.Deserialize<MicrosoftUserInfo>(responseContent, options);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Exception getting Microsoft user info: {ex.Message}");
+                return null;
+            }
+        }
+
+        private string BuildPublicCallbackUrl(string callbackPath)
+        {
+            var configuredBaseUrl = _configuration["AppSettings:PublicBaseUrl"];
+            if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
+            {
+                var normalizedBaseUrl = configuredBaseUrl.TrimEnd('/');
+                var configuredCallbackUrl = $"{normalizedBaseUrl}/api/MobileOAuth/{callbackPath}";
+                Console.WriteLine($"OAuth callback redirect_uri resolved from AppSettings:PublicBaseUrl: {configuredCallbackUrl}");
+                return configuredCallbackUrl;
+            }
+
+            var forwardedProto = Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+            var forwardedHost = Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+
+            var scheme = string.IsNullOrWhiteSpace(forwardedProto) ? Request.Scheme : forwardedProto;
+            var host = string.IsNullOrWhiteSpace(forwardedHost) ? Request.Host.Value : forwardedHost;
+
+            var callbackUrl = $"{scheme}://{host}/api/MobileOAuth/{callbackPath}";
+            Console.WriteLine($"OAuth callback redirect_uri resolved: {callbackUrl}");
+            return callbackUrl;
+        }
+
         // HTML templates for mobile OAuth response
         private string GetSuccessHtml(string token, bool isNewUser, string provider, string? facebookAccessToken = null)
         {
@@ -479,7 +679,7 @@ namespace Server.Controllers
         public class GoogleTokenResponse
         {
             [System.Text.Json.Serialization.JsonPropertyName("access_token")]
-            public string AccessToken { get; set; }
+            public string AccessToken { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("id_token")]
             public string? IdToken { get; set; }
@@ -491,25 +691,25 @@ namespace Server.Controllers
         public class GoogleUserInfo
         {
             [System.Text.Json.Serialization.JsonPropertyName("email")]
-            public string Email { get; set; }
+            public string Email { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("given_name")]
-            public string GivenName { get; set; }
+            public string GivenName { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("family_name")]
-            public string FamilyName { get; set; }
+            public string FamilyName { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("picture")]
-            public string Picture { get; set; }
+            public string Picture { get; set; } = string.Empty;
         }
 
         public class FacebookTokenResponse
         {
             [System.Text.Json.Serialization.JsonPropertyName("access_token")]
-            public string AccessToken { get; set; }
+            public string AccessToken { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("token_type")]
-            public string TokenType { get; set; }
+            public string TokenType { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("expires_in")]
             public int ExpiresIn { get; set; }
@@ -518,31 +718,64 @@ namespace Server.Controllers
         public class FacebookUserInfo
         {
             [System.Text.Json.Serialization.JsonPropertyName("id")]
-            public string Id { get; set; }
+            public string Id { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("email")]
-            public string Email { get; set; }
+            public string Email { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("first_name")]
-            public string FirstName { get; set; }
+            public string FirstName { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("last_name")]
-            public string LastName { get; set; }
+            public string LastName { get; set; } = string.Empty;
 
             [System.Text.Json.Serialization.JsonPropertyName("picture")]
-            public FacebookPicture Picture { get; set; }
+            public FacebookPicture Picture { get; set; } = new FacebookPicture();
         }
 
         public class FacebookPicture
         {
             [System.Text.Json.Serialization.JsonPropertyName("data")]
-            public FacebookPictureData Data { get; set; }
+            public FacebookPictureData Data { get; set; } = new FacebookPictureData();
         }
 
         public class FacebookPictureData
         {
             [System.Text.Json.Serialization.JsonPropertyName("url")]
             public string? Url { get; set; }
+        }
+
+        public class MicrosoftTokenResponse
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("access_token")]
+            public string AccessToken { get; set; } = string.Empty;
+
+            [System.Text.Json.Serialization.JsonPropertyName("id_token")]
+            public string? IdToken { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("expires_in")]
+            public int ExpiresIn { get; set; }
+        }
+
+        public class MicrosoftUserInfo
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("id")]
+            public string Id { get; set; } = string.Empty;
+
+            [System.Text.Json.Serialization.JsonPropertyName("displayName")]
+            public string? DisplayName { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("givenName")]
+            public string? GivenName { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("surname")]
+            public string? Surname { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("mail")]
+            public string? Mail { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("userPrincipalName")]
+            public string? UserPrincipalName { get; set; }
         }
     }
 }

@@ -47,9 +47,9 @@
     },
     "extra": {
       "router": {
-        "origin": "https://10.233.192.135:8081"
+        "origin": "https://d11jxezcivrzgp.cloudfront.net"
       },
-      "API_BASE_URL": "https://10.233.192.135:8000",
+      "API_BASE_URL": "https://d11jxezcivrzgp.cloudfront.net",
       "eas": {
         "projectId": "547482d5-6c42-4004-8f90-5a109c482988"
       }

@@ -6,6 +6,25 @@ import { Platform } from 'react-native';
 // Keep browser session active
 WebBrowser.maybeCompleteAuthSession();
 
+const storeOAuthTokens = async (token: string, provider: string | null, facebookAccessToken: string | null) => {
+    await AsyncStorage.setItem('firebaseToken', token);
+
+    if (provider) {
+        await AsyncStorage.setItem('authProvider', provider);
+    }
+
+    if (provider === 'facebook') {
+        if (facebookAccessToken) {
+            await AsyncStorage.setItem('facebookAccessToken', facebookAccessToken);
+        } else {
+            await AsyncStorage.removeItem('facebookAccessToken');
+            console.warn("⚠️ Facebook access token missing from server OAuth callback");
+        }
+    } else {
+        await AsyncStorage.removeItem('facebookAccessToken');
+    }
+};
+
 /**
  * Server-side Google OAuth Flow
  * 1. Opens browser with Google OAuth consent screen (redirect to server)
@@ -86,17 +105,7 @@ export const handleGoogleOAuthServer = async () => {
         console.log("🔑 Provider:", provider);
 
         // Step 4: Store the JWT token
-        await AsyncStorage.setItem('firebaseToken', token);
-        if (provider === 'facebook') {
-            if (facebookAccessToken) {
-                await AsyncStorage.setItem('authProvider', 'facebook');
-                await AsyncStorage.setItem('facebookAccessToken', facebookAccessToken);
-            } else {
-                await AsyncStorage.removeItem('facebookAccessToken');
-                await AsyncStorage.setItem('authProvider', 'facebook');
-                console.warn("⚠️ Facebook access token missing from server OAuth callback");
-            }
-        }
+        await storeOAuthTokens(token, provider, facebookAccessToken);
         
         console.log("✅ Token stored successfully");
 
@@ -174,17 +183,7 @@ export const handleFacebookOAuthServer = async () => {
         console.log("🔑 Provider:", provider);
 
         // Step 4: Store the JWT token
-        await AsyncStorage.setItem('firebaseToken', token);
-        if (provider === 'facebook') {
-            if (facebookAccessToken) {
-                await AsyncStorage.setItem('authProvider', 'facebook');
-                await AsyncStorage.setItem('facebookAccessToken', facebookAccessToken);
-            } else {
-                await AsyncStorage.removeItem('facebookAccessToken');
-                await AsyncStorage.setItem('authProvider', 'facebook');
-                console.warn("⚠️ Facebook access token missing from server OAuth callback");
-            }
-        }
+        await storeOAuthTokens(token, provider, facebookAccessToken);
         
         console.log("✅ Token stored successfully");
 
@@ -198,6 +197,80 @@ export const handleFacebookOAuthServer = async () => {
 
     } catch (error: any) {
         console.error("❌ Server-side Facebook OAuth error:", error);
+        throw error;
+    }
+};
+
+/**
+ * Server-side Microsoft OAuth Flow
+ * Same as Google/Facebook but for Microsoft identity platform
+ */
+export const handleMicrosoftOAuthServer = async () => {
+    try {
+        console.log("🔐 === SERVER-SIDE MICROSOFT OAUTH START ===");
+
+        const tenantId = OAUTH_CONFIG.microsoft.tenantId || 'common';
+        const microsoftAuthUrl = new URL(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`);
+        microsoftAuthUrl.searchParams.set("client_id", OAUTH_CONFIG.microsoft.clientId);
+        microsoftAuthUrl.searchParams.set("redirect_uri", OAUTH_CONFIG.microsoft.redirectUrl);
+        microsoftAuthUrl.searchParams.set("response_type", "code");
+        microsoftAuthUrl.searchParams.set("response_mode", "query");
+        microsoftAuthUrl.searchParams.set("scope", "openid profile email offline_access User.Read");
+        if (Platform.OS === 'web') {
+            microsoftAuthUrl.searchParams.set("state", "web");
+        }
+
+        console.log("🌐 Opening Microsoft auth URL:", microsoftAuthUrl.toString());
+        console.log("📍 Redirect URI (server):", OAUTH_CONFIG.microsoft.redirectUrl);
+
+        if (Platform.OS === 'web') {
+            return await handleOAuthWeb(microsoftAuthUrl.toString(), 'microsoft');
+        }
+
+        const result = await WebBrowser.openAuthSessionAsync(
+            microsoftAuthUrl.toString(),
+            "laisvalaikio://oauth-callback"
+        );
+
+        console.log("📱 Browser result:", result.type);
+
+        if (result.type === "cancel") {
+            throw new Error("User cancelled Microsoft login");
+        }
+
+        if (result.type !== "success") {
+            throw new Error(`OAuth failed: ${result.type}`);
+        }
+
+        const resultUrl = result.url;
+        console.log("🔗 Result URL:", resultUrl);
+
+        const url = new URL(resultUrl);
+        const token = url.searchParams.get("token");
+        const isNewUser = url.searchParams.get("isNewUser") === "true";
+        const provider = url.searchParams.get("provider");
+        const facebookAccessToken = url.searchParams.get("facebookAccessToken");
+
+        if (!token) {
+            throw new Error("No authentication token received from server");
+        }
+
+        console.log("✅ JWT token received from server");
+        console.log("👤 New user:", isNewUser);
+        console.log("🔑 Provider:", provider);
+
+        await storeOAuthTokens(token, provider, facebookAccessToken);
+
+        console.log("✅ Token stored successfully");
+
+        return {
+            success: true,
+            token,
+            isNewUser,
+            provider: 'microsoft'
+        };
+    } catch (error: any) {
+        console.error("❌ Server-side Microsoft OAuth error:", error);
         throw error;
     }
 };
@@ -253,17 +326,7 @@ const handleOAuthWeb = (authUrl: string, provider: string): Promise<any> => {
                 console.log("🔑 Provider:", responseProvider);
 
                 // Store the JWT token
-                await AsyncStorage.setItem('firebaseToken', token);
-                if (responseProvider === 'facebook') {
-                    if (facebookAccessToken) {
-                        await AsyncStorage.setItem('authProvider', 'facebook');
-                        await AsyncStorage.setItem('facebookAccessToken', facebookAccessToken);
-                    } else {
-                        await AsyncStorage.removeItem('facebookAccessToken');
-                        await AsyncStorage.setItem('authProvider', 'facebook');
-                        console.warn("⚠️ Facebook access token missing from web OAuth postMessage");
-                    }
-                }
+                await storeOAuthTokens(token, responseProvider, facebookAccessToken);
                 console.log("✅ Token stored successfully");
 
                 resolve({

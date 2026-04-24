@@ -2,15 +2,18 @@ using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Server.Services
 {
     public class FirebaseAuthService
     {
         private readonly FirebaseAuth _firebaseAuth;
+        private readonly ILogger<FirebaseAuthService> _logger;
 
-        public FirebaseAuthService()
+        public FirebaseAuthService(ILogger<FirebaseAuthService> logger)
         {
+            _logger = logger;
             // Initialize Firebase Admin SDK
             if (FirebaseApp.DefaultInstance == null)
             {
@@ -27,7 +30,7 @@ namespace Server.Services
                     if (File.Exists(path))
                     {
                         serviceAccountPath = path;
-                        Console.WriteLine($"Found Firebase service account: {path}");
+                        _logger.LogInformation("Found Firebase service account file at {Path}", path);
                         break;
                     }
                 }
@@ -38,7 +41,7 @@ namespace Server.Services
                     {
                         Credential = GoogleCredential.FromFile(serviceAccountPath)
                     });
-                    Console.WriteLine("Firebase Admin SDK initialized successfully");
+                    _logger.LogInformation("Firebase Admin SDK initialized successfully from file");
                 }
                 else
                 {
@@ -50,7 +53,7 @@ namespace Server.Services
                         {
                             Credential = GoogleCredential.FromJson(serviceAccountJson)
                         });
-                        Console.WriteLine("Firebase Admin SDK initialized from environment variable");
+                        _logger.LogInformation("Firebase Admin SDK initialized from environment variable");
                     }
                     else
                     {
@@ -76,6 +79,16 @@ namespace Server.Services
             catch (FirebaseAuthException ex)
             {
                 throw new UnauthorizedAccessException($"Invalid Firebase token: {ex.Message}", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed calling Firebase/Google APIs while verifying token");
+                throw new InvalidOperationException("Failed to reach Firebase Auth service. Check server outbound internet, DNS, and TLS access to googleapis.com.", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError(ex, "Timeout while calling Firebase/Google APIs during token verification");
+                throw new InvalidOperationException("Timed out reaching Firebase Auth service. Check NAT gateway, route tables, DNS, and egress rules.", ex);
             }
         }
 

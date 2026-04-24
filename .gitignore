@@ -20,3 +20,5 @@ Server/appsettings.json
 Server/appsettings.local.backup.json
 Server/appsettings.*.json
 !Server/appsettings.example.json
+Server/publish/
+Server/.ebbundle/

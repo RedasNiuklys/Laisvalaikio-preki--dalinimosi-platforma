@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Server.Models;
+using Server.Services.Storage;
+using System.Text.RegularExpressions;
 
 namespace Server.Controllers
 {
@@ -12,28 +14,19 @@ namespace Server.Controllers
     [EnableCors("CorsPolicy")]
     public class StorageController : ControllerBase
     {
-        private readonly IWebHostEnvironment _environment;
-        private readonly IConfiguration _configuration;
-        private readonly string _baseUploadPath;
+        private readonly IObjectStorageService _objectStorage;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private static readonly Regex SafePathSegmentRegex = new("^[a-zA-Z0-9._-]+$", RegexOptions.Compiled);
 
         public StorageController(
-            IWebHostEnvironment environment,
-            IConfiguration configuration,
-            UserManager<ApplicationUser> userManager)
+            IObjectStorageService objectStorage,
+            UserManager<ApplicationUser> userManager,
+            IHttpClientFactory httpClientFactory)
         {
-            _environment = environment;
-            _configuration = configuration;
+            _objectStorage = objectStorage;
             _userManager = userManager;
-            _baseUploadPath = Path.Combine(_environment.WebRootPath, "uploads");
-            _httpClient = new HttpClient();
-
-            // Ensure upload directory exists
-            if (!Directory.Exists(_baseUploadPath))
-            {
-                Directory.CreateDirectory(_baseUploadPath);
-            }
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpPost("UploadAvatar")]
@@ -69,7 +62,8 @@ namespace Server.Controllers
                 else
                 {
                     // Handle Expo URI upload
-                    var response = await _httpClient.GetAsync(fileUri);
+                    var httpClient = _httpClientFactory.CreateClient();
+                    var response = await httpClient.GetAsync(fileUri);
                     if (!response.IsSuccessStatusCode)
                         return BadRequest("Failed to download file from URI");
 
@@ -89,16 +83,12 @@ namespace Server.Controllers
                     };
                 }
 
-                // Create user-specific directory
-                var userDirectory = Path.Combine(_baseUploadPath, "avatars", userId);
-                Directory.CreateDirectory(userDirectory);
-
                 // Generate unique filename
                 var fileName = $"{Guid.NewGuid()}{extension}";
-                var filePath = Path.Combine(userDirectory, fileName);
+                var objectKey = StorageKeyHelper.Build("avatars", userId, fileName);
 
-                // Save file
-                await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
+                await using var input = new MemoryStream(fileBytes);
+                await _objectStorage.SaveAsync(objectKey, input, GetContentType(fileName));
 
                 var relativeAvatarPath = $"api/Storage/GetAvatar/{userId}/{fileName}";
                 var fullUrl = $"{Request.Scheme}://{Request.Host}/{relativeAvatarPath}";
@@ -122,17 +112,21 @@ namespace Server.Controllers
 
         [HttpGet("GetAvatar/{userId}/{fileName}")]
         [AllowAnonymous]
-        public IActionResult GetAvatar(string userId, string fileName)
+        public async Task<IActionResult> GetAvatar(string userId, string fileName)
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "avatars", userId, fileName);
+                if (!IsSafePathSegment(userId) || !IsSafePathSegment(fileName))
+                {
+                    return BadRequest("Invalid path segment");
+                }
 
-                if (!System.IO.File.Exists(filePath))
+                var objectKey = StorageKeyHelper.Build("avatars", userId, fileName);
+                var storedObject = await _objectStorage.OpenReadAsync(objectKey);
+                if (storedObject == null)
                     return NotFound("Avatar not found");
 
-                var fileStream = System.IO.File.OpenRead(filePath);
-                return File(fileStream, "image/jpeg");
+                return File(storedObject.Stream, storedObject.ContentType);
             }
             catch (Exception ex)
             {
@@ -141,16 +135,20 @@ namespace Server.Controllers
         }
 
         [HttpDelete("DeleteAvatar/{userId}/{fileName}")]
-        public IActionResult DeleteAvatar(string userId, string fileName)
+        public async Task<IActionResult> DeleteAvatar(string userId, string fileName)
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "avatars", userId, fileName);
+                if (!IsSafePathSegment(userId) || !IsSafePathSegment(fileName))
+                {
+                    return BadRequest("Invalid path segment");
+                }
 
-                if (!System.IO.File.Exists(filePath))
+                var objectKey = StorageKeyHelper.Build("avatars", userId, fileName);
+                var deleted = await _objectStorage.DeleteIfExistsAsync(objectKey);
+                if (!deleted)
                     return NotFound("Avatar not found");
 
-                System.IO.File.Delete(filePath);
                 return Ok();
             }
             catch (Exception ex)
@@ -161,16 +159,21 @@ namespace Server.Controllers
 
         [HttpGet("GetEquipmentImage/{equipmentId}/{fileName}")]
         [AllowAnonymous]
-        public IActionResult GetEquipmentImage(string equipmentId, string fileName)
+        public async Task<IActionResult> GetEquipmentImage(string equipmentId, string fileName)
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "equipment", equipmentId, fileName);
-                if (!System.IO.File.Exists(filePath))
+                if (!IsSafePathSegment(equipmentId) || !IsSafePathSegment(fileName))
+                {
+                    return BadRequest("Invalid path segment");
+                }
+
+                var objectKey = StorageKeyHelper.Build("equipment", equipmentId, fileName);
+                var storedObject = await _objectStorage.OpenReadAsync(objectKey);
+                if (storedObject == null)
                     return NotFound("Equipment image not found");
 
-                var fileStream = System.IO.File.OpenRead(filePath);
-                return File(fileStream, "image/jpeg");
+                return File(storedObject.Stream, storedObject.ContentType);
             }
             catch (Exception ex)
             {
@@ -179,22 +182,43 @@ namespace Server.Controllers
         }
 
         [HttpDelete("DeleteEquipmentImage/{equipmentId}/{fileName}")]
-        public IActionResult DeleteEquipmentImage(string equipmentId, string fileName)
+        public async Task<IActionResult> DeleteEquipmentImage(string equipmentId, string fileName)
         {
             try
             {
-                var filePath = Path.Combine(_baseUploadPath, "equipment", equipmentId, fileName);
+                if (!IsSafePathSegment(equipmentId) || !IsSafePathSegment(fileName))
+                {
+                    return BadRequest("Invalid path segment");
+                }
 
-                if (!System.IO.File.Exists(filePath))
+                var objectKey = StorageKeyHelper.Build("equipment", equipmentId, fileName);
+                var deleted = await _objectStorage.DeleteIfExistsAsync(objectKey);
+                if (!deleted)
                     return NotFound("Equipment image not found");
 
-                System.IO.File.Delete(filePath);
                 return Ok();
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+
+        private static bool IsSafePathSegment(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value == Path.GetFileName(value)
+                && SafePathSegmentRegex.IsMatch(value);
+        }
+
+        private static string GetContentType(string fileName)
+        {
+            return Path.GetExtension(fileName).ToLowerInvariant() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
         }
     }
 }

@@ -72,6 +72,11 @@ export const OAUTH_CONFIG = {
     appId: process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || "<YOUR_FACEBOOK_APP_ID>",
     appSecret: process.env.EXPO_PUBLIC_FACEBOOK_APP_SECRET || "<YOUR_FACEBOOK_APP_SECRET>",
     redirectUrl: getRedirectUrl('facebook-callback')
+  },
+  microsoft: {
+    clientId: process.env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID || "<YOUR_MICROSOFT_CLIENT_ID>",
+    tenantId: process.env.EXPO_PUBLIC_MICROSOFT_TENANT_ID || "common",
+    redirectUrl: getRedirectUrl('microsoft-callback')
   }
 };
 

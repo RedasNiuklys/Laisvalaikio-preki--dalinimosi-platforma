@@ -64,7 +64,7 @@ public class LoginController : ControllerBase
         {
             Console.WriteLine("=== FIREBASE LOGIN ENDPOINT HIT ===");
             Console.WriteLine($"Firebase UID: {request.Uid}");
-            Console.WriteLine($"Firebase Token: {request.FirebaseToken}");
+            Console.WriteLine($"Firebase token provided: {!string.IsNullOrEmpty(request.FirebaseToken)}");
             // Verify Firebase token
             var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
 
@@ -126,6 +126,11 @@ public class LoginController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Unauthorized(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Firebase upstream connectivity error: {ex.Message}");
+            return StatusCode(503, "Firebase authentication service is temporarily unreachable");
         }
         catch (Exception ex)
         {
@@ -294,6 +299,11 @@ public class LoginController : ControllerBase
         {
             Console.WriteLine($"Unauthorized: {ex.Message}");
             return Unauthorized(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Firebase upstream connectivity error: {ex.Message}");
+            return StatusCode(503, "Firebase authentication service is temporarily unreachable");
         }
         catch (Exception ex)
         {
@@ -648,6 +658,54 @@ public class LoginController : ControllerBase
                 Email = email,
                 FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName),
                 LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)
+            };
+            await _userManager.CreateAsync(user);
+        }
+
+        var token = await _tokenService.CreateTokenAsync(user);
+        return Ok(new { token });
+    }
+
+    [HttpGet("microsoft-login")]
+    public IActionResult MicrosoftLogin()
+    {
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties("Microsoft", Url.Action(nameof(MicrosoftCallback)));
+        return Challenge(properties, "Microsoft");
+    }
+
+    [HttpGet("microsoft-callback")]
+    public async Task<IActionResult> MicrosoftCallback()
+    {
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info == null) return Unauthorized("Error loading external login information");
+
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            email = info.Principal.FindFirstValue("preferred_username")
+                ?? info.Principal.FindFirstValue(ClaimTypes.Name);
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized("Microsoft account did not return an email");
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName)
+                    ?? info.Principal.FindFirstValue("given_name")
+                    ?? "User",
+                LastName = info.Principal.FindFirstValue(ClaimTypes.Surname)
+                    ?? info.Principal.FindFirstValue("family_name")
+                    ?? string.Empty,
+                EmailConfirmed = true
             };
             await _userManager.CreateAsync(user);
         }
