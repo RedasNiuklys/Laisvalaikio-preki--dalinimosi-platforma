@@ -12,7 +12,7 @@ interface BookingsCalendarProps {
 }
 
 interface MarkedDate {
-    dots?: Array<{ key: string; color: string }>;
+    dots?: { key: string; color: string }[];
     marked?: boolean;
     startingDay?: boolean;
     endingDay?: boolean;
@@ -26,18 +26,18 @@ interface MarkedDates {
     [date: string]: MarkedDate;
 }
 
-const getStatusColor = (status: BookingStatus): string => {
+const getStatusColor = (status: BookingStatus, isDark: boolean): string => {
     switch (status) {
         case BookingStatus.Pending:
-            return '#FFA726'; // Orange
+            return isDark ? '#E6A23C' : '#F59E0B';
         case BookingStatus.Approved:
-            return '#66BB6A'; // Green
+            return isDark ? '#60A5FA' : '#2563EB';
         case BookingStatus.Rejected:
-            return '#EF5350'; // Red
+            return isDark ? '#F87171' : '#DC2626';
         case BookingStatus.Cancelled:
-            return '#9E9E9E'; // Grey
+            return isDark ? '#9CA3AF' : '#6B7280';
         default:
-            return '#9E9E9E';
+            return isDark ? '#9CA3AF' : '#6B7280';
     }
 };
 
@@ -69,7 +69,7 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
     const markedDates = bookings.reduce((acc: MarkedDates, booking) => {
         const startDate = new Date(booking.startDateTime);
         const endDate = new Date(booking.endDateTime);
-        const color = getStatusColor(booking.status);
+        const color = getStatusColor(booking.status, theme.dark);
         const isApproved = booking.status === BookingStatus.Approved;
 
         // Loop through all dates between start and end
@@ -115,6 +115,7 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
             <Calendar
+                key={`bookings-calendar-${theme.dark ? 'dark' : 'light'}`}
                 markingType="period"
                 markedDates={markedDates}
                 onDayPress={handleDayPress}
@@ -142,7 +143,7 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
             <View style={styles.legend}>
                 {Object.values(BookingStatus).map((status) => (
                     <View key={status} style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: getStatusColor(status as BookingStatus) }]} />
+                        <View style={[styles.legendDot, { backgroundColor: getStatusColor(status as BookingStatus, theme.dark) }]} />
                         <Text variant="bodySmall" style={{ color: theme.colors.onSurface }}>
                             {t(`booking.calendar.legend.${status.toLowerCase()}`)}
                         </Text>

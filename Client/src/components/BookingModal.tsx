@@ -21,9 +21,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
     const [endDate, setEndDate] = useState(initialDate || new Date());
     const [notes, setNotes] = useState('');
     const [showStartDate, setShowStartDate] = useState(false);
-    const [showStartTime, setShowStartTime] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
-    const [showEndTime, setShowEndTime] = useState(false);
 
     const isWeb = Platform.OS === 'web';
 
@@ -39,18 +37,20 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
         const currentDate = selectedDate || startDate;
         if (Platform.OS !== 'web') {
             setShowStartDate(Platform.OS === 'ios');
-            setShowStartTime(Platform.OS === 'ios');
         }
         setStartDate(currentDate);
+
+        if (currentDate > endDate) {
+            setEndDate(currentDate);
+        }
     };
 
     const handleEndDateChange = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || endDate;
         if (Platform.OS !== 'web') {
             setShowEndDate(Platform.OS === 'ios');
-            setShowEndTime(Platform.OS === 'ios');
         }
-        setEndDate(currentDate);
+        setEndDate(currentDate < startDate ? startDate : currentDate);
     };
 
     const handleSubmit = () => {
@@ -65,21 +65,21 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                     <View style={styles.dateTimeSection}>
                         <Text variant="titleSmall">{t('booking.startDateTime')}</Text>
                         <input
-                            type="datetime-local"
-                            value={startDate.toISOString().slice(0, 16)}
+                            type="date"
+                            value={startDate.toISOString().slice(0, 10)}
                             onChange={(e) => setStartDate(new Date(e.target.value))}
                             style={styles.webDateTimeInput}
-                            min={new Date().toISOString().slice(0, 16)}
+                            min={new Date().toISOString().slice(0, 10)}
                         />
                     </View>
                     <View style={styles.dateTimeSection}>
                         <Text variant="titleSmall">{t('booking.endDateTime')}</Text>
                         <input
-                            type="datetime-local"
-                            value={endDate.toISOString().slice(0, 16)}
+                            type="date"
+                            value={endDate.toISOString().slice(0, 10)}
                             onChange={(e) => setEndDate(new Date(e.target.value))}
                             style={styles.webDateTimeInput}
-                            min={startDate.toISOString().slice(0, 16)}
+                            min={startDate.toISOString().slice(0, 10)}
                         />
                     </View>
                 </View>
@@ -97,13 +97,6 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                     >
                         {startDate.toLocaleDateString()}
                     </Button>
-                    <Button
-                        mode="outlined"
-                        onPress={() => setShowStartTime(true)}
-                        style={styles.timeButton}
-                    >
-                        {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Button>
                 </View>
 
                 <Text variant="titleSmall" style={styles.endDateLabel}>
@@ -117,29 +110,22 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                     >
                         {endDate.toLocaleDateString()}
                     </Button>
-                    <Button
-                        mode="outlined"
-                        onPress={() => setShowEndTime(true)}
-                        style={styles.timeButton}
-                    >
-                        {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Button>
                 </View>
 
-                {(showStartDate || showStartTime) && (
+                {showStartDate && (
                     <DateTimePicker
                         value={startDate}
-                        mode={showStartDate ? 'date' : 'time'}
+                        mode="date"
                         is24Hour={true}
                         onChange={handleStartDateChange}
                         minimumDate={new Date()}
                     />
                 )}
 
-                {(showEndDate || showEndTime) && (
+                {showEndDate && (
                     <DateTimePicker
                         value={endDate}
-                        mode={showEndDate ? 'date' : 'time'}
+                        mode="date"
                         is24Hour={true}
                         onChange={handleEndDateChange}
                         minimumDate={startDate}
@@ -271,10 +257,6 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     dateButton: {
-        flex: 2,
-        marginRight: 8,
-    },
-    timeButton: {
         flex: 1,
     },
     endDateLabel: {

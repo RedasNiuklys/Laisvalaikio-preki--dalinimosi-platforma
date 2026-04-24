@@ -40,7 +40,7 @@ export default function DateSelector({
   onDateSelect,
 }: DateSelectorProps) {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { settings } = useSettings();
   const { user,loadUser } = useAuth();
   const [blockedDates, setBlockedDates] = useState<UsedDates[]>([]); // Dates from server
@@ -51,6 +51,8 @@ export default function DateSelector({
   ); // Current active selection
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const sessionIdCounter = useRef(1);
+  const blockedDateColor = theme.colors.errorContainer;
+  const blockedDateTextColor = theme.colors.onErrorContainer;
   // Initialize past dates on first load
   useEffect(() => {
     const today = new Date();
@@ -96,8 +98,8 @@ export default function DateSelector({
     LocaleConfig.locales = {};
     LocaleConfig.locales["lt"] = ltLocale;
     LocaleConfig.locales["en"] = enLocale;
-    LocaleConfig.defaultLocale = settings.language || "en";
-  }, [settings.language]);
+    LocaleConfig.defaultLocale = i18n.language || "en";
+  }, [i18n.language]);
 
   const fetchUsedDates = async () => {
     try {
@@ -153,8 +155,8 @@ export default function DateSelector({
         marked[dateString] = {
           disabled: true,
           disableTouchEvent: true,
-          color: theme.colors.error,
-          textColor: theme.colors.onError,
+          color: blockedDateColor,
+          textColor: blockedDateTextColor,
         };
       }
     });
@@ -325,8 +327,8 @@ export default function DateSelector({
         marked[dateString] = {
           disabled: true,
           disableTouchEvent: true,
-          color: theme.colors.error,
-          textColor: theme.colors.onError,
+          color: blockedDateColor,
+          textColor: blockedDateTextColor,
         };
       }
     });
@@ -655,7 +657,7 @@ export default function DateSelector({
   return (
     <View style={styles.container}>
       <Calendar
-        key={settings.language}
+        key={`${i18n.language}-${theme.dark ? "dark" : "light"}`}
         onDayPress={handleDayPress}
         onDayLongPress={Platform.OS === "web" ? undefined : handleDayPress}
         markedDates={markedDates}

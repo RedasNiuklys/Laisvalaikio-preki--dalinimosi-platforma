@@ -110,11 +110,25 @@ export default function EquipmentDetailsPage({
         try {
             // Server will auto-approve if the user is the owner
             const isOwner = user?.id === equipment.ownerId;
+
+            const normalizedStart = new Date(Date.UTC(
+                startDate.getFullYear(),
+                startDate.getMonth(),
+                startDate.getDate(),
+                0, 0, 0, 0
+            ));
+            const normalizedEnd = new Date(Date.UTC(
+                endDate.getFullYear(),
+                endDate.getMonth(),
+                endDate.getDate(),
+                23, 59, 59, 999
+            ));
+
             console.log('Creating booking with startDate:', startDate, 'endDate:', endDate, 'notes:', notes, 'isOwner:', isOwner);
             const newBooking = {
                 equipmentId: equipment.id,
-                startDateTime: startDate.toISOString(),
-                endDateTime: endDate.toISOString(),
+                startDateTime: normalizedStart.toISOString(),
+                endDateTime: normalizedEnd.toISOString(),
                 notes: notes.trim()
             };
 
