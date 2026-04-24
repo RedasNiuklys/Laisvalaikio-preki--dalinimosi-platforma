@@ -3,6 +3,7 @@ import { View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import { authApi } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface OAuthButtonsProps {
     firstName?: string;
@@ -23,6 +24,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
     const [loadingFacebook, setLoadingFacebook] = useState(false);
     const [loadingMicrosoft, setLoadingMicrosoft] = useState(false);
     const { oauthLogin } = useAuth();
+    const { t } = useTranslation();
 
     const handleGoogleLogin = async () => {
         try {
@@ -37,8 +39,8 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
             console.error('Google login error:', error);
             onError?.(error);
             Alert.alert(
-                'Google Login Failed',
-                error.message || 'An unexpected error occurred'
+                t('auth.login.googleLoginFailed'),
+                error.message || t('auth.login.googleLoginError')
             );
         } finally {
             setLoadingGoogle(false);
@@ -58,8 +60,8 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
             console.error('Facebook login error:', error);
             onError?.(error);
             Alert.alert(
-                'Facebook Login Failed',
-                error.message || 'An unexpected error occurred'
+                t('auth.login.facebookLoginFailed'),
+                error.message || t('auth.login.facebookLoginError')
             );
         } finally {
             setLoadingFacebook(false);
@@ -79,8 +81,8 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
             console.error('Microsoft login error:', error);
             onError?.(error);
             Alert.alert(
-                'Microsoft Login Failed',
-                error.message || 'An unexpected error occurred'
+                t('auth.login.microsoftLoginFailed'),
+                error.message || t('auth.login.microsoftLoginError')
             );
         } finally {
             setLoadingMicrosoft(false);
@@ -99,7 +101,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
                 style={styles.button}
                 icon="google"
             >
-                {loadingGoogle ? 'Connecting...' : 'Login with Google'}
+                {loadingGoogle ? t('auth.login.connectingGoogle') : t('auth.login.loginWithGoogle')}
             </Button>
 
             <Button
@@ -110,7 +112,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
                 style={styles.button}
                 icon="facebook"
             >
-                {loadingFacebook ? 'Connecting...' : 'Login with Facebook'}
+                {loadingFacebook ? t('auth.login.connectingFacebook') : t('auth.login.loginWithFacebook')}
             </Button>
 
             <Button
@@ -121,7 +123,7 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
                 style={styles.button}
                 icon="microsoft-windows"
             >
-                {loadingMicrosoft ? 'Connecting...' : 'Login with Microsoft'}
+                {loadingMicrosoft ? t('auth.login.connectingMicrosoft') : t('auth.login.loginWithMicrosoft')}
             </Button>
 
             {(loadingGoogle || loadingFacebook || loadingMicrosoft) && (

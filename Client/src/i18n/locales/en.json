@@ -176,14 +176,19 @@
       "error": "Login failed",
       "googleLoginFailed": "Google Login Failed",
       "facebookLoginFailed": "Facebook Login Failed",
+      "microsoftLoginFailed": "Microsoft Login Failed",
       "googleLoginError": "An unexpected error occurred",
       "facebookLoginError": "An unexpected error occurred",
+      "microsoftLoginError": "An unexpected error occurred",
       "connectingGoogle": "Connecting...",
       "connectingFacebook": "Connecting...",
+      "connectingMicrosoft": "Connecting...",
       "loginWithGoogle": "Login with Google",
       "loginWithFacebook": "Login with Facebook",
+      "loginWithMicrosoft": "Login with Microsoft",
       "processingGoogle": "Processing Google login...",
-      "processingFacebook": "Processing Facebook login..."
+      "processingFacebook": "Processing Facebook login...",
+      "processingMicrosoft": "Processing Microsoft login..."
     },
     "register": {
       "title": "Register",
@@ -303,13 +308,37 @@
     "startDateTime": "Start Date & Time",
     "endDateTime": "End Date & Time",
     "submit": "Create Booking",
-    "success": "Booking created successfully",
+    "doneSuccess": "Booking created successfully",
     "ownerSuccess": "Booking created and automatically approved",
     "ownerAutoApproval": "As the owner, your booking will be automatically approved",
     "error": "Failed to create booking",
     "noBookings": "No bookings yet",
     "notes": "Notes",
     "notesPlaceholder": "Add any additional information about your booking...",
+    "notifications": {
+      "notifyOwner": "Notify owner via message",
+      "sendFailed": "Booking was created, but chat notification could not be sent.",
+      "notesPrefix": "Notes: {{notes}}",
+      "requestSummary": "Booking request for \"{{equipmentName}}\" ({{range}}).",
+      "starters": {
+        "directRequest": "Hi! I just sent a booking request.",
+        "interested": "Hey! I am interested in your equipment and sent a booking request.",
+        "reachOut": "Hello! I placed a booking request and wanted to reach out directly."
+      },
+      "actions": {
+        "reviewRequest": "Review booking request",
+        "openMyRequest": "Open my booking request"
+      }
+    },
+    "filters": {
+      "button": "Filter",
+      "clear": "Clear",
+      "specificBooking": "Showing linked booking",
+      "showAll": "Show all",
+      "statusTitle": "Statuses",
+      "hidePast": "Hide past bookings",
+      "noResults": "No bookings match the selected filters"
+    },
     "errors": {
       "dateBlocked": "Date Unavailable",
       "dateBlockedMessage": "This date is already booked and approved"

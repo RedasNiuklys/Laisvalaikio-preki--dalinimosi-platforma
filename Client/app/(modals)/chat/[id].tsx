@@ -6,7 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Avatar,
   TextInput,
@@ -20,9 +20,9 @@ import { format } from "date-fns";
 import { ChatMessage } from "@/src/types/ChatMessage";
 import { BASE_URL } from "@/src/utils/envConfig";
 import { useAuth } from "@/src/context/AuthContext";
-import { useChatContext } from "@/src/context/ChatContext";
 import axios from "axios";
 import { getAuthToken } from "@/src/utils/authUtils";
+import { useTranslation } from "react-i18next";
 
 interface User {
   id: string;
@@ -32,7 +32,7 @@ interface User {
 }
 
 export default function ChatScreen() {
-  const BOOKING_LINK_REGEX = /\[BOOKINGS_LINK:([^\]]+)\]/;
+  const BOOKING_LINK_REGEX = /\[BOOKINGS_LINK:([^:\]]+)(?::([^\]]+))?\]/;
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -47,10 +47,9 @@ export default function ChatScreen() {
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const [connectionReady, setConnectionReady] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const navigation = useNavigation();
-  const { title, chatId: cachedChatId } = useChatContext();
   const flatListRef = useRef<FlatList>(null);
 
   const MESSAGES_PER_PAGE = 50;
@@ -356,6 +355,7 @@ export default function ChatScreen() {
     (() => {
       const match = item.content.match(BOOKING_LINK_REGEX);
       const bookingEquipmentId = match?.[1];
+      const bookingId = match?.[2];
       const displayContent = item.content.replace(BOOKING_LINK_REGEX, '').trim();
 
       return (
@@ -403,11 +403,13 @@ export default function ChatScreen() {
             onPress={() =>
               router.push({
                 pathname: "/(modals)/equipment/[id]",
-                params: { id: bookingEquipmentId, open: "bookings" },
+                params: { id: bookingEquipmentId, open: "bookings", ...(bookingId ? { bookingId } : {}) },
               })
             }
           >
-            Open bookings
+            {item.isMine
+              ? t("booking.notifications.actions.openMyRequest")
+              : t("booking.notifications.actions.reviewRequest")}
           </Button>
         )}
         <Text variant="labelSmall" style={styles.timestamp}>

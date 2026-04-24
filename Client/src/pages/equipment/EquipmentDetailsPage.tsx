@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, ScrollView, Image } from "react-native";
 import {
     Text,
@@ -6,12 +6,9 @@ import {
     useTheme,
     Button,
     ActivityIndicator,
-    IconButton,
-    Divider,
-    FAB,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import axios from "axios";
 import LocationMap from "@/src/components/LocationMap";
 import * as equipmentApi from "@/src/api/equipmentApi";
@@ -32,11 +29,13 @@ import { chatService } from "@/src/services/ChatService";
 type EquipmentDetailsPageProps = {
     id: string;
     openBookingsListOnLoad?: boolean;
+    initialBookingId?: string;
 };
 
 export default function EquipmentDetailsPage({
     id,
     openBookingsListOnLoad = false,
+    initialBookingId,
 }: EquipmentDetailsPageProps) {
     const [equipment, setEquipment] = useState<Equipment | null>(null);
     const [loading, setLoading] = useState(true);
@@ -50,7 +49,7 @@ export default function EquipmentDetailsPage({
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [didAutoOpenBookings, setDidAutoOpenBookings] = useState(false);
 
-    const loadBookings = async (equipmentId: string) => {
+    const loadBookings = useCallback(async (equipmentId: string) => {
         try {
             console.log("Loading bookings for equipment:", equipmentId);
             const data = await getBookingsForEquipment(equipmentId);
@@ -60,9 +59,9 @@ export default function EquipmentDetailsPage({
             console.error("Error loading bookings:", error);
             showToast("error", t("booking.error"));
         }
-    };
+    }, [t]);
 
-    const fetchEquipmentDetails = async () => {
+    const fetchEquipmentDetails = useCallback(async () => {
         try {
             setLoading(true);
             const data = await equipmentApi.getById(id as string);
@@ -78,11 +77,11 @@ export default function EquipmentDetailsPage({
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, loadBookings, t]);
 
     useEffect(() => {
         fetchEquipmentDetails();
-    }, [id]);
+    }, [fetchEquipmentDetails]);
 
     useEffect(() => {
         if (
@@ -127,17 +126,22 @@ export default function EquipmentDetailsPage({
         return response.data;
     };
 
-    const buildBookingNotificationMessage = (equipmentName: string, equipmentId: string, startDate: Date, endDate: Date, notes: string): string => {
+    const buildBookingNotificationMessage = (equipmentName: string, equipmentId: string, bookingId: string, startDate: Date, endDate: Date, notes: string): string => {
         const starters = [
-            "Hi! I just sent a booking request.",
-            "Hey! I am interested in your equipment and sent a booking request.",
-            "Hello! I placed a booking request and wanted to reach out directly.",
+            t("booking.notifications.starters.directRequest"),
+            t("booking.notifications.starters.interested"),
+            t("booking.notifications.starters.reachOut"),
         ];
         const conversationStarter = starters[Math.floor(Math.random() * starters.length)];
         const rangeText = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-        const notesPart = notes.trim() ? `\nNotes: ${notes.trim()}` : "";
+        const notesPart = notes.trim()
+            ? `\n${t("booking.notifications.notesPrefix", { notes: notes.trim() })}`
+            : "";
 
-        return `${conversationStarter}\n\nBooking request for \"${equipmentName}\" (${rangeText}).${notesPart}\n[BOOKINGS_LINK:${equipmentId}]`;
+        return `${conversationStarter}\n\n${t("booking.notifications.requestSummary", {
+            equipmentName,
+            range: rangeText,
+        })}${notesPart}\n[BOOKINGS_LINK:${equipmentId}:${bookingId}]`;
     };
 
     const handleCreateBooking = async (startDate: Date, endDate: Date, notes: string, notifyOwner: boolean) => {
@@ -168,7 +172,7 @@ export default function EquipmentDetailsPage({
                 notes: notes.trim()
             };
 
-            await createBooking(newBooking);
+            const createdBooking = await createBooking(newBooking);
 
             if (notifyOwner && !isOwner) {
                 try {
@@ -176,6 +180,7 @@ export default function EquipmentDetailsPage({
                     const message = buildBookingNotificationMessage(
                         equipment.name,
                         equipment.id,
+                        createdBooking.id,
                         startDate,
                         endDate,
                         notes
@@ -183,13 +188,13 @@ export default function EquipmentDetailsPage({
                     await chatService.sendMessage(chatId, message);
                 } catch (notifyError) {
                     console.error("Failed to notify owner via chat:", notifyError);
-                    showToast("info", "Booking was created, but chat notification could not be sent.");
+                    showToast("info", t("booking.notifications.sendFailed"));
                 }
             }
 
             // Reload bookings after creating a new one
             await loadBookings(equipment.id);
-            showToast("success", isOwner ? t("booking.ownerSuccess") : t("booking.success"));
+            showToast("success", isOwner ? t("booking.ownerSuccess") : t("booking.doneSuccess"));
         } catch (error) {
             console.error("Error creating booking:", error);
             showToast("error", t("booking.error"));
@@ -389,6 +394,7 @@ export default function EquipmentDetailsPage({
                 bookings={bookings}
                 equipmentName={equipment?.name || ''}
                 equipmentOwnerId={equipment?.ownerId}
+                initialBookingId={initialBookingId}
                 onStatusChange={handleStatusChange}
             />
         </>

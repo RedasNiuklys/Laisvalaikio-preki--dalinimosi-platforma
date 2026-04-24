@@ -203,7 +203,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                                 onPress={() => setNotifyOwner((prev) => !prev)}
                             />
                             <Text style={[styles.notifyText, { color: theme.colors.onSurface }]}>
-                                Notify owner via message
+                                {t('booking.notifications.notifyOwner')}
                             </Text>
                         </View>
                     )}

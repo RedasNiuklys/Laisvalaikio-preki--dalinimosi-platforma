@@ -87,7 +87,7 @@
     "startDateTime": "Pradžios data ir laikas",
     "endDateTime": "Pabaigos data ir laikas",
     "submit": "Rezervuoti",
-    "success": "Rezervacija sėkmingai sukurta",
+    "doneSuccess": "Rezervacija sėkmingai sukurta",
     "ownerSuccess": "Rezervacija sukurta ir automatiškai patvirtinta",
     "ownerAutoApproval": "Kaip savininkas, jūsų rezervacija bus automatiškai patvirtinta",
     "error": "Nepavyko sukurti rezervacijos",
@@ -101,6 +101,31 @@
       "inUse": "Naudojama"
     },
     "notes": "Pastabos",
+    "notesPlaceholder": "Pridėkite papildomos informacijos apie savo rezervaciją...",
+    "notifications": {
+      "notifyOwner": "Pranešti savininkui žinute",
+      "sendFailed": "Rezervacija sukurta, tačiau nepavyko išsiųsti pranešimo pokalbyje.",
+      "notesPrefix": "Pastabos: {{notes}}",
+      "requestSummary": "Rezervacijos užklausa įrangai \"{{equipmentName}}\" ({{range}}).",
+      "starters": {
+        "directRequest": "Sveiki! Ką tik pateikiau rezervacijos užklausą.",
+        "interested": "Sveiki! Susidomėjau jūsų įranga ir pateikiau rezervacijos užklausą.",
+        "reachOut": "Laba diena! Pateikiau rezervacijos užklausą ir norėjau parašyti tiesiogiai."
+      },
+      "actions": {
+        "reviewRequest": "Peržiūrėti rezervacijos užklausą",
+        "openMyRequest": "Atidaryti mano rezervacijos užklausą"
+      }
+    },
+    "filters": {
+      "button": "Filtras",
+      "clear": "Išvalyti",
+      "specificBooking": "Rodoma susieta rezervacija",
+      "showAll": "Rodyti visas",
+      "statusTitle": "Būsenos",
+      "hidePast": "Slėpti pasibaigusias rezervacijas",
+      "noResults": "Pagal pasirinktus filtrus rezervacijų nerasta"
+    },
     "actions": {
       "book": "Rezervuoti",
       "update": "Atnaujinti",
@@ -201,14 +226,19 @@
       "error": "Prisijungimas nepavyko",
       "googleLoginFailed": "Google prisijungimas nepavyko",
       "facebookLoginFailed": "Facebook prisijungimas nepavyko",
+      "microsoftLoginFailed": "Microsoft prisijungimas nepavyko",
       "googleLoginError": "Įvyko netikėta klaida",
       "facebookLoginError": "Įvyko netikėta klaida",
+      "microsoftLoginError": "Įvyko netikėta klaida",
       "connectingGoogle": "Jungiamaisi...",
       "connectingFacebook": "Jungiamaisi...",
+      "connectingMicrosoft": "Jungiamaisi...",
       "loginWithGoogle": "Prisijungti su Google",
       "loginWithFacebook": "Prisijungti su Facebook",
+      "loginWithMicrosoft": "Prisijungti su Microsoft",
       "processingGoogle": "Apdorojamas Google prisijungimas...",
-      "processingFacebook": "Apdorojamas Facebook prisijungimas..."
+      "processingFacebook": "Apdorojamas Facebook prisijungimas...",
+      "processingMicrosoft": "Apdorojamas Microsoft prisijungimas..."
     },
     "register": {
       "title": "Registracija",

@@ -5,7 +5,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 export default function EquipmentDetailsModal() {
-    const { id, open } = useLocalSearchParams<{ id: string; open?: string }>();
+    const { id, open, bookingId } = useLocalSearchParams<{ id: string; open?: string; bookingId?: string }>();
     const { t } = useTranslation();
     const router = useRouter();
     const shouldOpenBookings = open === 'bookings';
@@ -16,7 +16,11 @@ export default function EquipmentDetailsModal() {
                 <Appbar.BackAction onPress={() => { if (router.canGoBack()) router.push('/equipment'); }} />
                 <Appbar.Content title={t('equipment.details.title')} />
             </Appbar.Header>
-            <EquipmentDetailsPage id={id as string} openBookingsListOnLoad={shouldOpenBookings} />
+            <EquipmentDetailsPage
+                id={id as string}
+                openBookingsListOnLoad={shouldOpenBookings}
+                initialBookingId={bookingId}
+            />
         </View>
     );
 }
