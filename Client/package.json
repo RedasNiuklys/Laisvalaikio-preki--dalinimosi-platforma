@@ -11,8 +11,12 @@
     "ios": "npx expo run:ios",
     "web": "npx expo start --web",
     "web:build": "npx expo export --platform web",
+    "web:deploy:aws": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy-web-aws.ps1",
     "web:https": "npm run web:build && node https-server.js",
     "web:dev:https": "node https-dev-proxy.js",
+    "eas:build:development": "npx eas build --platform android --profile development",
+    "eas:build:preview": "npx eas build --platform android --profile preview",
+    "eas:build:production": "npx eas build --platform android --profile production",
     "proxy": "node https-dev-proxy.js",
     "lint": "npx expo lint"
   },

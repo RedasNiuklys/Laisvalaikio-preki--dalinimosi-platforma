@@ -1,52 +1,37 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Moq;
+using Moq.Protected;
 using Server.Controllers;
 using Server.Models;
-using System;
-using System.IO;
+using Server.Services.Storage;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Xunit;
-using Moq;
 
 namespace Server.Tests.Controllers
 {
     public class StorageControllerTests
     {
         private readonly StorageController _controller;
-        private readonly Mock<IWebHostEnvironment> _environmentMock;
-        private readonly Mock<IConfiguration> _configurationMock;
+        private readonly Mock<IObjectStorageService> _objectStorageMock;
         private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
+        private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly string _testUserId = "test-user-id";
-        private readonly string _testUploadPath;
 
         public StorageControllerTests()
         {
-            // Setup mocks
-            _environmentMock = new Mock<IWebHostEnvironment>();
-            _configurationMock = new Mock<IConfiguration>();
+            _objectStorageMock = new Mock<IObjectStorageService>();
             _userManagerMock = new Mock<UserManager<ApplicationUser>>(
                 Mock.Of<IUserStore<ApplicationUser>>(),
                 null, null, null, null, null, null, null, null);
+            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
 
-            // Setup configuration
-            _configurationMock.Setup(x => x["AppSettings:LocalIP"]).Returns("localhost");
-            _configurationMock.Setup(x => x["AppSettings:ApiPort"]).Returns("5000");
-
-            // Setup environment
-            _testUploadPath = Path.Combine(Path.GetTempPath(), "test-uploads");
-            _environmentMock.Setup(x => x.WebRootPath).Returns(_testUploadPath);
-
-            // Create controller
             _controller = new StorageController(
-                _environmentMock.Object,
-                _configurationMock.Object,
-                _userManagerMock.Object);
+                _objectStorageMock.Object,
+                _userManagerMock.Object,
+                _httpClientFactoryMock.Object);
 
-            // Setup user claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, _testUserId)
@@ -58,18 +43,14 @@ namespace Server.Tests.Controllers
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
-
-            // Create test directories
-            Directory.CreateDirectory(Path.Combine(_testUploadPath, "uploads", "avatars", _testUserId));
+            _controller.ControllerContext.HttpContext.Request.Scheme = "http";
+            _controller.ControllerContext.HttpContext.Request.Host = new HostString("localhost", 5000);
         }
 
         [Fact]
         public async Task UploadAvatar_NoFileOrUri_ReturnsBadRequest()
         {
-            // Act
             var result = await _controller.UploadAvatar(null, null, _testUserId);
-
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("No file or file URI provided", badRequestResult.Value);
         }
@@ -77,221 +58,176 @@ namespace Server.Tests.Controllers
         [Fact]
         public async Task UploadAvatar_InvalidFileType_ReturnsBadRequest()
         {
-            // Arrange
             var fileMock = new Mock<IFormFile>();
             fileMock.Setup(f => f.FileName).Returns("test.txt");
             fileMock.Setup(f => f.Length).Returns(1024);
 
-            // Act
             var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
-
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid file type. Allowed types: JPG, JPEG, PNG", badRequestResult.Value);
         }
 
         [Fact]
-        public async Task UploadAvatar_ValidFile_ReturnsOkWithUrl()
+        public async Task UploadAvatar_ValidFile_ReturnsOk()
         {
-            // Arrange
             var fileMock = new Mock<IFormFile>();
             fileMock.Setup(f => f.FileName).Returns("test.jpg");
             fileMock.Setup(f => f.Length).Returns(1024);
-            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns(Task.CompletedTask);
+            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default)).Returns(Task.CompletedTask);
 
             var user = new ApplicationUser { Id = _testUserId };
-            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId))
-                .ReturnsAsync(user);
-            _userManagerMock.Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
+            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId)).ReturnsAsync(user);
+            _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
 
-            // Act
             var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<string>(okResult.Value);
-            Assert.NotNull(returnValue);
-            Assert.StartsWith("http://localhost:5000/api/Storage/GetAvatar/", returnValue);
+            Assert.NotNull(okResult.Value);
+            _objectStorageMock.Verify(x => x.SaveAsync(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), default), Times.Once);
         }
 
         [Fact]
-        public async Task UploadAvatar_ValidUri_ReturnsOkWithUrl()
+        public async Task GetAvatar_InvalidPath_ReturnsBadRequest()
         {
-            // Arrange
-            var fileUri = "https://fastly.picsum.photos/id/817/200/300.jpg?hmac=Egrlh6ZzXMOSu9esbUDMY8PhK3cBCmeqHyWBXm7dnHQ";
-            var user = new ApplicationUser { Id = _testUserId };
-            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId))
-                .ReturnsAsync(user);
-            _userManagerMock.Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
-
-            // Act
-            var result = await _controller.UploadAvatar(null, fileUri, _testUserId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<string>(okResult.Value);
-            Assert.NotNull(returnValue);
-            Assert.StartsWith("http://localhost:5000/api/Storage/GetAvatar/", returnValue);
+            var result = await _controller.GetAvatar("../bad", "test.jpg");
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
-        public async Task UploadAvatar_FileSize100KB_ReturnsOk()
+        public async Task GetAvatar_NotFound_ReturnsNotFound()
         {
-            // Arrange
-            var fileMock = new Mock<IFormFile>();
-            fileMock.Setup(f => f.FileName).Returns("test.jpg");
-            fileMock.Setup(f => f.Length).Returns(100 * 1024); // 100KB
-            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns(Task.CompletedTask);
+            _objectStorageMock.Setup(x => x.OpenReadAsync(It.IsAny<string>(), default))
+                .ReturnsAsync((StoredObject?)null);
 
-            var user = new ApplicationUser { Id = _testUserId };
-            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId))
-                .ReturnsAsync(user);
-            _userManagerMock.Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
-
-            // Act
-            var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<string>(okResult.Value);
-            Assert.NotNull(returnValue);
-            Assert.StartsWith("http://localhost:5000/api/Storage/GetAvatar/", returnValue);
+            var result = await _controller.GetAvatar(_testUserId, "missing.jpg");
+            Assert.IsType<NotFoundObjectResult>(result);
         }
 
         [Fact]
-        public async Task UploadAvatar_FileSize1MB_ReturnsOk()
+        public async Task GetAvatar_Found_ReturnsFile()
         {
-            // Arrange
-            var fileMock = new Mock<IFormFile>();
-            fileMock.Setup(f => f.FileName).Returns("test.jpg");
-            fileMock.Setup(f => f.Length).Returns(1024 * 1024); // 1MB
-            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns(Task.CompletedTask);
+            _objectStorageMock.Setup(x => x.OpenReadAsync(It.IsAny<string>(), default))
+                .ReturnsAsync(new StoredObject
+                {
+                    Stream = new MemoryStream(new byte[] { 1, 2, 3 }),
+                    ContentType = "image/jpeg"
+                });
 
-            var user = new ApplicationUser { Id = _testUserId };
-            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId))
-                .ReturnsAsync(user);
-            _userManagerMock.Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
-
-            // Act
-            var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<string>(okResult.Value);
-            Assert.NotNull(returnValue);
-            Assert.StartsWith("http://localhost:5000/api/Storage/GetAvatar/", returnValue);
-        }
-
-        [Fact]
-        public async Task UploadAvatar_FileSize10MB_ReturnsOk()
-        {
-            // Arrange
-            var fileMock = new Mock<IFormFile>();
-            fileMock.Setup(f => f.FileName).Returns("test.jpg");
-            fileMock.Setup(f => f.Length).Returns(10 * 1024 * 1024); // 10MB
-            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns(Task.CompletedTask);
-
-            var user = new ApplicationUser { Id = _testUserId };
-            _userManagerMock.Setup(x => x.FindByIdAsync(_testUserId))
-                .ReturnsAsync(user);
-            _userManagerMock.Setup(x => x.UpdateAsync(user))
-                .ReturnsAsync(IdentityResult.Success);
-
-            // Act
-            var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnValue = Assert.IsType<string>(okResult.Value);
-            Assert.NotNull(returnValue);
-            Assert.StartsWith("http://localhost:5000/api/Storage/GetAvatar/", returnValue);
-        }
-
-        [Fact]
-        public async Task UploadAvatar_FileSizeOver100MB_ReturnsBadRequest()
-        {
-            // Arrange
-            var fileMock = new Mock<IFormFile>();
-            fileMock.Setup(f => f.FileName).Returns("test.jpg");
-            fileMock.Setup(f => f.Length).Returns(101 * 1024 * 1024); // 101MB
-            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns(Task.CompletedTask);
-
-            // Act
-            var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("File size exceeds the maximum allowed size of 100MB", badRequestResult.Value);
-        }
-
-        [Fact]
-        public void GetAvatar_FileExists_ReturnsFile()
-        {
-            // Arrange
-            var fileName = "test.jpg";
-            var filePath = Path.Combine(_testUploadPath, "uploads", "avatars", _testUserId, fileName);
-            File.WriteAllText(filePath, "test content");
-
-            // Act
-            var result = _controller.GetAvatar(_testUserId, fileName);
-
-            // Assert
+            var result = await _controller.GetAvatar(_testUserId, "test.jpg");
             var fileResult = Assert.IsType<FileStreamResult>(result);
             Assert.Equal("image/jpeg", fileResult.ContentType);
         }
 
         [Fact]
-        public void GetAvatar_FileDoesNotExist_ReturnsNotFound()
+        public async Task DeleteAvatar_NotFound_ReturnsNotFound()
         {
-            // Act
-            var result = _controller.GetAvatar(_testUserId, "nonexistent.jpg");
+            _objectStorageMock.Setup(x => x.DeleteIfExistsAsync(It.IsAny<string>(), default)).ReturnsAsync(false);
 
-            // Assert
+            var result = await _controller.DeleteAvatar(_testUserId, "missing.jpg");
             Assert.IsType<NotFoundObjectResult>(result);
         }
 
         [Fact]
-        public void DeleteAvatar_FileExists_ReturnsOk()
+        public async Task DeleteAvatar_Found_ReturnsOk()
         {
-            // Arrange
-            var fileName = "test.jpg";
-            var filePath = Path.Combine(_testUploadPath, "uploads", "avatars", _testUserId, fileName);
-            File.WriteAllText(filePath, "test content");
+            _objectStorageMock.Setup(x => x.DeleteIfExistsAsync(It.IsAny<string>(), default)).ReturnsAsync(true);
 
-            // Act
-            var result = _controller.DeleteAvatar(_testUserId, fileName);
-
-            // Assert
+            var result = await _controller.DeleteAvatar(_testUserId, "test.jpg");
             Assert.IsType<OkResult>(result);
-            Assert.False(File.Exists(filePath));
         }
 
         [Fact]
-        public void DeleteAvatar_FileDoesNotExist_ReturnsNotFound()
+        public async Task GetEquipmentImage_InvalidPath_ReturnsBadRequest()
         {
-            // Act
-            var result = _controller.DeleteAvatar(_testUserId, "nonexistent.jpg");
+            var result = await _controller.GetEquipmentImage("../bad", "test.jpg");
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
 
-            // Assert
+        [Fact]
+        public async Task DeleteEquipmentImage_Found_ReturnsOk()
+        {
+            _objectStorageMock.Setup(x => x.DeleteIfExistsAsync(It.IsAny<string>(), default)).ReturnsAsync(true);
+
+            var result = await _controller.DeleteEquipmentImage("equipment-1", "test.jpg");
+            Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task GetEquipmentImage_Found_ReturnsFile()
+        {
+            _objectStorageMock.Setup(x => x.OpenReadAsync(It.IsAny<string>(), default))
+                .ReturnsAsync(new StoredObject
+                {
+                    Stream = new MemoryStream(new byte[] { 1, 2, 3 }),
+                    ContentType = "image/jpeg"
+                });
+
+            var result = await _controller.GetEquipmentImage("equipment-1", "test.jpg");
+            var fileResult = Assert.IsType<FileStreamResult>(result);
+            Assert.Equal("image/jpeg", fileResult.ContentType);
+        }
+
+        [Fact]
+        public async Task GetEquipmentImage_NotFound_ReturnsNotFound()
+        {
+            _objectStorageMock.Setup(x => x.OpenReadAsync(It.IsAny<string>(), default))
+                .ReturnsAsync((StoredObject?)null);
+
+            var result = await _controller.GetEquipmentImage("equipment-1", "missing.jpg");
             Assert.IsType<NotFoundObjectResult>(result);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task DeleteEquipmentImage_NotFound_ReturnsNotFound()
         {
-            // Clean up test directories
-            if (Directory.Exists(_testUploadPath))
-            {
-                Directory.Delete(_testUploadPath, true);
-            }
+            _objectStorageMock.Setup(x => x.DeleteIfExistsAsync(It.IsAny<string>(), default)).ReturnsAsync(false);
+
+            var result = await _controller.DeleteEquipmentImage("equipment-1", "missing.jpg");
+            Assert.IsType<NotFoundObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteEquipmentImage_InvalidPath_ReturnsBadRequest()
+        {
+            var result = await _controller.DeleteEquipmentImage("../bad", "test.jpg");
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteAvatar_InvalidPath_ReturnsBadRequest()
+        {
+            var result = await _controller.DeleteAvatar("../bad", "test.jpg");
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UploadAvatar_FileTooLarge_ReturnsBadRequest()
+        {
+            var fileMock = new Mock<IFormFile>();
+            fileMock.Setup(f => f.FileName).Returns("test.jpg");
+            fileMock.Setup(f => f.Length).Returns(200 * 1024 * 1024); // 200 MB
+
+            var result = await _controller.UploadAvatar(fileMock.Object, null, _testUserId);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("File size exceeds the maximum allowed size of 100MB", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task UploadAvatar_WithFileUri_DownloadFails_ReturnsBadRequest()
+        {
+            var httpClientMock = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(httpClientMock.Object);
+            httpClientMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+            _httpClientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(httpClient);
+
+            var result = await _controller.UploadAvatar(null, "http://example.com/file.jpg", _testUserId);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Failed to download file from URI", badRequest.Value);
         }
     }
 }

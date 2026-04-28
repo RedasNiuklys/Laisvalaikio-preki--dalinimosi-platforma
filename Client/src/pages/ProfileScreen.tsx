@@ -11,6 +11,7 @@ import {
   Text,
   ActivityIndicator,
   useTheme as usePaperTheme,
+  Button,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
@@ -23,7 +24,7 @@ import {SaveOptions, ImageResult , SaveFormat, ImageManipulator, ImageManipulato
 import { getAuthToken } from "../utils/authUtils";
 import { BASE_URL } from "../utils/envConfig";
 import axios from "axios";
-import {File as ExpoFile, Directory, Paths, FileInfo} from "expo-file-system";
+import {File as ExpoFile, Paths, FileInfo} from "expo-file-system";
 import { useTranslation } from "react-i18next";
 
 interface UserProfile {
@@ -46,8 +47,6 @@ const ProfileScreen = () => {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarLoading, setAvatarLoading] = useState(false);
-
   const fetchUser = async () => {
     try {
       setLoading(true);
@@ -132,7 +131,6 @@ const ProfileScreen = () => {
   };
 
   const uploadImage = async (uri: string) => {
-    let tempFileUri: string | null = null;
     let manipulatedImage: ImageManipulatorContext | null = null;
     let imageRef : ImageRef | null = null;
     let ImageResult : ImageResult | null = null;
@@ -141,7 +139,6 @@ const ProfileScreen = () => {
     let info: FileInfo;  
 
     try {
-      setAvatarLoading(true);
       console.log("Starting image processing...");
 
       // Step 1: Manipulate image (resize and compress)
@@ -179,8 +176,6 @@ const ProfileScreen = () => {
         // For mobile: create temp file in cache directory
         console.log("Mobile platform detected - creating temporary file");
         console.log("Manipulated image URI:", ImageResult.uri);
-        tempFileUri = `${Paths.cache.name}avatar_${Date.now()}.jpg`;
-        
         // Copy manipulated image to temporary location
         androidFile?.move(Paths.cache);
         console.log("Temporary file created:", androidFile?.uri);
@@ -240,7 +235,6 @@ const ProfileScreen = () => {
           console.warn("Warning: Failed to delete temporary file:", cleanupError);
         }
       }
-      setAvatarLoading(false);
     }
   };
 
@@ -298,6 +292,15 @@ const ProfileScreen = () => {
             {t("profile.email")}: {profile.email}
           </Text>
 
+          <Button
+            mode="contained"
+            icon="account-edit"
+            onPress={() => router.push("/profile/edit" as any)}
+            style={localStyles.editButton}
+          >
+            {t("profile.editTitle", { defaultValue: "Edit profile" })}
+          </Button>
+
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>{t("profile.logout")}</Text>
           </TouchableOpacity>
@@ -310,3 +313,11 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
+
+const localStyles = StyleSheet.create({
+  editButton: {
+    marginTop: 8,
+    marginBottom: 16,
+    alignSelf: "stretch",
+  },
+});

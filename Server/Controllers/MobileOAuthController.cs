@@ -14,15 +14,18 @@ namespace Server.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public MobileOAuthController(
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -302,11 +305,11 @@ namespace Server.Controllers
         }
 
         // Helper methods for OAuth token exchange
-        private async Task<GoogleTokenResponse?> ExchangeGoogleCodeForTokens(string code, string redirectUri)
+        protected virtual async Task<GoogleTokenResponse?> ExchangeGoogleCodeForTokens(string code, string redirectUri)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 var clientId = _configuration["Authentication:Google:ClientId"] ?? "";
                 var clientSecret = _configuration["Authentication:Google:ClientSecret"] ?? "";
 
@@ -349,11 +352,11 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<GoogleUserInfo?> GetGoogleUserInfo(string accessToken)
+        protected virtual async Task<GoogleUserInfo?> GetGoogleUserInfo(string accessToken)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
                 Console.WriteLine("🔗 Fetching Google User Info...");
@@ -375,11 +378,11 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<FacebookTokenResponse?> ExchangeFacebookCodeForTokens(string code, string redirectUri)
+        protected virtual async Task<FacebookTokenResponse?> ExchangeFacebookCodeForTokens(string code, string redirectUri)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 var appId = _configuration["Authentication:Facebook:ClientId"] ?? "";
                 var appSecret = _configuration["Authentication:Facebook:ClientSecret"] ?? "";
 
@@ -415,11 +418,11 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<FacebookUserInfo?> GetFacebookUserInfo(string accessToken)
+        protected virtual async Task<FacebookUserInfo?> GetFacebookUserInfo(string accessToken)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 var url = $"https://graph.facebook.com/me?fields=id,email,first_name,last_name,picture&access_token={accessToken}";
 
                 Console.WriteLine("🔗 Fetching Facebook User Info...");
@@ -441,11 +444,11 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<MicrosoftTokenResponse?> ExchangeMicrosoftCodeForTokens(string code, string redirectUri)
+        protected virtual async Task<MicrosoftTokenResponse?> ExchangeMicrosoftCodeForTokens(string code, string redirectUri)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 var clientId = _configuration["Authentication:Microsoft:ClientId"];
                 var clientSecret = _configuration["Authentication:Microsoft:ClientSecret"];
                 var tenantId = _configuration["Authentication:Microsoft:TenantId"];
@@ -491,11 +494,11 @@ namespace Server.Controllers
             }
         }
 
-        private async Task<MicrosoftUserInfo?> GetMicrosoftUserInfo(string accessToken)
+        protected virtual async Task<MicrosoftUserInfo?> GetMicrosoftUserInfo(string accessToken)
         {
             try
             {
-                using var client = new HttpClient();
+                using var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
                 Console.WriteLine("🔗 Fetching Microsoft User Info...");
@@ -517,7 +520,7 @@ namespace Server.Controllers
             }
         }
 
-        private string BuildPublicCallbackUrl(string callbackPath)
+        protected virtual string BuildPublicCallbackUrl(string callbackPath)
         {
             var configuredBaseUrl = _configuration["AppSettings:PublicBaseUrl"];
             if (!string.IsNullOrWhiteSpace(configuredBaseUrl))

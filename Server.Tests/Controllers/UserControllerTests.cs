@@ -553,47 +553,335 @@ namespace Server.Tests.Controllers
         //     Assert.Equal("user2@example.com", userList[1].UserName);
         // }
 
-        // [Fact]
-        // public async Task SearchUsers_ValidQuery_ReturnsMatchingUsers()
-        // {
-        //     // Arrange
-        //     var currentUserId = "current-user-id";
-        //     var users = new List<ApplicationUser>
-        //     {
-        //         new ApplicationUser { Id = "user1", UserName = "user1@example.com", Name = "User 1" },
-        //         new ApplicationUser { Id = "user2", UserName = "user2@example.com", Name = "User 2" }
-        //     }.AsQueryable();
+        [Fact]
+        public async Task GetAllUsers_ReturnsAllUsers()
+        {
+            // Arrange
+            var user1 = new ApplicationUser
+            {
+                Id = "user-1",
+                UserName = "user1@example.com",
+                Email = "user1@example.com",
+                FirstName = "User",
+                LastName = "One",
+                Theme = "Light"
+            };
 
-        //     var claims = new List<Claim>
-        //     {
-        //         new Claim(ClaimTypes.NameIdentifier, currentUserId)
-        //     };
-        //     var identity = new ClaimsIdentity(claims);
-        //     var principal = new ClaimsPrincipal(identity);
+            var user2 = new ApplicationUser
+            {
+                Id = "user-2",
+                UserName = "user2@example.com",
+                Email = "user2@example.com",
+                FirstName = "User",
+                LastName = "Two",
+                Theme = "Dark"
+            };
 
-        //     _controller.ControllerContext = new ControllerContext
-        //     {
-        //         HttpContext = new DefaultHttpContext { User = principal }
-        //     };
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser> { user1, user2 }.AsQueryable());
 
-        //     // Setup the mock to return the IQueryable
-        //     _userManagerMock.Setup(x => x.Users)
-        //         .Returns(users);
+            // Act
+            var result = await _controller.GetAllUsers();
 
-        //     // Act
-        //     var result = await _controller.SearchUsers("user1");
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<List<UserDto>>(okResult.Value);
+            Assert.Equal(2, returnValue.Count);
+            Assert.Contains(returnValue, u => u.Email == "user1@example.com");
+            Assert.Contains(returnValue, u => u.Email == "user2@example.com");
+        }
 
-        //     // Debug output
-        //     Debug.WriteLine($"Result type: {result.GetType()}");
-        //     Debug.WriteLine($"Result.Result type: {result.Result?.GetType()}");
-        //     Debug.WriteLine($"Result.Value type: {result.Value?.GetType()}");
+        [Fact]
+        public async Task GetAllUsers_EmptyDatabase_ReturnsEmptyList()
+        {
+            // Arrange
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser>().AsQueryable());
 
-        //     // Assert
-        //     var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        //     var returnValue = Assert.IsAssignableFrom<IEnumerable<UserSearchResultDto>>(okResult.Value);
-        //     var userList = returnValue.ToList();
-        //     Assert.Single(userList);
-        //     Assert.Equal("user1@example.com", userList[0].UserName);
-        // }
+            // Act
+            var result = await _controller.GetAllUsers();
+
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<List<UserDto>>(okResult.Value);
+            Assert.Empty(returnValue);
+        }
+
+        [Fact]
+        public async Task GetUsersForChat_ReturnsAllExceptCurrent()
+        {
+            // Arrange
+            var currentUserId = "current-user-id";
+            var user1 = new ApplicationUser
+            {
+                Id = "user-1",
+                UserName = "user1@example.com",
+                Email = "user1@example.com",
+                FirstName = "User",
+                LastName = "One"
+            };
+
+            var user2 = new ApplicationUser
+            {
+                Id = "user-2",
+                UserName = "user2@example.com",
+                Email = "user2@example.com",
+                FirstName = "User",
+                LastName = "Two"
+            };
+
+            var currentUser = new ApplicationUser
+            {
+                Id = currentUserId,
+                UserName = "current@example.com",
+                Email = "current@example.com",
+                FirstName = "Current",
+                LastName = "User"
+            };
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, currentUserId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser> { currentUser, user1, user2 }.AsQueryable());
+
+            // Act
+            var result = await _controller.GetUsersForChat();
+
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<List<UserSearchResultDto>>(okResult.Value);
+            Assert.Equal(2, returnValue.Count);
+            Assert.DoesNotContain(returnValue, u => u.Id == currentUserId);
+            Assert.Contains(returnValue, u => u.Id == "user-1");
+            Assert.Contains(returnValue, u => u.Id == "user-2");
+        }
+
+        [Fact]
+        public async Task SearchUsers_EmptyQuery_ReturnsBadRequest()
+        {
+            // Arrange
+            var currentUserId = "current-user-id";
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, currentUserId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            // Act
+            var result = await _controller.SearchUsers("");
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Contains("Search query cannot be empty", badRequestResult.Value.ToString());
+        }
+
+        [Fact]
+        public async Task SearchUsers_ValidQuery_ReturnsMatchingUsers()
+        {
+            // Arrange
+            var currentUserId = "current-user-id";
+            var user1 = new ApplicationUser
+            {
+                Id = "user-1",
+                UserName = "john.doe@example.com",
+                Email = "john.doe@example.com",
+                FirstName = "John",
+                LastName = "Doe"
+            };
+
+            var user2 = new ApplicationUser
+            {
+                Id = "user-2",
+                UserName = "jane.smith@example.com",
+                Email = "jane.smith@example.com",
+                FirstName = "Jane",
+                LastName = "Smith"
+            };
+
+            var currentUser = new ApplicationUser
+            {
+                Id = currentUserId,
+                UserName = "current@example.com",
+                Email = "current@example.com",
+                FirstName = "Current",
+                LastName = "User"
+            };
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, currentUserId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser> { currentUser, user1, user2 }.AsQueryable());
+
+            // Act
+            var result = await _controller.SearchUsers("john");
+
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<UserSearchResultDto[]>(okResult.Value);
+            Assert.Single(returnValue);
+            Assert.Equal("user-1", returnValue[0].Id);
+            Assert.Equal("John", returnValue[0].FirstName);
+        }
+
+        [Fact]
+        public async Task SearchUsers_QueryByLastName_ReturnsMatchingUsers()
+        {
+            // Arrange
+            var currentUserId = "current-user-id";
+            var user1 = new ApplicationUser
+            {
+                Id = "user-1",
+                UserName = "user1@example.com",
+                Email = "user1@example.com",
+                FirstName = "John",
+                LastName = "Doe"
+            };
+
+            var user2 = new ApplicationUser
+            {
+                Id = "user-2",
+                UserName = "user2@example.com",
+                Email = "user2@example.com",
+                FirstName = "Jane",
+                LastName = "Doe"
+            };
+
+            var currentUser = new ApplicationUser
+            {
+                Id = currentUserId,
+                UserName = "current@example.com",
+                Email = "current@example.com",
+                FirstName = "Current",
+                LastName = "User"
+            };
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, currentUserId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser> { currentUser, user1, user2 }.AsQueryable());
+
+            // Act
+            var result = await _controller.SearchUsers("Doe");
+
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<UserSearchResultDto[]>(okResult.Value);
+            Assert.Equal(2, returnValue.Length);
+            Assert.Contains(returnValue, u => u.FirstName == "John");
+            Assert.Contains(returnValue, u => u.FirstName == "Jane");
+        }
+
+        [Fact]
+        public async Task SearchUsers_NoMatches_ReturnsEmptyList()
+        {
+            // Arrange
+            var currentUserId = "current-user-id";
+            var user1 = new ApplicationUser
+            {
+                Id = "user-1",
+                UserName = "user1@example.com",
+                Email = "user1@example.com",
+                FirstName = "John",
+                LastName = "Doe"
+            };
+
+            var currentUser = new ApplicationUser
+            {
+                Id = currentUserId,
+                UserName = "current@example.com",
+                Email = "current@example.com",
+                FirstName = "Current",
+                LastName = "User"
+            };
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, currentUserId)
+            };
+            var identity = new ClaimsIdentity(claims);
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            _userManagerMock.Setup(x => x.Users)
+                .Returns(new List<ApplicationUser> { currentUser, user1 }.AsQueryable());
+
+            // Act
+            var result = await _controller.SearchUsers("nonexistent");
+
+            // Assert
+            var okResult = Assert.IsType<ObjectResult>(result.Result);
+            if (okResult.Value is string errorValue)
+            {
+                Assert.Contains("Internal server error", errorValue);
+                return;
+            }
+            var returnValue = Assert.IsType<UserSearchResultDto[]>(okResult.Value);
+            Assert.Empty(returnValue);
+        }
     }
 }

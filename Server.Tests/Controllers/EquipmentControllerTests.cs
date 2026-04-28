@@ -12,6 +12,8 @@ using Xunit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using AutoMapper;
+using Server.Services.Storage;
 
 namespace Server.Tests.Controllers
 {
@@ -22,15 +24,14 @@ namespace Server.Tests.Controllers
         private readonly string _otherUserId = "other-user-id";
         private readonly string _equipmentId = "test-equipment-id";
         private readonly string _locationId = "test-location-id";
-        private readonly Mock<IConfiguration> _configurationMock;
+        private readonly IMapper _mapper;
+        private readonly Mock<IObjectStorageService> _objectStorageMock;
 
         public EquipmentControllerTests() : base()
         {
-            _configurationMock = new Mock<IConfiguration>();
-            _configurationMock.Setup(x => x["AppSettings:LocalIP"]).Returns("localhost");
-            _configurationMock.Setup(x => x["AppSettings:ApiPort"]).Returns("5000");
-
-            _controller = new EquipmentController(_context, _configurationMock.Object);
+            _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(EquipmentController).Assembly)).CreateMapper();
+            _objectStorageMock = new Mock<IObjectStorageService>();
+            _controller = new EquipmentController(_context, _mapper, _objectStorageMock.Object);
 
             // Setup user claims
             var claims = new List<Claim>
@@ -49,7 +50,7 @@ namespace Server.Tests.Controllers
             SeedTestData().Wait();
         }
 
-        private async Task SeedTestData()
+        private new async Task SeedTestData()
         {
             // Create test users
             var currentUser = new ApplicationUser
@@ -166,7 +167,8 @@ namespace Server.Tests.Controllers
             Assert.Equal(_currentUserId, equipment.OwnerId);
             Assert.Equal("Test Category", equipment.Category.Name);
             Assert.Single(equipment.Images);
-            Assert.Equal("http://localhost:5000/uploads/equipment/test.jpg", equipment.Images[0].ImageUrl);
+            Assert.Contains("/api/Storage/GetEquipmentImage/", equipment.Images[0].ImageUrl);
+            Assert.Contains("test.jpg", equipment.Images[0].ImageUrl);
         }
 
         [Fact]
@@ -335,6 +337,116 @@ namespace Server.Tests.Controllers
             var okResult = Assert.IsType<ActionResult<IEnumerable<EquipmentResponseDto>>>(result);
             var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okResult.Value);
             Assert.Empty(equipment);
+        }
+
+        [Fact]
+        public async Task GetEquipment_NoUserClaim_ReturnsUnauthorized()
+        {
+            // Arrange - no claims
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
+            };
+
+            var result = await _controller.GetEquipment();
+
+            var okResult = Assert.IsType<ActionResult<IEnumerable<EquipmentResponseDto>>>(result);
+            Assert.IsType<UnauthorizedResult>(okResult.Result);
+        }
+
+        [Fact]
+        public async Task AddEquipmentImage_NoUserClaim_ReturnsUnauthorized()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
+            };
+
+            var result = await _controller.AddEquipmentImage(_equipmentId, new EquipmentController.AddEquipmentImageForm());
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task AddEquipmentImage_NullFile_ReturnsBadRequest()
+        {
+            var result = await _controller.AddEquipmentImage(_equipmentId, new EquipmentController.AddEquipmentImageForm { File = null });
+            var bad = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("No file uploaded", bad.Value);
+        }
+
+        [Fact]
+        public async Task AddEquipmentImage_ValidFile_ReturnsOk()
+        {
+            var fileMock = new Mock<IFormFile>();
+            fileMock.Setup(f => f.FileName).Returns("photo.jpg");
+            fileMock.Setup(f => f.Length).Returns(1024);
+            fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+            fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream(new byte[] { 1, 2, 3 }));
+
+            var form = new EquipmentController.AddEquipmentImageForm { File = fileMock.Object, IsMainImage = true };
+            var result = await _controller.AddEquipmentImage(_equipmentId, form);
+
+            Assert.IsType<OkResult>(result);
+            _objectStorageMock.Verify(x => x.SaveAsync(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), default), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteEquipmentImage_EquipmentNotFound_ReturnsNotFound()
+        {
+            var result = await _controller.DeleteEquipmentImage("nonexistent-id", "img-1");
+            var notFound = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Equipment not found", notFound.Value);
+        }
+
+        [Fact]
+        public async Task DeleteEquipmentImage_NotOwner_ReturnsForbid()
+        {
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, _otherUserId) };
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims)) }
+            };
+
+            var result = await _controller.DeleteEquipmentImage(_equipmentId, "img-1");
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteEquipmentImage_ImageNotFound_ReturnsNoContent()
+        {
+            // Image not in DB — idempotent delete
+            var result = await _controller.DeleteEquipmentImage(_equipmentId, "nonexistent-image-id");
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteEquipmentImage_ValidImage_ReturnsNoContent()
+        {
+            _objectStorageMock.Setup(x => x.DeleteIfExistsAsync(It.IsAny<string>(), default)).ReturnsAsync(true);
+
+            var result = await _controller.DeleteEquipmentImage(_equipmentId, "test-image-id");
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateEquipment_NotFound_ReturnsNotFound()
+        {
+            var result = await _controller.UpdateEquipment("nonexistent-id", new UpdateEquipmentDto
+            {
+                Name = "x",
+                Description = "desc",
+                Condition = "Good",
+                LocationId = "loc-1",
+                Status = "Available"
+            });
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteEquipment_NotFound_ReturnsNotFound()
+        {
+            var result = await _controller.DeleteEquipment("nonexistent-id");
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

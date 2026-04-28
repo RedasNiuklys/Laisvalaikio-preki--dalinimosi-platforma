@@ -1,9 +1,6 @@
 import {
-  View,
   StyleSheet,
-  Platform,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import {
   Text,
@@ -12,52 +9,27 @@ import {
   Button,
   Portal,
   Dialog,
-  Divider,
   List,
 } from "react-native-paper";
 
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { useSettings } from "@/src/context/SettingsContext";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "expo-router";
-import { globalStyles } from "@/src/styles/globalStyles";
-import { authApi } from "@/src/api/auth";
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { settings, updateSettings } = useSettings();
   const theme = useTheme();
-  const router = useRouter();
-  const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
-
-  const clearCache = async () => {
-    try {
-      await logout();
-      let allItems = await AsyncStorage.getAllKeys();
-      await AsyncStorage.clear();
-
-      showToast("success", t("settings.toast.cacheCleared"));
-
-      // Sign out after clearing cache
-      router.replace("/(auth)/login");
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-      showToast("error", t("settings.toast.cacheClearError"));
-    } finally {
-      setConfirmDialogVisible(false);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
       await logout();
       setLogoutDialogVisible(false);
-      router.replace("/(auth)/login");
+      showToast("success", t("settings.toast.logoutSuccess"));
     } catch (error) {
       console.error("Error signing out:", error);
       showToast("error", t("settings.toast.logoutError"));
@@ -99,24 +71,6 @@ export default function SettingsScreen() {
         variant="bodyLarge"
         style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
       >
-        {t("settings.appData.title")}
-      </Text>
-
-      <Button
-        mode="outlined"
-        onPress={() => setConfirmDialogVisible(true)}
-        style={styles.button}
-        icon="delete"
-      >
-        {t("settings.appData.clearCache")}
-      </Button>
-
-      <Divider style={styles.divider} />
-
-      <Text
-        variant="bodyLarge"
-        style={[styles.sectionTitle, { color: theme.colors.onBackground }]}
-      >
         {t("settings.account.title")}
       </Text>
 
@@ -131,24 +85,6 @@ export default function SettingsScreen() {
       </Button>
 
       <Portal>
-        <Dialog
-          visible={confirmDialogVisible}
-          onDismiss={() => setConfirmDialogVisible(false)}
-        >
-          <Dialog.Title>{t("settings.appData.clearCache")}</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium">
-              {t("settings.appData.clearCacheConfirm")}
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setConfirmDialogVisible(false)}>
-              {t("common.buttons.cancel")}
-            </Button>
-            <Button onPress={clearCache}>{t("common.buttons.clear")}</Button>
-          </Dialog.Actions>
-        </Dialog>
-
         <Dialog
           visible={logoutDialogVisible}
           onDismiss={() => setLogoutDialogVisible(false)}

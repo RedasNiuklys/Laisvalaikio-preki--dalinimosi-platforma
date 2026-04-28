@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using AutoMapper;
 
 namespace Server.Tests.Controllers
 {
@@ -16,6 +17,7 @@ namespace Server.Tests.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly LocationController _controller;
+        private readonly IMapper _mapper;
         private readonly string _testUserId = "test-user-id";
 
         public LocationControllerTests()
@@ -26,8 +28,9 @@ namespace Server.Tests.Controllers
                 .Options;
             _context = new ApplicationDbContext(options);
 
+            _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(LocationController).Assembly)).CreateMapper();
             // Create controller
-            _controller = new LocationController(_context);
+            _controller = new LocationController(_context, _mapper);
 
             // Setup user claims
             var claims = new List<Claim>

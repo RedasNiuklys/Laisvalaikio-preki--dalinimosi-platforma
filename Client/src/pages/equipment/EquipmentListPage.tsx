@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, FlatList, useWindowDimensions, Pressable } from "react-native";
+import { View, StyleSheet, FlatList, useWindowDimensions, Pressable, Platform } from "react-native";
 import {
     Text,
     Card,
@@ -36,7 +36,7 @@ export default function EquipmentListPage({
     const [showCategories, setShowCategories] = useState(true);
     const theme = useTheme();
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const router = useRouter();
     const { width } = useWindowDimensions();
     const isNarrowScreen = width < 420;
@@ -56,7 +56,7 @@ export default function EquipmentListPage({
 
     useEffect(() => {
         fetchEquipment();
-    }, [user?.id, ownerOnly]);
+    }, [isAuthenticated, user?.id, ownerOnly]);
 
     useEffect(() => {
         filterEquipment();
@@ -105,6 +105,13 @@ export default function EquipmentListPage({
     };
 
     const fetchEquipment = async () => {
+        if (!isAuthenticated) {
+            setEquipment([]);
+            setFilteredEquipment([]);
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             let data: Equipment[] = [];
@@ -230,7 +237,15 @@ export default function EquipmentListPage({
                             contentStyle={!showCardActionLabels ? styles.iconOnlyButtonContent : undefined}
                             labelStyle={!showCardActionLabels ? styles.iconOnlyButtonLabel : undefined}
                             accessibilityLabel={t("booking.title")}
-                            onPress={() => router.push({ pathname: "/(modals)/equipment/[id]", params: { id: item.id, open: "bookings" } })}
+                            onPress={() =>
+                                router.push({
+                                    pathname:
+                                        Platform.OS === "web"
+                                            ? "/(modals)/equipment/[id]"
+                                            : "/equipment/details/[id]",
+                                    params: { id: item.id, open: "bookings" },
+                                } as any)
+                            }
                         >
                             {showCardActionLabels ? t("booking.title") : undefined}
                         </Button>
@@ -261,11 +276,11 @@ export default function EquipmentListPage({
                     mode="contained"
                     icon="map"
                     onPress={() => router.push({
-                        pathname: "/(modals)/map-modal",
+                        pathname: Platform.OS === "web" ? "/(modals)/map-modal" : "/map",
                         params: {
                             category: selectedCategory
                         }
-                    })}
+                    } as any)}
                     style={styles.mapButton}
                 >
                     {t("location.showMap")}

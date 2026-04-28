@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, ScrollView, Image } from "react-native";
+import { View, StyleSheet, ScrollView, Image, Platform } from "react-native";
 import {
     Text,
     Card,
@@ -48,6 +48,7 @@ export default function EquipmentDetailsPage({
     const [showBookingsListModal, setShowBookingsListModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [didAutoOpenBookings, setDidAutoOpenBookings] = useState(false);
+    const isNative = Platform.OS !== "web";
 
     const loadBookings = useCallback(async (equipmentId: string) => {
         try {
@@ -301,15 +302,33 @@ export default function EquipmentDetailsPage({
                                 <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
                                     {t("equipment.details.location")}
                                 </Text>
-                                <View style={styles.mapContainer}>
-                                    <LocationMap
-                                        locations={[equipment.location]}
-                                        selectedLocation={equipment.location}
-                                        onLocationSelect={() => { }}
-                                        onLocationClick={() => { }}
-                                        isAddingLocation={false}
-                                    />
-                                </View>
+                                {isNative ? (
+                                    <Button
+                                        mode="outlined"
+                                        icon="map"
+                                        onPress={() =>
+                                            router.push({
+                                                pathname: "/map" as any,
+                                                params: {
+                                                    category: equipment.category?.name || "",
+                                                },
+                                            })
+                                        }
+                                        style={styles.openMapButton}
+                                    >
+                                        {t("location.showMap")}
+                                    </Button>
+                                ) : (
+                                    <View style={styles.mapContainer}>
+                                        <LocationMap
+                                            locations={[equipment.location]}
+                                            selectedLocation={equipment.location}
+                                            onLocationSelect={() => { }}
+                                            onLocationClick={() => { }}
+                                            isAddingLocation={false}
+                                        />
+                                    </View>
+                                )}
                                 <View style={styles.locationInfo}>
                                     <Text style={{ color: theme.colors.onSurface }}>{equipment.location.streetAddress}</Text>
                                     <Text style={{ color: theme.colors.onSurface }}>
@@ -455,6 +474,10 @@ const styles = StyleSheet.create({
     },
     locationInfo: {
         marginTop: 8,
+    },
+    openMapButton: {
+        marginBottom: 8,
+        alignSelf: "flex-start",
     },
     description: {
         marginBottom: 16,

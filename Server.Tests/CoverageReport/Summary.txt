@@ -1,0 +1,96 @@
+Summary
+  Generated on: 28/04/2026 - 12:00:45
+  Coverage date: 28/04/2026 - 12:00:29
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 74
+  Files: 45
+  Line coverage: 75.6%
+  Covered lines: 2976
+  Uncovered lines: 956
+  Coverable lines: 3932
+  Total lines: 6298
+  Branch coverage: 61.2% (530 of 866)
+  Covered branches: 530
+  Total branches: 866
+  Method coverage: 92.2% (461 of 500)
+  Full method coverage: 78.4% (392 of 500)
+  Covered methods: 461
+  Fully covered methods: 392
+  Total methods: 500
+
+Server                                                   75.6%
+  ApplicationDbContext                                    100%
+  LoginController                                        49.7%
+  LoginDto                                                100%
+  LogoutResponseDto                                       100%
+  RegisterDto                                             100%
+  Server.Controllers.BookingController                   77.7%
+  Server.Controllers.CategoryController                  93.5%
+  Server.Controllers.ChatController                        73%
+  Server.Controllers.EquipmentController                 83.6%
+  Server.Controllers.FriendshipController                71.2%
+  Server.Controllers.LocationController                  78.3%
+  Server.Controllers.MobileOAuthController               70.6%
+  Server.Controllers.SendFriendRequestRequest             100%
+  Server.Controllers.StorageController                     78%
+  Server.Controllers.UpdateParticipantsRequest            100%
+  Server.DataTransferObjects.AdminOperationResponseDto    100%
+  Server.DataTransferObjects.BookingDto                   100%
+  Server.DataTransferObjects.BookingResponseDto           100%
+  Server.DataTransferObjects.CategoryDto                  100%
+  Server.DataTransferObjects.CategoryResponseDto          100%
+  Server.DataTransferObjects.ChatResponseDto              100%
+  Server.DataTransferObjects.CreateBookingDto             100%
+  Server.DataTransferObjects.CreateCategoryDto            100%
+  Server.DataTransferObjects.CreateChatRequest            100%
+  Server.DataTransferObjects.CreateEquipmentDto           100%
+  Server.DataTransferObjects.CreateEquipmentImageDto      100%
+  Server.DataTransferObjects.CreateLocationDto            100%
+  Server.DataTransferObjects.DeleteUserResponseDto        100%
+  Server.DataTransferObjects.EquipmentImageDto            100%
+  Server.DataTransferObjects.EquipmentImageResponseDto    100%
+  Server.DataTransferObjects.EquipmentResponseDto         100%
+  Server.DataTransferObjects.ErrorResponseDto             100%
+  Server.DataTransferObjects.LocationDto                  100%
+  Server.DataTransferObjects.LocationResponseDto          100%
+  Server.DataTransferObjects.MessageDto                   100%
+  Server.DataTransferObjects.MessageResponseDto           100%
+  Server.DataTransferObjects.ParticipantDto               100%
+  Server.DataTransferObjects.ReadReceiptDto               100%
+  Server.DataTransferObjects.ThemePreferenceDto           100%
+  Server.DataTransferObjects.UpdateBookingDto             100%
+  Server.DataTransferObjects.UpdateBookingStatusDto       100%
+  Server.DataTransferObjects.UpdateEquipmentDto           100%
+  Server.DataTransferObjects.UpdateParticipantsRequest      0%
+  Server.DataTransferObjects.UpdateUserDto                100%
+  Server.DataTransferObjects.UserDto                      100%
+  Server.DataTransferObjects.UserResponseDto              100%
+  Server.DataTransferObjects.UserSearchResultDto          100%
+  Server.Hubs.ChatHub                                    90.1%
+  Server.MappingProfiles.BookingProfile                   100%
+  Server.MappingProfiles.EquipmentProfile                 100%
+  Server.MappingProfiles.LocationProfile                  100%
+  Server.Models.ApplicationUser                           100%
+  Server.Models.Booking                                   100%
+  Server.Models.Category                                  100%
+  Server.Models.Chat                                      100%
+  Server.Models.ChatParticipant                          85.7%
+  Server.Models.Equipment                                94.1%
+  Server.Models.EquipmentImage                           85.7%
+  Server.Models.Friendship                                 75%
+  Server.Models.Location                                 92.8%
+  Server.Models.MaintenanceRecord                          90%
+  Server.Models.Message                                  87.5%
+  Server.Models.MessageRead                               100%
+  Server.Services.FirebaseAuthService                       0%
+  Server.Services.FirebaseTokenVerifier                     0%
+  Server.Services.GoogleIdTokenPayload                    100%
+  Server.Services.GoogleIdTokenValidator                    0%
+  Server.Services.Storage.LocalObjectStorageService      98.1%
+  Server.Services.Storage.S3ObjectStorageService         92.8%
+  Server.Services.Storage.StorageKeyHelper                100%
+  Server.Services.Storage.StorageOptions                  100%
+  Server.Services.Storage.StoredObject                    100%
+  Server.Services.TokenService                            100%
+  UserController                                         74.9%

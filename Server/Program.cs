@@ -88,6 +88,8 @@ var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<FirebaseAuthService>();
+builder.Services.AddSingleton<IFirebaseTokenVerifier, FirebaseTokenVerifier>();
+builder.Services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
 
 System.Console.WriteLine("JWT Key: " + jwtKey);
 System.Console.WriteLine("JWT Issuer: " + jwtIssuer);

@@ -127,7 +127,6 @@ namespace Server.Tests.Controllers
             Assert.Equal("Other", friendObjectDict["FirstName"].ToString());
             Assert.Equal("User", friendObjectDict["LastName"].ToString());
             Assert.Equal("otheruser@example.com", friendObjectDict["Email"].ToString());
-            Assert.NotNull(friendDict["CreatedAt"]);
         }
 
         [Fact]

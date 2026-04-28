@@ -25,6 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
+  const resetAuthState = () => {
+    setToken(null);
+    setIsAuthenticated(false);
+    setAuthProvider("");
+    setUser(null);
+  };
+
   useEffect(() => {
     console.log('🔐 AuthContext: useEffect running (initial auth check)...');
     // Singleton pattern: ensure initial auth check only happens once
@@ -159,8 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await authApi.logout();
-      // Firebase listener will handle clearing auth state
-      setAuthProvider("");
+      resetAuthState();
     } catch (error) {
       console.error("Logout error:", error);
       throw error;
@@ -170,10 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearToken = async () => {
     try {
       await authApi.logout();
-      setToken(null);
-      setIsAuthenticated(false);
-      setAuthProvider("");
-      setUser(null);
+      resetAuthState();
     } catch (error) {
       console.error("Clear token error:", error);
       throw error;

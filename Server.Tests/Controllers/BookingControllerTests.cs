@@ -10,12 +10,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Http;
+using AutoMapper;
 
 namespace Server.Tests.Controllers
 {
     public class BookingControllerTests : TestBase
     {
         private readonly BookingController _controller;
+        private readonly IMapper _mapper;
         private readonly string _currentUserId = "current-user-id";
         private readonly string _otherUserId = "other-user-id";
         private readonly string _equipmentId = "test-equipment-id";
@@ -23,7 +25,8 @@ namespace Server.Tests.Controllers
 
         public BookingControllerTests() : base()
         {
-            _controller = new BookingController(_context);
+            _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(BookingController).Assembly)).CreateMapper();
+            _controller = new BookingController(_context, _mapper);
 
             // Setup user claims
             var claims = new List<Claim>
@@ -42,7 +45,7 @@ namespace Server.Tests.Controllers
             SeedTestData().Wait();
         }
 
-        private async Task SeedTestData()
+        private new async Task SeedTestData()
         {
             // Create test users
             var currentUser = new ApplicationUser
@@ -281,6 +284,96 @@ namespace Server.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateBooking_ValidUpdate_ReturnsUpdatedBooking()
+        {
+            // Arrange
+            var booking = new Booking
+            {
+                Id = "booking-update",
+                UserId = _currentUserId,
+                EquipmentId = _equipmentId,
+                StartDateTime = DateTime.UtcNow.AddDays(1),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Planning,
+                Notes = "Original notes",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+
+            var updateDto = new UpdateBookingDto
+            {
+                StartDateTime = DateTime.UtcNow.AddDays(3),
+                EndDateTime = DateTime.UtcNow.AddDays(4),
+                Status = BookingStatus.Pending,
+                Notes = "Updated notes"
+            };
+
+            // Act
+            var result = await _controller.UpdateBooking("booking-update", updateDto);
+
+            // Assert
+            var response = Assert.IsType<BookingResponseDto>(result.Value);
+            Assert.NotNull(response);
+            Assert.Equal("booking-update", response.Id);
+            Assert.Equal(updateDto.Notes, response.Notes);
+            Assert.Equal(updateDto.Status.ToString(), response.Status.ToString());
+
+            // Verify database was updated
+            var updatedBooking = await _context.Bookings.FindAsync("booking-update");
+            Assert.NotNull(updatedBooking);
+            Assert.Equal(updateDto.Notes, updatedBooking.Notes);
+            Assert.Equal(BookingStatus.Pending, updatedBooking.Status);
+        }
+
+        [Fact]
+        public async Task UpdateBooking_NonOwner_ReturnsNotFound()
+        {
+            // Arrange
+            var booking = new Booking
+            {
+                Id = "booking-other-user",
+                UserId = _otherUserId,
+                EquipmentId = _equipmentId,
+                StartDateTime = DateTime.UtcNow.AddDays(1),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Planning,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+
+            var updateDto = new UpdateBookingDto
+            {
+                Notes = "Trying to update someone else's booking"
+            };
+
+            // Act
+            var result = await _controller.UpdateBooking("booking-other-user", updateDto);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task UpdateBooking_InvalidId_ReturnsNotFound()
+        {
+            // Arrange
+            var updateDto = new UpdateBookingDto
+            {
+                Notes = "Updating non-existent booking"
+            };
+
+            // Act
+            var result = await _controller.UpdateBooking("non-existent-booking", updateDto);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result.Result);
         }
 
         [Fact]

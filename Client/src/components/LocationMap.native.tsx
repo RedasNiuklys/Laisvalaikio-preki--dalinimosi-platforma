@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { View, StyleSheet } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { LocationMapProps, LocationMapRef } from "./LocationMap";
 import { Location } from "../types/Location";
 import { useTheme } from "react-native-paper";
@@ -146,7 +146,7 @@ const LocationMap = forwardRef<LocationMapRef, LocationMapProps>(
       <View style={styles.container}>
         <MapView
           ref={mapRef}
-          provider={PROVIDER_GOOGLE}
+          provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={{
             latitude: selectedLocation?.latitude ?? defaultCoordinates.latitude,

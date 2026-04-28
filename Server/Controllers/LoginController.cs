@@ -9,7 +9,6 @@ using Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using Server.Models;
-using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
@@ -22,7 +21,9 @@ public class LoginController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly FirebaseAuthService _firebaseAuth;
+    private readonly IFirebaseTokenVerifier _firebaseTokenVerifier;
+    private readonly IGoogleIdTokenValidator _googleIdTokenValidator;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ApplicationDbContext _context;
 
     public LoginController(
@@ -32,7 +33,9 @@ public class LoginController : ControllerBase
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
         RoleManager<IdentityRole> roleManager,
-        FirebaseAuthService firebaseAuth,
+        IFirebaseTokenVerifier firebaseTokenVerifier,
+        IGoogleIdTokenValidator googleIdTokenValidator,
+        IHttpClientFactory httpClientFactory,
         ApplicationDbContext context)
     {
         _userManager = userManager;
@@ -41,7 +44,9 @@ public class LoginController : ControllerBase
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
         _roleManager = roleManager;
-        _firebaseAuth = firebaseAuth;
+        _firebaseTokenVerifier = firebaseTokenVerifier;
+        _googleIdTokenValidator = googleIdTokenValidator;
+        _httpClientFactory = httpClientFactory;
         _context = context;
     }
 
@@ -66,7 +71,7 @@ public class LoginController : ControllerBase
             Console.WriteLine($"Firebase UID: {request.Uid}");
             Console.WriteLine($"Firebase token provided: {!string.IsNullOrEmpty(request.FirebaseToken)}");
             // Verify Firebase token
-            var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
+            var verifiedUid = await _firebaseTokenVerifier.VerifyUidAsync(request.FirebaseToken);
 
             // Find or create user based on Firebase UID
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -204,8 +209,8 @@ public class LoginController : ControllerBase
 
             // Verify Firebase token
             Console.WriteLine("Verifying Firebase token...");
-            var firebaseToken = await _firebaseAuth.VerifyTokenAsync(request.FirebaseToken);
-            Console.WriteLine($"Token verified successfully. UID from token: {firebaseToken.Uid}");
+            var verifiedUid = await _firebaseTokenVerifier.VerifyUidAsync(request.FirebaseToken);
+            Console.WriteLine($"Token verified successfully. UID from token: {verifiedUid}");
 
             // Check if user already exists
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
@@ -389,7 +394,7 @@ public class LoginController : ControllerBase
 
             // Validate access token with Facebook Graph API
             Console.WriteLine("Validating Facebook access token...");
-            using (var client = new HttpClient())
+            using (var client = _httpClientFactory.CreateClient())
             {
                 var response = await client.GetAsync($"https://graph.facebook.com/me?access_token={request.AccessToken}");
                 if (!response.IsSuccessStatusCode)
@@ -603,14 +608,9 @@ public class LoginController : ControllerBase
     {
         try
         {
-            var settings = new GoogleJsonWebSignature.ValidationSettings()
-            {
-                Audience = new[] {
-                    _configuration["Authentication:Google:ExpoClientId"]
-                }
-            };
-
-            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+            var payload = await _googleIdTokenValidator.ValidateAsync(
+                request.IdToken,
+                _configuration["Authentication:Google:ExpoClientId"]);
 
             var user = await _userManager.FindByEmailAsync(payload.Email);
             if (user == null)
@@ -628,7 +628,7 @@ public class LoginController : ControllerBase
             var token = await _tokenService.CreateTokenAsync(user);
             return Ok(new { token });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Unauthorized("Invalid token");
         }

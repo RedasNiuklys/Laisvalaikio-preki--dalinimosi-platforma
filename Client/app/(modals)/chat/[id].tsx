@@ -402,9 +402,12 @@ export default function ChatScreen() {
             style={styles.bookingActionButton}
             onPress={() =>
               router.push({
-                pathname: "/(modals)/equipment/[id]",
+                pathname:
+                  Platform.OS === "web"
+                    ? "/(modals)/equipment/[id]"
+                    : "/equipment/details/[id]",
                 params: { id: bookingEquipmentId, open: "bookings", ...(bookingId ? { bookingId } : {}) },
-              })
+              } as any)
             }
           >
             {item.isMine

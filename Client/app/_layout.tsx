@@ -4,5 +4,4 @@ import WebLayout from "./_layout.web";
 
 console.log('🚀 _layout.tsx: Entry point loading, Platform:', Platform.OS);
 
-// export default Platform.OS === "web" ? WebLayout : NativeLayout;
-export default WebLayout;
+export default Platform.OS === "web" ? WebLayout : NativeLayout;

@@ -1,4 +1,8 @@
 {
+  "dotnet-test-explorer.testProjectPath": "**/*Tests.@(csproj|vbproj|fsproj)",
+  "coverage-gutters.manualCoverageFilePaths": [
+    "C:\\Users\\User\\Desktop\\Laisvalaikio-preki--dalinimosi-platforma\\Server.Tests\\TestResults\\coverage.cobertura.xml"
+  ],
   "editor.formatOnSave": true,
   "git.ignoreLimitWarning": true
 }
