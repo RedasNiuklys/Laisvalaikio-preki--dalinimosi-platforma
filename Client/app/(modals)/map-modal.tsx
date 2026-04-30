@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { useTheme, IconButton, ActivityIndicator, Text, Card, List } from 'react-native-paper';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, ScrollView } from 'react-native';
+import { useTheme, IconButton, ActivityIndicator, Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import LocationMap, { LocationMapRef } from '@/src/components/LocationMap';
 import { Location } from '@/src/types/Location';
@@ -8,7 +8,6 @@ import * as LocationService from 'expo-location';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/src/context/AuthContext';
 import { showToast } from '@/src/components/Toast';
-import * as locationApi from '@/src/api/locationApi';
 import * as equipmentApi from '@/src/api/equipmentApi';
 import * as categoryApi from '@/src/api/categoryApi';
 import { Equipment } from '@/src/types/Equipment';
@@ -25,10 +24,16 @@ export default function MapModal() {
     const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
     const [locations, setLocations] = useState<Location[]>([]);
     const [loading, setLoading] = useState(true);
-    const [equipment, setEquipment] = useState<Equipment[]>([]);
     const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const selectedCategory = params.category as string;
+    const isMountedRef = useRef(true);
+    const initRunIdRef = useRef(0);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
         const R = 6371; // Earth's radius in kilometers
@@ -49,23 +54,72 @@ export default function MapModal() {
         return `${distance.toFixed(1)}km`;
     };
 
+    const getChildCategories = (parentCategoryName: string, categoriesData: Category[]): string[] => {
+        const parentCategory = categoriesData.find(c => c.name === parentCategoryName);
+        if (!parentCategory) return [parentCategoryName];
+
+        const childCategories = categoriesData
+            .filter(c => c.parentCategoryId === parentCategory.id)
+            .map(c => c.name);
+
+        return [parentCategoryName, ...childCategories];
+    };
+
+    const getCurrentLocation = useCallback(async (runId?: number) => {
+        try {
+            const { status } = await LocationService.requestForegroundPermissionsAsync();
+            if (!isMountedRef.current || (runId && initRunIdRef.current !== runId)) return;
+            if (status !== "granted") {
+                showToast("error", t("location.errors.permissionDenied"));
+                return;
+            }
+
+            const location = await LocationService.getCurrentPositionAsync({});
+            if (!isMountedRef.current || (runId && initRunIdRef.current !== runId)) return;
+            const currentLoc: Location = {
+                id: "current",
+                name: t("location.currentLocation"),
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                streetAddress: "",
+                city: "",
+                country: "",
+                userId: user?.id || "",
+            };
+            setCurrentLocation(currentLoc);
+            setLocations(prevLocations => {
+                const withoutCurrent = prevLocations.filter(loc => loc.id !== "current");
+                return [...withoutCurrent, currentLoc];
+            });
+        } catch (error) {
+            console.error("Error getting current location:", error);
+            if (isMountedRef.current && (!runId || initRunIdRef.current === runId)) {
+                showToast("error", t("location.errors.locationFetchFailed"));
+            }
+        }
+    }, [t, user?.id]);
+
     useEffect(() => {
+        const runId = ++initRunIdRef.current;
         const initializeData = async () => {
             try {
-                setLoading(true);
+                if (isMountedRef.current) {
+                    setLoading(true);
+                }
                 // First fetch categories
                 const categoriesData = await categoryApi.getCategories();
+                if (!isMountedRef.current || initRunIdRef.current !== runId) return;
                 console.log('Fetched Categories:', categoriesData);
-                setCategories(categoriesData);
 
                 // Then fetch equipment and filter based on categories
                 const equipmentData = await equipmentApi.getAll();
-                setEquipment(equipmentData);
+                if (!isMountedRef.current || initRunIdRef.current !== runId) return;
 
                 // Get relevant categories based on selection
                 const relevantCategories = selectedCategory
-                    ? await getChildCategories(selectedCategory, categoriesData)
+                    ? getChildCategories(selectedCategory, categoriesData)
                     : [];
+                if (!isMountedRef.current || initRunIdRef.current !== runId) return;
 
                 console.log('Relevant Categories:', relevantCategories);
 
@@ -88,55 +142,21 @@ export default function MapModal() {
                 setLocations(equipmentLocations as Location[]);
 
                 // Get current location
-                await getCurrentLocation();
+                await getCurrentLocation(runId);
             } catch (error) {
                 console.error('Error initializing data:', error);
-                showToast('error', t('location.errors.fetchFailed'));
+                if (isMountedRef.current && initRunIdRef.current === runId) {
+                    showToast('error', t('location.errors.fetchFailed'));
+                }
             } finally {
-                setLoading(false);
+                if (isMountedRef.current && initRunIdRef.current === runId) {
+                    setLoading(false);
+                }
             }
         };
 
         initializeData();
-    }, [selectedCategory]);
-
-    const getChildCategories = async (parentCategoryName: string, categoriesData: Category[]): Promise<string[]> => {
-        const parentCategory = categoriesData.find(c => c.name === parentCategoryName);
-        if (!parentCategory) return [parentCategoryName];
-
-        const childCategories = categoriesData
-            .filter(c => c.categoryId === parentCategory.id)
-            .map(c => c.name);
-
-        return [parentCategoryName, ...childCategories];
-    };
-
-    const getCurrentLocation = async () => {
-        try {
-            const { status } = await LocationService.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                showToast("error", t("location.errors.permissionDenied"));
-                return;
-            }
-
-            const location = await LocationService.getCurrentPositionAsync({});
-            const currentLoc: Location = {
-                id: "current",
-                name: t("location.currentLocation"),
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                streetAddress: "",
-                city: "",
-                country: "",
-                userId: user?.id || "",
-            };
-            setCurrentLocation(currentLoc);
-            setLocations(prevLocations => [...prevLocations, currentLoc]);
-        } catch (error) {
-            console.error("Error getting current location:", error);
-            showToast("error", t("location.errors.locationFetchFailed"));
-        }
-    };
+    }, [getCurrentLocation, selectedCategory, t]);
 
     const handleLocationSelect = (location: Location) => {
         mapRef.current?.animateToLocation(location);

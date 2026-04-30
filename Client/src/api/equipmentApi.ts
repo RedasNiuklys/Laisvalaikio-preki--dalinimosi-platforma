@@ -162,18 +162,20 @@ export const removeUsedDate = async (equipmentId: string, date: Date): Promise<E
 };
 
 export const getEquipment = async (id: string): Promise<Equipment> => {
+    const token = await getAuthToken();
     const response = await axios.get(`${EQUIPMENT_ENDPOINT}/${id}`, {
         headers: {
-            Authorization: `Bearer ${getAuthToken()}`
+            Authorization: `Bearer ${token}`
         }
     });
     return response.data;
 };
 
 export const deleteEquipment = async (id: string): Promise<void> => {
+    const token = await getAuthToken();
     await axios.delete(`${EQUIPMENT_ENDPOINT}/${id}`, {
         headers: {
-            Authorization: `Bearer ${getAuthToken()}`
+            Authorization: `Bearer ${token}`
         }
     });
 };

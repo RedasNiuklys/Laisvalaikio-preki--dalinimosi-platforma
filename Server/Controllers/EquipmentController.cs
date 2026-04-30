@@ -390,12 +390,23 @@ namespace Server.Controllers
                 return Forbid();
             }
 
-            _context.EquipmentImages.RemoveRange(equipment.Images);
-            _context.Bookings.RemoveRange(equipment.Bookings);
-            _context.Equipment.Remove(equipment);
-            await _context.SaveChangesAsync();
+            if (equipment.Bookings.Any())
+            {
+                return Conflict("Cannot delete equipment with existing bookings. Remove bookings first.");
+            }
 
-            return NoContent();
+            try
+            {
+                _context.EquipmentImages.RemoveRange(equipment.Images);
+                _context.Equipment.Remove(equipment);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict("Cannot delete equipment because related records still exist.");
+            }
         }
 
         // GET: api/Equipment/owner/{userId}

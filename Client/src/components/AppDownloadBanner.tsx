@@ -9,7 +9,7 @@ const AppDownloadBanner = () => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [isMobileWeb, setIsMobileWeb] = useState(false);
-
+  const image = require('@/src/assets/favicon.png');
   useEffect(() => {
     // Only show on web platform
     if (Platform.OS !== 'web') {
@@ -68,7 +68,7 @@ const AppDownloadBanner = () => {
     <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
       <View style={styles.content}>
         <Image
-          source={require('@/src/assets/favicon.png')}
+          source={image}
           style={styles.appIcon}
         />
         <View style={styles.textContainer}>

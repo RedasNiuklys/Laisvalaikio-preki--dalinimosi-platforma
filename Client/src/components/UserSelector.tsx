@@ -31,6 +31,7 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const profileImage = require("../assets/default-avatar.png");
 
   useEffect(() => {
     fetchUsers();
@@ -105,7 +106,7 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
                   source={
                     item.avatar
                       ? { uri: item.avatar }
-                      : require("../assets/default-avatar.png")
+                      : profileImage
                   }
                 />
               )}

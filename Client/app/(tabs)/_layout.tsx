@@ -5,11 +5,15 @@ import "@/src/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/src/context/AuthContext";
+import { isSingleAdminUser } from "@/src/utils/adminAccess";
 
 export default function TabLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const canAccessAdmin = isSingleAdminUser(user);
 
   useEffect(() => {
     // Check for unread messages every second
@@ -89,6 +93,7 @@ export default function TabLayout() {
           name="admin"
           options={{
             title: t("navigation.admin"),
+            href: canAccessAdmin ? "/admin" : null,
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons
                 name="shield-check"

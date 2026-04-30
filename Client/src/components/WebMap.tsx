@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { Location } from "../types/Location";
 import { GOOGLE_API_KEY } from "../utils/envConfig";
@@ -15,9 +15,50 @@ interface WebMapProps {
 declare global {
   interface Window {
     google: any;
-    initMap: () => void;
+    __googleMapsLoaderPromise?: Promise<any>;
   }
 }
+
+const loadGoogleMapsApi = (): Promise<any> => {
+  if (window.google?.maps) {
+    return Promise.resolve(window.google);
+  }
+
+  if (window.__googleMapsLoaderPromise) {
+    return window.__googleMapsLoaderPromise;
+  }
+
+  window.__googleMapsLoaderPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(
+      'script[data-google-maps-loader="true"]'
+    ) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(window.google));
+      existingScript.addEventListener("error", () => {
+        window.__googleMapsLoaderPromise = undefined;
+        reject(new Error("Failed to load Google Maps script"));
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}`;
+    script.async = true;
+    script.defer = true;
+    script.dataset.googleMapsLoader = "true";
+
+    script.onload = () => resolve(window.google);
+    script.onerror = () => {
+      window.__googleMapsLoaderPromise = undefined;
+      reject(new Error("Failed to load Google Maps script"));
+    };
+
+    document.head.appendChild(script);
+  });
+
+  return window.__googleMapsLoaderPromise;
+};
 
 export default function WebMap({
   onLocationSelect,
@@ -29,19 +70,39 @@ export default function WebMap({
 }: WebMapProps) {
   const [map, setMap] = useState<any>(null);
   const [markers, setMarkers] = useState<any[]>([]);
+  const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const isMountedRef = useRef(true);
+  const isAddingLocationRef = useRef(isAddingLocation);
+  const onLocationSelectRef = useRef(onLocationSelect);
   const [currentPosition, setCurrentPosition] = useState(
     initialPosition || { lat: 54.903929466398154, lng: 23.957888105144654 }
   );
+
+  useEffect(() => {
+    isAddingLocationRef.current = isAddingLocation;
+  }, [isAddingLocation]);
+
+  useEffect(() => {
+    onLocationSelectRef.current = onLocationSelect;
+  }, [onLocationSelect]);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Get user's current location
   useEffect(() => {
     if (!initialPosition && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCurrentPosition({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
+          if (isMountedRef.current) {
+            setCurrentPosition({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
+          }
         },
         (error) => {
           console.log("Error getting location:", error);
@@ -52,48 +113,56 @@ export default function WebMap({
   }, [initialPosition]);
 
   useEffect(() => {
-    // Load Google Maps script
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap`;
-    script.async = true;
-    script.defer = true;
+    let isCancelled = false;
 
-    window.initMap = () => {
-      const mapInstance = new window.google.maps.Map(
-        document.getElementById("map"),
-        {
+    const initializeMap = async () => {
+      try {
+        const googleApi = await loadGoogleMapsApi();
+        if (isCancelled || !mapElementRef.current || map) {
+          return;
+        }
+
+        const mapInstance = new googleApi.maps.Map(mapElementRef.current, {
           center: currentPosition,
           zoom: 13,
-          styles: [], // Can add dark mode styles here
-        }
-      );
+          styles: [],
+        });
 
-      // Add click listener for adding locations
-      mapInstance.addListener("click", (e: any) => {
-        if (isAddingLocation) {
-          const newLocation: Location = {
-            latitude: e.latLng.lat(),
-            longitude: e.latLng.lng(),
-            name: "",
-            streetAddress: "",
-            city: "",
-            country: "",
-            userId: "",
-          };
-          onLocationSelect(newLocation);
-        }
-      });
+        mapInstance.addListener("click", (e: any) => {
+          if (isAddingLocationRef.current) {
+            const newLocation: Location = {
+              latitude: e.latLng.lat(),
+              longitude: e.latLng.lng(),
+              name: "",
+              streetAddress: "",
+              city: "",
+              country: "",
+              userId: "",
+            };
+            onLocationSelectRef.current(newLocation);
+          }
+        });
 
-      setMap(mapInstance);
+        if (isMountedRef.current) {
+          setMap(mapInstance);
+        }
+      } catch (error) {
+        console.error("Failed to initialize Google Maps:", error);
+      }
     };
 
-    document.head.appendChild(script);
+    initializeMap();
 
     return () => {
-      document.head.removeChild(script);
-      delete window.initMap;
+      isCancelled = true;
     };
-  }, [currentPosition]);
+  }, [currentPosition, map]);
+
+  useEffect(() => {
+    if (map) {
+      map.setCenter(currentPosition);
+    }
+  }, [map, currentPosition]);
 
   // Update markers when locations or selectedLocation change
   useEffect(() => {
@@ -179,7 +248,7 @@ export default function WebMap({
 
   return (
     <View style={styles.container}>
-      <div id="map" style={{ width: "100%", height: "100%" }} />
+      <div ref={mapElementRef} style={{ width: "100%", height: "100%" }} />
     </View>
   );
 }

@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { Category } from "@/src/types/Category";
 import { deleteCategory, getCategories } from "@/src/api/categoryApi";
 import EditDeleteButtons from "@/src/components/EditDeleteButtons";
+import { useAuth } from "@/src/context/AuthContext";
+import { isSingleAdminUser } from "@/src/utils/adminAccess";
 
 const styles = StyleSheet.create({
   container: {
@@ -27,10 +29,17 @@ export default function AdminScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
+  const { user } = useAuth();
+  const canAccessAdmin = isSingleAdminUser(user);
 
   useEffect(() => {
+    if (!canAccessAdmin) {
+      router.replace("/(tabs)/equipment");
+      return;
+    }
+
     loadCategories();
-  }, []);
+  }, [canAccessAdmin]);
 
   const loadCategories = async () => {
     try {
@@ -51,6 +60,10 @@ export default function AdminScreen() {
       console.error("Error deleting category:", error);
     }
   };
+
+  if (!canAccessAdmin) {
+    return null;
+  }
 
   return (
     <View

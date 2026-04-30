@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { View, StyleSheet, ScrollView, Image, Platform } from "react-native";
 import {
     Text,
@@ -9,7 +9,7 @@ import {
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import LocationMap from "@/src/components/LocationMap";
 import * as equipmentApi from "@/src/api/equipmentApi";
 import { Equipment } from "@/src/types/Equipment";
@@ -25,6 +25,7 @@ import BookingsListModal from "@/src/components/BookingsListModal";
 import { BASE_URL } from "@/src/utils/envConfig";
 import { getAuthToken } from "@/src/utils/authUtils";
 import { chatService } from "@/src/services/ChatService";
+import { getUserById } from "@/src/api/userApi";
 
 type EquipmentDetailsPageProps = {
     id: string;
@@ -48,17 +49,58 @@ export default function EquipmentDetailsPage({
     const [showBookingsListModal, setShowBookingsListModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [didAutoOpenBookings, setDidAutoOpenBookings] = useState(false);
+    const [ownerDisplayName, setOwnerDisplayName] = useState("");
+    const isMountedRef = useRef(true);
     const isNative = Platform.OS !== "web";
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    const resolveOwnerDisplayName = useCallback(async (ownerId: string) => {
+        if (user?.id === ownerId) {
+            const currentUserName = [user.firstName, user.lastName]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+            if (isMountedRef.current) {
+                setOwnerDisplayName(currentUserName || user.userName || "You");
+            }
+            return;
+        }
+
+        try {
+            const owner = await getUserById(ownerId);
+            const fullName = [owner?.firstName, owner?.lastName]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+            if (isMountedRef.current) {
+                setOwnerDisplayName(fullName || owner?.userName || owner?.email || ownerId);
+            }
+        } catch (error) {
+            console.error("Error fetching equipment owner details:", error);
+            if (isMountedRef.current) {
+                setOwnerDisplayName(ownerId);
+            }
+        }
+    }, [user?.id, user?.firstName, user?.lastName, user?.userName]);
 
     const loadBookings = useCallback(async (equipmentId: string) => {
         try {
             console.log("Loading bookings for equipment:", equipmentId);
             const data = await getBookingsForEquipment(equipmentId);
             console.log("Bookings loaded:", data);
-            setBookings(data);
+            if (isMountedRef.current) {
+                setBookings(data);
+            }
         } catch (error) {
             console.error("Error loading bookings:", error);
-            showToast("error", t("booking.error"));
+            if (isMountedRef.current) {
+                showToast("error", t("booking.error"));
+            }
         }
     }, [t]);
 
@@ -69,16 +111,24 @@ export default function EquipmentDetailsPage({
             console.log("Equipment details:", data);
             console.log("Equipment images from API:", data.images);
             console.log("Image URLs:", data.images?.map((img: any) => ({ id: img.id, imageUrl: img.imageUrl, url: img.url })));
+            if (!isMountedRef.current) {
+                return;
+            }
             setEquipment(data);
+            await resolveOwnerDisplayName(data.ownerId);
             // Load bookings right after equipment is loaded
             await loadBookings(data.id);
         } catch (error) {
             console.error("Error fetching equipment details:", error);
-            showToast("error", t("equipment.errors.fetchFailed"));
+            if (isMountedRef.current) {
+                showToast("error", t("equipment.errors.fetchFailed"));
+            }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
-    }, [id, loadBookings, t]);
+    }, [id, loadBookings, resolveOwnerDisplayName, t]);
 
     useEffect(() => {
         fetchEquipmentDetails();
@@ -101,10 +151,18 @@ export default function EquipmentDetailsPage({
 
         try {
             await deleteEquipment(equipment.id);
-            router.back();
+            router.replace("/(tabs)/equipment");
         } catch (error) {
             console.error('Error deleting equipment:', error);
-            // You might want to show an error message to the user here
+            if (isAxiosError(error)) {
+                const serverMessage = typeof error.response?.data === "string"
+                    ? error.response.data
+                    : undefined;
+                showToast("error", serverMessage || t("equipment.errors.deleteFailed"));
+                return;
+            }
+
+            showToast("error", t("equipment.errors.deleteFailed"));
         }
     };
 
@@ -285,6 +343,14 @@ export default function EquipmentDetailsPage({
                                         color={theme.colors.primary}
                                     />
                                     <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{equipment.category.name}</Text>
+                                </View>
+                                <View style={styles.infoRow}>
+                                    <MaterialCommunityIcons
+                                        name="account"
+                                        size={20}
+                                        color={theme.colors.primary}
+                                    />
+                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>Owner: {ownerDisplayName}</Text>
                                 </View>
                                 <View style={styles.infoRow}>
                                     <MaterialCommunityIcons

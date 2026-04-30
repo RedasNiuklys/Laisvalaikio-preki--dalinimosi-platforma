@@ -19,6 +19,9 @@ export default function GlobalHeader() {
         if (pathname.includes('/chat/') && chatTitle) {
             return chatTitle;
         }
+        if(pathname.includes('-') && pathname.includes('/equipment/')) {
+            return '';
+        }
         
         switch (path) {
             case 'index':

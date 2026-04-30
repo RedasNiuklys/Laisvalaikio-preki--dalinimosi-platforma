@@ -35,6 +35,13 @@ export default function BookingsListModal({
     const [activeBookingId, setActiveBookingId] = useState<string | undefined>(initialBookingId);
     const hasLoadedForOpenRef = useRef(false);
     const loadUserRef = useRef(loadUser);
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         loadUserRef.current = loadUser;
@@ -47,7 +54,9 @@ export default function BookingsListModal({
     useEffect(() => {
         if (!visible) {
             hasLoadedForOpenRef.current = false;
-            setIsLoadingUser(false);
+            if (isMountedRef.current) {
+                setIsLoadingUser(false);
+            }
             return;
         }
 
@@ -55,19 +64,31 @@ export default function BookingsListModal({
             return;
         }
 
+        if (user) {
+            hasLoadedForOpenRef.current = true;
+            if (isMountedRef.current) {
+                setIsLoadingUser(false);
+            }
+            return;
+        }
+
         hasLoadedForOpenRef.current = true;
-        setIsLoadingUser(true);
+        if (isMountedRef.current) {
+            setIsLoadingUser(true);
+        }
 
         const loadCurrentUser = async () => {
             try {
                 await loadUserRef.current();
             } finally {
-                setIsLoadingUser(false);
+                if (isMountedRef.current) {
+                    setIsLoadingUser(false);
+                }
             }
         };
 
         loadCurrentUser();
-    }, [visible]);
+    }, [user, visible]);
 
     const isOwner = user?.id === equipmentOwnerId;
     console.log('User ID:', user?.id);
