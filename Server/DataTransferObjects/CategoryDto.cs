@@ -9,6 +9,9 @@ namespace Server.DataTransferObjects
         [StringLength(50)]
         public required string Name { get; set; }
 
+        [StringLength(120)]
+        public string? Slug { get; set; }
+
         [Required]
         public required string IconName { get; set; }
 

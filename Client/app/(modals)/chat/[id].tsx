@@ -498,7 +498,7 @@ export default function ChatScreen() {
           <View style={[styles.connectionBanner, { backgroundColor: theme.colors.secondary }]}>
             <ActivityIndicator size="small" color={theme.colors.onSecondary} />
             <Text style={[styles.connectionText, { color: theme.colors.onSecondary, marginLeft: 8 }]}>
-              Connecting to chat...
+              {t("chat.connecting")}
             </Text>
           </View>
         )}
@@ -506,7 +506,7 @@ export default function ChatScreen() {
           mode="flat"
           value={newMessage}
           onChangeText={setNewMessage}
-          placeholder={connectionReady ? "Type a message..." : "Connecting..."}
+          placeholder={connectionReady ? t("chat.typeMessage") : t("chat.connecting")}
           style={styles.input}
           disabled={sending || !connectionReady}
           right={

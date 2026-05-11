@@ -13,6 +13,7 @@ import * as categoryApi from '@/src/api/categoryApi';
 import { Equipment } from '@/src/types/Equipment';
 import { Category } from '@/src/types/Category';
 import { globalStyles } from '../../src/styles/globalStyles';
+import { getCategoryLabel } from '@/src/utils/categoryUtils';
 
 export default function MapModal() {
     const theme = useTheme();
@@ -25,7 +26,8 @@ export default function MapModal() {
     const [locations, setLocations] = useState<Location[]>([]);
     const [loading, setLoading] = useState(true);
     const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
-    const selectedCategory = params.category as string;
+    const selectedCategorySlug = params.category as string;
+    const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string>('');
     const isMountedRef = useRef(true);
     const initRunIdRef = useRef(0);
 
@@ -54,15 +56,15 @@ export default function MapModal() {
         return `${distance.toFixed(1)}km`;
     };
 
-    const getChildCategories = (parentCategoryName: string, categoriesData: Category[]): string[] => {
-        const parentCategory = categoriesData.find(c => c.name === parentCategoryName);
-        if (!parentCategory) return [parentCategoryName];
+    const getChildCategories = (parentCategorySlug: string, categoriesData: Category[]): string[] => {
+        const parentCategory = categoriesData.find(c => c.slug === parentCategorySlug);
+        if (!parentCategory) return [parentCategorySlug];
 
         const childCategories = categoriesData
             .filter(c => c.parentCategoryId === parentCategory.id)
-            .map(c => c.name);
+            .map(c => c.slug);
 
-        return [parentCategoryName, ...childCategories];
+        return [parentCategorySlug, ...childCategories];
     };
 
     const getCurrentLocation = useCallback(async (runId?: number) => {
@@ -111,21 +113,24 @@ export default function MapModal() {
                 if (!isMountedRef.current || initRunIdRef.current !== runId) return;
                 console.log('Fetched Categories:', categoriesData);
 
+                const selectedCategoryObj = categoriesData.find(c => c.slug === selectedCategorySlug);
+                setSelectedCategoryLabel(selectedCategoryObj ? getCategoryLabel(selectedCategoryObj, t) : selectedCategorySlug);
+
                 // Then fetch equipment and filter based on categories
                 const equipmentData = await equipmentApi.getAll();
                 if (!isMountedRef.current || initRunIdRef.current !== runId) return;
 
                 // Get relevant categories based on selection
-                const relevantCategories = selectedCategory
-                    ? getChildCategories(selectedCategory, categoriesData)
+                const relevantCategories = selectedCategorySlug
+                    ? getChildCategories(selectedCategorySlug, categoriesData)
                     : [];
                 if (!isMountedRef.current || initRunIdRef.current !== runId) return;
 
                 console.log('Relevant Categories:', relevantCategories);
 
                 // Filter equipment by category if one is selected
-                const filtered = selectedCategory
-                    ? equipmentData.filter(item => relevantCategories.includes(item.category.name))
+                const filtered = selectedCategorySlug
+                    ? equipmentData.filter(item => relevantCategories.includes(item.category.slug))
                     : equipmentData;
 
                 setFilteredEquipment(filtered);
@@ -156,7 +161,7 @@ export default function MapModal() {
         };
 
         initializeData();
-    }, [getCurrentLocation, selectedCategory, t]);
+    }, [getCurrentLocation, selectedCategorySlug, t]);
 
     const handleLocationSelect = (location: Location) => {
         mapRef.current?.animateToLocation(location);
@@ -192,10 +197,10 @@ export default function MapModal() {
                 onPress={handleBack}
                 style={[globalStyles.backButton, { backgroundColor: theme.colors.surface }]}
             />
-            {selectedCategory && (
+            {selectedCategorySlug && (
                 <View style={[globalStyles.categoryContainer, { backgroundColor: theme.colors.surface }]}>
                     <Text style={globalStyles.categoryText}>
-                        {t('equipment.category')}: {selectedCategory}
+                        {t('equipment.category')}: {selectedCategoryLabel}
                     </Text>
                 </View>
             )}
@@ -236,7 +241,7 @@ export default function MapModal() {
                                     {item.name}
                                 </Text>
                                 <Text style={[globalStyles.tableCell, globalStyles.categoryCell, { color: theme.colors.onSurface }]} numberOfLines={1}>
-                                    {item.category.name}
+                                    {getCategoryLabel(item.category, t)}
                                 </Text>
                                 <Text style={[globalStyles.tableCell, globalStyles.addressCell, { color: theme.colors.onSurface }]} numberOfLines={2}>
                                     {item.location ? `${item.location.streetAddress}, ${item.location.city}` : '-'}

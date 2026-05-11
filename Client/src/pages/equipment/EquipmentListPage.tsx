@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, FlatList, useWindowDimensions, Pressable, Platform } from "react-native";
 import {
-    Text,
     Card,
     FAB,
     useTheme,
@@ -18,6 +17,7 @@ import { showToast } from "@/src/components/Toast";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { getCategoryLabel } from "@/src/utils/categoryUtils";
 
 type EquipmentListPageProps = {
     ownerOnly?: boolean;
@@ -32,7 +32,7 @@ export default function EquipmentListPage({
     const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
     const [showCategories, setShowCategories] = useState(true);
     const theme = useTheme();
     const { t } = useTranslation();
@@ -50,19 +50,7 @@ export default function EquipmentListPage({
         (width - listHorizontalPadding * 2 - cardGap * (numColumns - 1)) /
         numColumns;
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    useEffect(() => {
-        fetchEquipment();
-    }, [isAuthenticated, user?.id, ownerOnly]);
-
-    useEffect(() => {
-        filterEquipment();
-    }, [selectedCategory, equipment, categories]);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const data = await categoryApi.getCategories();
             console.log("data", data);
@@ -71,30 +59,30 @@ export default function EquipmentListPage({
             console.error("Error fetching categories:", error);
             showToast("error", t("category.errors.fetchFailed"));
         }
-    };
+    }, [t]);
 
-    const filterEquipment = () => {
+    const filterEquipment = useCallback(() => {
         let filtered = equipment;
-        console.log("selectedCategory", selectedCategory);
-        if (selectedCategory !== "") {
+        console.log("selectedCategorySlug", selectedCategorySlug);
+        if (selectedCategorySlug !== "") {
             const selectedCategoryObj = categories.find(
-                (c) => c.name === selectedCategory
+                (c) => c.slug === selectedCategorySlug
             );
             if (selectedCategoryObj) {
                 if (!selectedCategoryObj.parentCategoryId) {
                     // If parent category is selected, show all its children
                     const childCategories = categories
                         .filter((c) => c.parentCategoryId === selectedCategoryObj.id)
-                        .map((c) => c.name);
+                        .map((c) => c.slug);
                     filtered = filtered.filter(
                         (item) =>
-                            childCategories.includes(item.category.name) ||
-                            item.category.name === selectedCategory
+                            childCategories.includes(item.category.slug) ||
+                            item.category.slug === selectedCategorySlug
                     );
                 } else {
                     // If child category is selected, show only that category
                     filtered = filtered.filter(
-                        (item) => item.category.name === selectedCategory
+                        (item) => item.category.slug === selectedCategorySlug
                     );
                 }
             }
@@ -102,9 +90,9 @@ export default function EquipmentListPage({
         console.log("filtered", filtered.length);
 
         setFilteredEquipment(filtered);
-    };
+    }, [categories, equipment, selectedCategorySlug]);
 
-    const fetchEquipment = async () => {
+    const fetchEquipment = useCallback(async () => {
         if (!isAuthenticated) {
             setEquipment([]);
             setFilteredEquipment([]);
@@ -133,14 +121,26 @@ export default function EquipmentListPage({
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAuthenticated, ownerOnly, t, user?.id]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
+    useEffect(() => {
+        fetchEquipment();
+    }, [fetchEquipment]);
+
+    useEffect(() => {
+        filterEquipment();
+    }, [filterEquipment]);
 
     const renderCategoryChips = () => {
         return (
             <View style={styles.filtersContainer}>
                 <Chip
-                    selected={selectedCategory === ""}
-                    onPress={() => setSelectedCategory("")}
+                    selected={selectedCategorySlug === ""}
+                    onPress={() => setSelectedCategorySlug("")}
                     style={styles.categoryChip}
                     icon={() => (
                         <MaterialCommunityIcons
@@ -156,14 +156,14 @@ export default function EquipmentListPage({
                     return (
                         <Chip
                             key={category.id}
-                            selected={selectedCategory === category.name}
-                            onPress={() => setSelectedCategory(category.name)}
+                            selected={selectedCategorySlug === category.slug}
+                            onPress={() => setSelectedCategorySlug(category.slug)}
                             style={[
                                 styles.categoryChip,
                                 !category.parentCategoryId && {
                                     backgroundColor: theme.colors.primaryContainer,
                                 },
-                                selectedCategory === category.name && {
+                                selectedCategorySlug === category.slug && {
                                     backgroundColor: theme.colors.primaryContainer,
                                     opacity: 0.8,
                                 },
@@ -176,7 +176,7 @@ export default function EquipmentListPage({
                                 />
                             )}
                         >
-                            {showChipLabels ? category.name : ""}
+                            {showChipLabels ? getCategoryLabel(category, t) : ""}
                         </Chip>
                     );
                 })}
@@ -204,7 +204,7 @@ export default function EquipmentListPage({
                     />
                     <Card.Title
                         title={item.name}
-                        subtitle={item.category.name}
+                        subtitle={getCategoryLabel(item.category, t)}
                         titleStyle={styles.cardTitle}
                         subtitleStyle={styles.cardSubtitle}
                     />
@@ -273,7 +273,7 @@ export default function EquipmentListPage({
                     onPress={() => router.push({
                         pathname: Platform.OS === "web" ? "/(modals)/map-modal" : "/map",
                         params: {
-                            category: selectedCategory
+                            category: selectedCategorySlug
                         }
                     } as any)}
                     style={styles.mapButton}

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
 using Server.Models;
+using System.Text.RegularExpressions;
 
 namespace Server.Controllers
 {
@@ -28,6 +29,7 @@ namespace Server.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
+                    Slug = c.Slug,
                     IconName = c.IconName,
                     ParentCategoryId = c.ParentCategoryId,
                     CreatedAt = c.CreatedAt,
@@ -36,6 +38,7 @@ namespace Server.Controllers
                     {
                         Id = sc.Id,
                         Name = sc.Name,
+                        Slug = sc.Slug,
                         IconName = sc.IconName,
                         ParentCategoryId = sc.ParentCategoryId,
                         CreatedAt = sc.CreatedAt,
@@ -65,6 +68,7 @@ namespace Server.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
+                Slug = category.Slug,
                 IconName = category.IconName,
                 ParentCategoryId = category.ParentCategoryId,
                 CreatedAt = category.CreatedAt,
@@ -73,6 +77,7 @@ namespace Server.Controllers
                 {
                     Id = category.ParentCategory.Id,
                     Name = category.ParentCategory.Name,
+                    Slug = category.ParentCategory.Slug,
                     IconName = category.ParentCategory.IconName,
                     CreatedAt = category.ParentCategory.CreatedAt,
                     UpdatedAt = category.ParentCategory.UpdatedAt
@@ -81,6 +86,7 @@ namespace Server.Controllers
                 {
                     Id = sc.Id,
                     Name = sc.Name,
+                    Slug = sc.Slug,
                     IconName = sc.IconName,
                     ParentCategoryId = sc.ParentCategoryId,
                     CreatedAt = sc.CreatedAt,
@@ -93,9 +99,22 @@ namespace Server.Controllers
         [HttpPost]
         public async Task<ActionResult<CategoryResponseDto>> CreateCategory(CreateCategoryDto createCategoryDto)
         {
+            var slug = NormalizeSlug(createCategoryDto.Slug, createCategoryDto.Name);
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return BadRequest("Category slug is required");
+            }
+
+            var slugExists = await _context.Categories.AnyAsync(c => c.Slug == slug);
+            if (slugExists)
+            {
+                return BadRequest("Category slug already exists");
+            }
+
             var category = new Category
             {
                 Name = createCategoryDto.Name,
+                Slug = slug,
                 IconName = createCategoryDto.IconName,
                 ParentCategoryId = createCategoryDto.ParentCategoryId,
                 CreatedAt = DateTime.UtcNow
@@ -111,6 +130,7 @@ namespace Server.Controllers
                 {
                     Id = category.Id,
                     Name = category.Name,
+                    Slug = category.Slug,
                     IconName = category.IconName,
                     ParentCategoryId = category.ParentCategoryId,
                     CreatedAt = category.CreatedAt,
@@ -128,7 +148,20 @@ namespace Server.Controllers
                 return NotFound();
             }
 
+            var slug = NormalizeSlug(updateCategoryDto.Slug, updateCategoryDto.Name);
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return BadRequest("Category slug is required");
+            }
+
+            var slugExists = await _context.Categories.AnyAsync(c => c.Id != id && c.Slug == slug);
+            if (slugExists)
+            {
+                return BadRequest("Category slug already exists");
+            }
+
             category.Name = updateCategoryDto.Name;
+            category.Slug = slug;
             category.IconName = updateCategoryDto.IconName;
             category.ParentCategoryId = updateCategoryDto.ParentCategoryId;
             category.UpdatedAt = DateTime.UtcNow;
@@ -184,6 +217,7 @@ namespace Server.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
+                    Slug = c.Slug,
                     IconName = c.IconName,
                     ParentCategoryId = c.ParentCategoryId,
                     CreatedAt = c.CreatedAt,
@@ -197,6 +231,14 @@ namespace Server.Controllers
         private bool CategoryExists(int id)
         {
             return _context.Categories.Any(e => e.Id == id);
+        }
+
+        private static string NormalizeSlug(string? providedSlug, string name)
+        {
+            var source = string.IsNullOrWhiteSpace(providedSlug) ? name : providedSlug;
+            var lower = source.Trim().ToLowerInvariant();
+            var normalized = Regex.Replace(lower, "[^a-z0-9]+", "-").Trim('-');
+            return normalized;
         }
     }
 }

@@ -28,6 +28,7 @@ import * as FileSystem from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
+import { getCategoryLabel } from "../utils/categoryUtils";
 
 type AddEquipmentScreenProps = {
   initialLocation?: {
@@ -336,7 +337,9 @@ export default function AddEquipmentScreen({
 
     setLoading(true);
     try {
-      const selectedCategory = categories[selectedCategoryId - 1];
+      console.log(categories)
+      console.log("Selected category ID:", selectedCategoryId);
+      const selectedCategory = categories.find((category) => category.id == selectedCategoryId);
       console.log("selectedCategory", selectedCategory);
       if (!selectedCategory) {
         Toast.show({
@@ -479,7 +482,9 @@ export default function AddEquipmentScreen({
             selectedValue={selectedCategoryId}
             onValueChange={(value) => {
               setSelectedCategoryId(value);
-              const selectedCategory = categories.find((c) => c.id === value);
+              console.log("Category picker changed to:", value);
+              console.log("Current Categories:", categories);
+              const selectedCategory = categories.find((c) => c.id == value);
               if (selectedCategory) {
                 console.log("Selected category:", selectedCategory);
                 console.log("Updating equipment with categoryId:", selectedCategory.id);
@@ -491,7 +496,7 @@ export default function AddEquipmentScreen({
             {categories.map((category) => (
               <Picker.Item
                 key={category.id}
-                label={category.name}
+                label={getCategoryLabel(category, t)}
                 value={category.id}
                 color={theme.colors.onSurface}
               />

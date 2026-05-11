@@ -22,6 +22,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { showToast } from "../components/Toast";
 import { useTranslation } from "react-i18next";
+import { getCategoryLabel, toCategorySlug } from "../utils/categoryUtils";
 
 interface AdminCategoryScreenProps {
   categoryId?: number;
@@ -39,6 +40,7 @@ export default function AdminCategoryScreen({
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const [category, setCategory] = useState<CategoryEdit>({
     name: "",
+    slug: "",
     iconName: "tag",
     parentCategoryId: undefined,
     description: "",
@@ -64,7 +66,10 @@ export default function AdminCategoryScreen({
   const loadCategory = async () => {
     try {
       const data = await getCategoryById(categoryId!);
-      setCategory(data);
+      setCategory({
+        ...data,
+        slug: data.slug || toCategorySlug(data.name),
+      });
       setSelectedParentId(data.parentCategoryId ?? null);
     } catch (error) {
       console.error("Failed to load category:", error);
@@ -73,8 +78,19 @@ export default function AdminCategoryScreen({
   };
 
   const handleSubmit = async () => {
-    if (!category.name) {
+    if (!category.name.trim()) {
       showToast("error", t("category.nameRequired"));
+      return;
+    }
+
+    const normalizedSlug = toCategorySlug(category.slug || category.name);
+    if (!normalizedSlug) {
+      showToast("error", t("category.slugRequired", { defaultValue: "Category slug is required" }));
+      return;
+    }
+
+    if (!category.iconName.trim()) {
+      showToast("error", t("category.iconRequired", { defaultValue: "Category icon name is required" }));
       return;
     }
 
@@ -82,6 +98,8 @@ export default function AdminCategoryScreen({
     try {
       const categoryData = {
         ...category,
+        slug: normalizedSlug,
+        iconName: category.iconName.trim(),
         parentCategoryId: selectedParentId,
       };
 
@@ -144,8 +162,24 @@ export default function AdminCategoryScreen({
         <TextInput
           label={t("category.name")}
           value={category.name}
-          onChangeText={(text) => setCategory({ ...category, name: text })}
+          onChangeText={(text) =>
+            setCategory((prev) => ({
+              ...prev,
+              name: text,
+              slug: prev.slug ? prev.slug : toCategorySlug(text),
+            }))
+          }
           style={styles.input}
+        />
+
+        <TextInput
+          label={t("category.slug", { defaultValue: "Slug" })}
+          value={category.slug}
+          onChangeText={(text) => setCategory({ ...category, slug: toCategorySlug(text) })}
+          style={styles.input}
+          autoCapitalize="none"
+          autoCorrect={false}
+          placeholder="e.g. winter-sports"
         />
 
         <Text style={[styles.label, { color: theme.colors.onSurface }]}>
@@ -186,17 +220,24 @@ export default function AdminCategoryScreen({
                   />
                 )}
               >
-                {parent.name}
+                {getCategoryLabel(parent, t)}
               </Chip>
             ))}
           </View>
         </View>
 
-        <Text style={[styles.label, { color: theme.colors.onSurface }]}>
-          {t("category.icon")}
-        </Text>
+        <TextInput
+          label={t("category.icon", { defaultValue: "Icon name" })}
+          value={category.iconName}
+          onChangeText={(text) => setCategory({ ...category, iconName: text })}
+          style={styles.input}
+          autoCapitalize="none"
+          autoCorrect={false}
+          placeholder="MaterialCommunityIcons name, e.g. snowboard"
+        />
+
         <View style={styles.iconContainer}>
-          {["tag", "tag-multiple", "tag-outline", "tag-text"].map((icon) => (
+          {["tag", "tag-multiple", "snowboard", "waves", "weather-sunny", "bicycle"].map((icon) => (
             <Chip
               key={icon}
               selected={category.iconName === icon}

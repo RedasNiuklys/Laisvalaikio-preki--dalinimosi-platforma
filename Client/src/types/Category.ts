@@ -1,17 +1,21 @@
 export interface Category {
-    id: number;
-    name: string;
-    iconName: string;
-    parentCategoryId?: number;
-    parentCategory?: Category;
-    subcategories?: Category[];
-    createdAt?: string;
-    updatedAt?: string;
+  id: number;
+  name: string;
+  slug: string;
+  iconName?: string;
+  parentCategoryId?: number;
+  parentCategory?: Category;
+  subcategories?: Category[];
+  createdAt?: string;
+  updatedAt?: string;
 }
+
 export interface CategoryEdit {
-    name: string;
-    iconName: string;
-    parentCategoryId?: number;
-    parentCategory?: Category;
-    subcategories?: Category[];
+  name: string;
+  slug: string;
+  iconName: string;
+  description?: string;
+  parentCategoryId?: number;
+  parentCategory?: Category;
+  subcategories?: Category[];
 }

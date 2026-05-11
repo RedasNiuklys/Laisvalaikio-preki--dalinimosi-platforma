@@ -287,6 +287,7 @@
       "images": "Images",
       "selectLocation": "Select a location",
       "createLocation": "Create New Location",
+
       "submit": {
         "add": "Add Equipment",
         "update": "Update Equipment"
@@ -432,9 +433,12 @@
   },
   "category": {
     "name": "Category Name",
+    "slug": "Category Slug",
     "parentCategory": "Parent Category",
     "icon": "Category Icon",
     "noParent": "No Parent Category",
+    "slugRequired": "Category slug is required",
+    "iconRequired": "Category icon name is required",
     "errors": {
       "fetchFailed": "Failed to fetch categories",
       "loadError": "Failed to load categories",
@@ -443,13 +447,41 @@
       "createSuccess": "Category created successfully"
     }
   },
+  "categories": {
+    "winter": "Winter",
+    "water": "Water",
+    "summer": "Summer",
+    "winter-sports": "Winter Sports",
+    "skiing": "Skiing",
+    "hockey": "Hockey",
+    "swimming": "Swimming",
+    "surfing": "Surfing",
+    "kayaking": "Kayaking",
+    "fishing": "Fishing",
+    "cycling": "Cycling",
+    "hiking": "Hiking",
+    "camping": "Camping",
+    "bbq": "BBQ",
+    "tennis": "Tennis",
+    "basketball": "Basketball",
+    "soccer": "Soccer",
+    "volleyball": "Volleyball",
+    "running": "Running",
+    "yoga": "Yoga",
+    "golf": "Golf",
+    "rollerblading": "Rollerblading"
+  },
   "chat": {
     "newChat": "New Chat",
     "groupChat": "Group Chat",
     "groupName": "Group Name",
     "create": "Create Chat",
     "loadingChats": "Loading chats...",
-    "searchPlaceholder": "Search users..."
+    "searchPlaceholder": "Search users...",
+    "connecting" : "Connecting to chat...",
+    "typeMessage": "Type a message...",
+    "noMessages": "No messages yet",
+    "unknownUser": "Unknown User"
   },
   "friends": {
     "title": "Friends",

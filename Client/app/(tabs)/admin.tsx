@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { List, Button, Text, Divider, useTheme } from "react-native-paper";
+import { List, Button, Divider, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Category } from "@/src/types/Category";
@@ -8,6 +8,7 @@ import { deleteCategory, getCategories } from "@/src/api/categoryApi";
 import EditDeleteButtons from "@/src/components/EditDeleteButtons";
 import { useAuth } from "@/src/context/AuthContext";
 import { isSingleAdminUser } from "@/src/utils/adminAccess";
+import { getCategoryLabel } from "@/src/utils/categoryUtils";
 
 const styles = StyleSheet.create({
   container: {
@@ -25,7 +26,6 @@ const styles = StyleSheet.create({
 
 export default function AdminScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
@@ -39,7 +39,7 @@ export default function AdminScreen() {
     }
 
     loadCategories();
-  }, [canAccessAdmin]);
+  }, [canAccessAdmin, router]);
 
   const loadCategories = async () => {
     try {
@@ -47,8 +47,6 @@ export default function AdminScreen() {
       setCategories(data);
     } catch (error) {
       console.error("Error loading categories:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -77,7 +75,7 @@ export default function AdminScreen() {
           {categories.map((category) => (
             <React.Fragment key={category.id}>
               <List.Item
-                title={category.name}
+                title={getCategoryLabel(category, t)}
                 description={category.iconName}
                 titleStyle={{ color: theme.colors.onBackground }}
                 descriptionStyle={{ color: theme.colors.onSurfaceVariant }}

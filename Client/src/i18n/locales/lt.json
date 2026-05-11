@@ -381,9 +381,12 @@
   },
   "category": {
     "name": "Kategorijos pavadinimas",
+    "slug": "Kategorijos žyma",
     "parentCategory": "Tėvinė kategorija",
     "icon": "Kategorijos piktograma",
     "noParent": "Be tėvinės kategorijos",
+    "slugRequired": "Kategorijos žyma yra privaloma",
+    "iconRequired": "Kategorijos piktogramos pavadinimas yra privalomas",
     "errors": {
       "fetchFailed": "Nepavyko gauti kategorijų"
     },
@@ -392,13 +395,41 @@
     "updateSuccess": "Kategorija sėkmingai atnaujinta",
     "createSuccess": "Kategorija sėkmingai sukurta"
   },
+  "categories": {
+    "winter": "Žiema",
+    "water": "Vanduo",
+    "summer": "Vasara",
+    "winter-sports": "Žiemos sportas",
+    "skiing": "Slidinėjimas",
+    "hockey": "Ledo ritulys",
+    "swimming": "Plaukimas",
+    "surfing": "Banglenčių sportas",
+    "kayaking": "Baidarės",
+    "fishing": "Žvejyba",
+    "cycling": "Dviračiai",
+    "hiking": "Žygiai",
+    "camping": "Stovyklavimas",
+    "bbq": "Grilis",
+    "tennis": "Tenisas",
+    "basketball": "Krepšinis",
+    "soccer": "Futbolas",
+    "volleyball": "Tinklinis",
+    "running": "Bėgimas",
+    "yoga": "Joga",
+    "golf": "Golfas",
+    "rollerblading": "Riedučiai"
+  },
   "chat": {
     "newChat": "Naujas pokalbis",
     "groupChat": "Grupės pokalbis",
     "groupName": "Grupės pavadinimas",
     "create": "Sukurti pokalbį",
     "loadingChats": "Įkeliami pokalbiai...",
-    "searchPlaceholder": "Ieškoti vartotojų..."
+    "searchPlaceholder": "Ieškoti vartotojų...",
+        "connecting" : "Jungiamasi prie pokalbio...",
+    "typeMessage": "Rašyti žinutę...",
+    "noMessages": "Dar nėra žinučių",
+    "unknownUser": "Nežinomas vartotojas"
   },
   "friends": {
     "title": "Draugai",

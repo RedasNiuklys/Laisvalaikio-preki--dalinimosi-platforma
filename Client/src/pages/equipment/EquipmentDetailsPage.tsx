@@ -27,6 +27,7 @@ import { getAuthToken } from "@/src/utils/authUtils";
 import { chatService } from "@/src/services/ChatService";
 import { getUserById } from "@/src/api/userApi";
 import i18n from "@/src/i18n";
+import { getCategoryLabel } from "@/src/utils/categoryUtils";
 
 type EquipmentDetailsPageProps = {
     id: string;
@@ -344,7 +345,7 @@ export default function EquipmentDetailsPage({
                                         size={20}
                                         color={theme.colors.primary}
                                     />
-                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{t("equipment.details.category")}: {equipment.category.name}</Text>
+                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{t("equipment.details.category")}: {getCategoryLabel(equipment.category, t)}</Text>
                                 </View>
                                 <View style={styles.infoRow}>
                                     <MaterialCommunityIcons
@@ -370,7 +371,7 @@ export default function EquipmentDetailsPage({
                                             router.push({
                                                 pathname: "/map" as any,
                                                 params: {
-                                                    category: equipment.category?.name || "",
+                                                    category: equipment.category?.slug || "",
                                                 },
                                             })
                                         }

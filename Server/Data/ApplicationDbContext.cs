@@ -127,6 +127,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 1,
                 Name = "Winter",
+                Slug = "winter",
                 IconName = "snowflake",
                 ParentCategoryId = null,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -136,6 +137,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 2,
                 Name = "Water",
+                Slug = "water",
                 IconName = "waves",
                 ParentCategoryId = null,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -145,6 +147,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 3,
                 Name = "Summer",
+                Slug = "summer",
                 IconName = "weather-sunny",
                 ParentCategoryId = null,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -156,6 +159,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 4,
                 Name = "Winter Sports",
+                Slug = "winter-sports",
                 IconName = "snowboard",
                 ParentCategoryId = 1,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -165,6 +169,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 5,
                 Name = "Skiing",
+                Slug = "skiing",
                 IconName = "ski",
                 ParentCategoryId = 1,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -174,6 +179,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 6,
                 Name = "Hockey",
+                Slug = "hockey",
                 IconName = "hockey-puck",
                 ParentCategoryId = 1,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -185,6 +191,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 7,
                 Name = "Swimming",
+                Slug = "swimming",
                 IconName = "swim",
                 ParentCategoryId = 2,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -194,6 +201,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 8,
                 Name = "Surfing",
+                Slug = "surfing",
                 IconName = "surfing",
                 ParentCategoryId = 2,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -203,6 +211,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 9,
                 Name = "Kayaking",
+                Slug = "kayaking",
                 IconName = "kayak",
                 ParentCategoryId = 2,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -212,6 +221,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 10,
                 Name = "Fishing",
+                Slug = "fishing",
                 IconName = "fishing",
                 ParentCategoryId = 2,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -223,6 +233,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 11,
                 Name = "Cycling",
+                Slug = "cycling",
                 IconName = "bicycle",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -232,6 +243,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 12,
                 Name = "Hiking",
+                Slug = "hiking",
                 IconName = "hiking",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -241,6 +253,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 13,
                 Name = "Camping",
+                Slug = "camping",
                 IconName = "camping",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -250,6 +263,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 14,
                 Name = "BBQ",
+                Slug = "bbq",
                 IconName = "grill",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -259,6 +273,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 15,
                 Name = "Tennis",
+                Slug = "tennis",
                 IconName = "tennis",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -268,6 +283,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 16,
                 Name = "Basketball",
+                Slug = "basketball",
                 IconName = "basketball",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -277,6 +293,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 17,
                 Name = "Soccer",
+                Slug = "soccer",
                 IconName = "soccer",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -286,6 +303,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 18,
                 Name = "Volleyball",
+                Slug = "volleyball",
                 IconName = "volleyball",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -295,6 +313,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 19,
                 Name = "Running",
+                Slug = "running",
                 IconName = "run",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -304,6 +323,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 20,
                 Name = "Yoga",
+                Slug = "yoga",
                 IconName = "yoga",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -313,6 +333,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 21,
                 Name = "Golf",
+                Slug = "golf",
                 IconName = "golf",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
@@ -322,6 +343,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             {
                 Id = 22,
                 Name = "Rollerblading",
+                Slug = "rollerblading",
                 IconName = "roller-skate",
                 ParentCategoryId = 3,
                 CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),

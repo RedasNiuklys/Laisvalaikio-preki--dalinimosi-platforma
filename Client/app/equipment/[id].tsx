@@ -19,9 +19,9 @@ import * as userApi from "@/src/api/userApi";
 import { showToast } from "@/src/components/Toast";
 import DateSelector from "@/src/components/DateSelector";
 import { User } from "@/src/types/User";
+import { getCategoryLabel } from "@/src/utils/categoryUtils";
 
 const { width: screenWidth } = Dimensions.get("window");
-
 export default function EquipmentCardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [equipment, setEquipment] = useState<Equipment | null>(null);
@@ -129,7 +129,7 @@ export default function EquipmentCardScreen() {
               {equipment.description}
             </Text>
             <Text variant="bodyMedium">
-              {t("equipment.details.category")}: {typeof equipment.category === 'object' ? equipment.category.name : equipment.category}
+              {t("equipment.details.category")}: {typeof equipment.category === "object" ? getCategoryLabel(equipment.category, t) : equipment.category}
             </Text>
             <Text variant="bodyMedium">
               {t("equipment.details.condition")}: {equipment.condition}

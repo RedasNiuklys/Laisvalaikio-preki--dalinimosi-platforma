@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import {
   Text,
   Avatar,
@@ -50,6 +51,7 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const theme = useTheme();
+  const { t } = useTranslation();
   const { setChatTitle } = useChatContext();
   // const { isAuthenticated } = useAuth();
 
@@ -141,7 +143,7 @@ export default function ChatScreen() {
     if (otherParticipant) {
       return `${otherParticipant.firstName} ${otherParticipant.lastName}`.trim();
     }
-    return "Unknown User";
+    return t("chat.unknownUser");
   };
 
   const handleChatPress = (chat: Chat) => {
@@ -208,7 +210,7 @@ export default function ChatScreen() {
     >
       <List.Item
         title={getChatTitle(chat)}
-        description={chat.lastMessage ? `${chat.lastMessage.sender.firstName} ${chat.lastMessage.sender.lastName}: ${chat.lastMessage.content}` : "No messages yet"}
+        description={chat.lastMessage ? `${chat.lastMessage.sender.firstName} ${chat.lastMessage.sender.lastName}: ${chat.lastMessage.content}` : t("chat.noMessages")}
         titleStyle={chat.unreadCount > 0 ? styles.unreadTitle : undefined}
         descriptionStyle={chat.unreadCount > 0 ? styles.unreadDescription : undefined}
         left={(props) => (
@@ -268,7 +270,7 @@ export default function ChatScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <Text>Loading chats...</Text>
+        <Text>{t("chat.loadingChats")}</Text>
       </View>
     );
   }

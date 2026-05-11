@@ -300,6 +300,11 @@ namespace Server.Migrations
                     b.Property<int?>("ParentCategoryId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -316,6 +321,7 @@ namespace Server.Migrations
                             CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
                             IconName = "snowflake",
                             Name = "Winter",
+                            Slug = "winter",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -324,6 +330,7 @@ namespace Server.Migrations
                             CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
                             IconName = "waves",
                             Name = "Water",
+                            Slug = "water",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -332,6 +339,7 @@ namespace Server.Migrations
                             CreatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc),
                             IconName = "weather-sunny",
                             Name = "Summer",
+                            Slug = "summer",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -341,6 +349,7 @@ namespace Server.Migrations
                             IconName = "snowboard",
                             Name = "Winter Sports",
                             ParentCategoryId = 1,
+                            Slug = "winter-sports",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -350,6 +359,7 @@ namespace Server.Migrations
                             IconName = "ski",
                             Name = "Skiing",
                             ParentCategoryId = 1,
+                            Slug = "skiing",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -359,6 +369,7 @@ namespace Server.Migrations
                             IconName = "hockey-puck",
                             Name = "Hockey",
                             ParentCategoryId = 1,
+                            Slug = "hockey",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -368,6 +379,7 @@ namespace Server.Migrations
                             IconName = "swim",
                             Name = "Swimming",
                             ParentCategoryId = 2,
+                            Slug = "swimming",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -377,6 +389,7 @@ namespace Server.Migrations
                             IconName = "surfing",
                             Name = "Surfing",
                             ParentCategoryId = 2,
+                            Slug = "surfing",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -386,6 +399,7 @@ namespace Server.Migrations
                             IconName = "kayak",
                             Name = "Kayaking",
                             ParentCategoryId = 2,
+                            Slug = "kayaking",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -395,6 +409,7 @@ namespace Server.Migrations
                             IconName = "fishing",
                             Name = "Fishing",
                             ParentCategoryId = 2,
+                            Slug = "fishing",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -404,6 +419,7 @@ namespace Server.Migrations
                             IconName = "bicycle",
                             Name = "Cycling",
                             ParentCategoryId = 3,
+                            Slug = "cycling",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -413,6 +429,7 @@ namespace Server.Migrations
                             IconName = "hiking",
                             Name = "Hiking",
                             ParentCategoryId = 3,
+                            Slug = "hiking",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -422,6 +439,7 @@ namespace Server.Migrations
                             IconName = "camping",
                             Name = "Camping",
                             ParentCategoryId = 3,
+                            Slug = "camping",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -431,6 +449,7 @@ namespace Server.Migrations
                             IconName = "grill",
                             Name = "BBQ",
                             ParentCategoryId = 3,
+                            Slug = "bbq",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -440,6 +459,7 @@ namespace Server.Migrations
                             IconName = "tennis",
                             Name = "Tennis",
                             ParentCategoryId = 3,
+                            Slug = "tennis",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -449,6 +469,7 @@ namespace Server.Migrations
                             IconName = "basketball",
                             Name = "Basketball",
                             ParentCategoryId = 3,
+                            Slug = "basketball",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -458,6 +479,7 @@ namespace Server.Migrations
                             IconName = "soccer",
                             Name = "Soccer",
                             ParentCategoryId = 3,
+                            Slug = "soccer",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -467,6 +489,7 @@ namespace Server.Migrations
                             IconName = "volleyball",
                             Name = "Volleyball",
                             ParentCategoryId = 3,
+                            Slug = "volleyball",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -476,6 +499,7 @@ namespace Server.Migrations
                             IconName = "run",
                             Name = "Running",
                             ParentCategoryId = 3,
+                            Slug = "running",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -485,6 +509,7 @@ namespace Server.Migrations
                             IconName = "yoga",
                             Name = "Yoga",
                             ParentCategoryId = 3,
+                            Slug = "yoga",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -494,6 +519,7 @@ namespace Server.Migrations
                             IconName = "golf",
                             Name = "Golf",
                             ParentCategoryId = 3,
+                            Slug = "golf",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         },
                         new
@@ -503,6 +529,7 @@ namespace Server.Migrations
                             IconName = "roller-skate",
                             Name = "Rollerblading",
                             ParentCategoryId = 3,
+                            Slug = "rollerblading",
                             UpdatedAt = new DateTime(2024, 3, 19, 14, 30, 45, 123, DateTimeKind.Utc)
                         });
                 });
