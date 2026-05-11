@@ -156,7 +156,8 @@ export default function AddEquipmentScreen({
 
   const loadCategories = async () => {
     try {
-      const data = await getCategories();
+      let data = await getCategories();
+      console.log("Fetched categories:", data);
       setCategories(data);
       if (data.length > 0) {
         setSelectedCategoryId(equipment.categoryId || data[0].id);

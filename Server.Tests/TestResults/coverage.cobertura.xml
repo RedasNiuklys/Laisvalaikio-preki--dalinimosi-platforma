@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<coverage line-rate="0" branch-rate="0" version="1.9" timestamp="1777551044" lines-covered="0" lines-valid="3932" branches-covered="0" branches-valid="876">
+<coverage line-rate="0" branch-rate="0" version="1.9" timestamp="1778422641" lines-covered="0" lines-valid="3938" branches-covered="0" branches-valid="878">
   <sources>
     <source>c:\Users\User\Desktop\Laisvalaikio-preki--dalinimosi-platforma\Server\</source>
   </sources>
   <packages>
-    <package name="Server" line-rate="0" branch-rate="0" complexity="1299">
+    <package name="Server" line-rate="0" branch-rate="0" complexity="1301">
       <classes>
         <class name="LoginController" filename="Controllers\LoginController.cs" line-rate="0" branch-rate="1" complexity="5">
           <methods>
@@ -9891,9 +9891,9 @@
             </method>
             <method name="EquipmentExists" signature="(System.String)" line-rate="0" branch-rate="1" complexity="1">
               <lines>
-                <line number="430" hits="0" branch="False" />
-                <line number="431" hits="0" branch="False" />
-                <line number="432" hits="0" branch="False" />
+                <line number="441" hits="0" branch="False" />
+                <line number="442" hits="0" branch="False" />
+                <line number="443" hits="0" branch="False" />
               </lines>
             </method>
             <method name=".ctor" signature="(ApplicationDbContext,AutoMapper.IMapper,Server.Services.Storage.IObjectStorageService)" line-rate="0" branch-rate="1" complexity="1">
@@ -9938,9 +9938,9 @@
             <line number="59" hits="0" branch="False" />
             <line number="62" hits="0" branch="False" />
             <line number="63" hits="0" branch="False" />
-            <line number="430" hits="0" branch="False" />
-            <line number="431" hits="0" branch="False" />
-            <line number="432" hits="0" branch="False" />
+            <line number="441" hits="0" branch="False" />
+            <line number="442" hits="0" branch="False" />
+            <line number="443" hits="0" branch="False" />
             <line number="28" hits="0" branch="False" />
             <line number="29" hits="0" branch="False" />
             <line number="30" hits="0" branch="False" />
@@ -10244,9 +10244,9 @@
             <line number="320" hits="0" branch="False" />
           </lines>
         </class>
-        <class name="Server.Controllers.EquipmentController/&lt;DeleteEquipment&gt;d__13" filename="Controllers\EquipmentController.cs" line-rate="0" branch-rate="0" complexity="6">
+        <class name="Server.Controllers.EquipmentController/&lt;DeleteEquipment&gt;d__13" filename="Controllers\EquipmentController.cs" line-rate="0" branch-rate="0" complexity="8">
           <methods>
-            <method name="MoveNext" signature="()" line-rate="0" branch-rate="0" complexity="6">
+            <method name="MoveNext" signature="()" line-rate="0" branch-rate="0" complexity="8">
               <lines>
                 <line number="376" hits="0" branch="False" />
                 <line number="377" hits="0" branch="False" />
@@ -10272,12 +10272,22 @@
                 </line>
                 <line number="389" hits="0" branch="False" />
                 <line number="390" hits="0" branch="False" />
-                <line number="393" hits="0" branch="False" />
+                <line number="393" hits="0" branch="True" condition-coverage="0% (0/2)">
+                  <conditions>
+                    <condition number="563" type="jump" coverage="0%" />
+                  </conditions>
+                </line>
                 <line number="394" hits="0" branch="False" />
                 <line number="395" hits="0" branch="False" />
-                <line number="396" hits="0" branch="False" />
-                <line number="398" hits="0" branch="False" />
                 <line number="399" hits="0" branch="False" />
+                <line number="400" hits="0" branch="False" />
+                <line number="401" hits="0" branch="False" />
+                <line number="402" hits="0" branch="False" />
+                <line number="404" hits="0" branch="False" />
+                <line number="406" hits="0" branch="False" />
+                <line number="407" hits="0" branch="False" />
+                <line number="408" hits="0" branch="False" />
+                <line number="410" hits="0" branch="False" />
               </lines>
             </method>
           </methods>
@@ -10306,12 +10316,22 @@
             </line>
             <line number="389" hits="0" branch="False" />
             <line number="390" hits="0" branch="False" />
-            <line number="393" hits="0" branch="False" />
+            <line number="393" hits="0" branch="True" condition-coverage="0% (0/2)">
+              <conditions>
+                <condition number="563" type="jump" coverage="0%" />
+              </conditions>
+            </line>
             <line number="394" hits="0" branch="False" />
             <line number="395" hits="0" branch="False" />
-            <line number="396" hits="0" branch="False" />
-            <line number="398" hits="0" branch="False" />
             <line number="399" hits="0" branch="False" />
+            <line number="400" hits="0" branch="False" />
+            <line number="401" hits="0" branch="False" />
+            <line number="402" hits="0" branch="False" />
+            <line number="404" hits="0" branch="False" />
+            <line number="406" hits="0" branch="False" />
+            <line number="407" hits="0" branch="False" />
+            <line number="408" hits="0" branch="False" />
+            <line number="410" hits="0" branch="False" />
           </lines>
         </class>
         <class name="Server.Controllers.EquipmentController/&lt;DeleteEquipmentImage&gt;d__10" filename="Controllers\EquipmentController.cs" line-rate="0" branch-rate="0" complexity="12">
@@ -10630,74 +10650,74 @@
           <methods>
             <method name="MoveNext" signature="()" line-rate="0" branch-rate="0" complexity="6">
               <lines>
-                <line number="404" hits="0" branch="False" />
-                <line number="405" hits="0" branch="False" />
-                <line number="406" hits="0" branch="False" />
-                <line number="407" hits="0" branch="False" />
-                <line number="408" hits="0" branch="False" />
-                <line number="409" hits="0" branch="False" />
-                <line number="410" hits="0" branch="False" />
-                <line number="412" hits="0" branch="False" />
-                <line number="415" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="415" hits="0" branch="False" />
+                <line number="416" hits="0" branch="False" />
+                <line number="417" hits="0" branch="False" />
+                <line number="418" hits="0" branch="False" />
+                <line number="419" hits="0" branch="False" />
+                <line number="420" hits="0" branch="False" />
+                <line number="421" hits="0" branch="False" />
+                <line number="423" hits="0" branch="False" />
+                <line number="426" hits="0" branch="True" condition-coverage="0% (0/2)">
                   <conditions>
                     <condition number="740" type="jump" coverage="0%" />
                   </conditions>
                 </line>
-                <line number="416" hits="0" branch="False" />
-                <line number="417" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="427" hits="0" branch="False" />
+                <line number="428" hits="0" branch="True" condition-coverage="0% (0/2)">
                   <conditions>
                     <condition number="568" type="jump" coverage="0%" />
                   </conditions>
                 </line>
-                <line number="418" hits="0" branch="False" />
-                <line number="419" hits="0" branch="True" condition-coverage="0% (0/2)">
+                <line number="429" hits="0" branch="False" />
+                <line number="430" hits="0" branch="True" condition-coverage="0% (0/2)">
                   <conditions>
                     <condition number="681" type="jump" coverage="0%" />
                   </conditions>
                 </line>
-                <line number="420" hits="0" branch="False" />
-                <line number="421" hits="0" branch="False" />
-                <line number="422" hits="0" branch="False" />
-                <line number="423" hits="0" branch="False" />
-                <line number="424" hits="0" branch="False" />
-                <line number="426" hits="0" branch="False" />
-                <line number="427" hits="0" branch="False" />
+                <line number="431" hits="0" branch="False" />
+                <line number="432" hits="0" branch="False" />
+                <line number="433" hits="0" branch="False" />
+                <line number="434" hits="0" branch="False" />
+                <line number="435" hits="0" branch="False" />
+                <line number="437" hits="0" branch="False" />
+                <line number="438" hits="0" branch="False" />
               </lines>
             </method>
           </methods>
           <lines>
-            <line number="404" hits="0" branch="False" />
-            <line number="405" hits="0" branch="False" />
-            <line number="406" hits="0" branch="False" />
-            <line number="407" hits="0" branch="False" />
-            <line number="408" hits="0" branch="False" />
-            <line number="409" hits="0" branch="False" />
-            <line number="410" hits="0" branch="False" />
-            <line number="412" hits="0" branch="False" />
-            <line number="415" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="415" hits="0" branch="False" />
+            <line number="416" hits="0" branch="False" />
+            <line number="417" hits="0" branch="False" />
+            <line number="418" hits="0" branch="False" />
+            <line number="419" hits="0" branch="False" />
+            <line number="420" hits="0" branch="False" />
+            <line number="421" hits="0" branch="False" />
+            <line number="423" hits="0" branch="False" />
+            <line number="426" hits="0" branch="True" condition-coverage="0% (0/2)">
               <conditions>
                 <condition number="740" type="jump" coverage="0%" />
               </conditions>
             </line>
-            <line number="416" hits="0" branch="False" />
-            <line number="417" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="427" hits="0" branch="False" />
+            <line number="428" hits="0" branch="True" condition-coverage="0% (0/2)">
               <conditions>
                 <condition number="568" type="jump" coverage="0%" />
               </conditions>
             </line>
-            <line number="418" hits="0" branch="False" />
-            <line number="419" hits="0" branch="True" condition-coverage="0% (0/2)">
+            <line number="429" hits="0" branch="False" />
+            <line number="430" hits="0" branch="True" condition-coverage="0% (0/2)">
               <conditions>
                 <condition number="681" type="jump" coverage="0%" />
               </conditions>
             </line>
-            <line number="420" hits="0" branch="False" />
-            <line number="421" hits="0" branch="False" />
-            <line number="422" hits="0" branch="False" />
-            <line number="423" hits="0" branch="False" />
-            <line number="424" hits="0" branch="False" />
-            <line number="426" hits="0" branch="False" />
-            <line number="427" hits="0" branch="False" />
+            <line number="431" hits="0" branch="False" />
+            <line number="432" hits="0" branch="False" />
+            <line number="433" hits="0" branch="False" />
+            <line number="434" hits="0" branch="False" />
+            <line number="435" hits="0" branch="False" />
+            <line number="437" hits="0" branch="False" />
+            <line number="438" hits="0" branch="False" />
           </lines>
         </class>
         <class name="Server.Controllers.EquipmentController/&lt;UpdateEquipment&gt;d__12" filename="Controllers\EquipmentController.cs" line-rate="0" branch-rate="0" complexity="18">

@@ -26,6 +26,19 @@ interface MarkedDates {
     [date: string]: MarkedDate;
 }
 
+const getLocalDateKey = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getDateAtLocalMidday = (value: string | Date): Date => {
+    const date = value instanceof Date ? new Date(value) : new Date(value);
+    date.setHours(12, 0, 0, 0);
+    return date;
+};
+
 const getStatusColor = (status: BookingStatus, isDark: boolean): string => {
     switch (status) {
         case BookingStatus.Pending:
@@ -49,9 +62,9 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
         // Check if the date is blocked (has an approved booking)
         const isBlocked = bookings.some(booking => {
             if (booking.status === BookingStatus.Approved) {
-                const startDate = new Date(booking.startDateTime);
-                const endDate = new Date(booking.endDateTime);
-                const selectedDate = new Date(day.dateString);
+                const startDate = getDateAtLocalMidday(booking.startDateTime);
+                const endDate = getDateAtLocalMidday(booking.endDateTime);
+                const selectedDate = getDateAtLocalMidday(day.dateString);
                 return selectedDate >= startDate && selectedDate <= endDate;
             }
             return false;
@@ -67,18 +80,18 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
 
     // Create marked dates object for the calendar
     const markedDates = bookings.reduce((acc: MarkedDates, booking) => {
-        const startDate = new Date(booking.startDateTime);
-        const endDate = new Date(booking.endDateTime);
+        const startDate = getDateAtLocalMidday(booking.startDateTime);
+        const endDate = getDateAtLocalMidday(booking.endDateTime);
         const color = getStatusColor(booking.status, theme.dark);
         const isApproved = booking.status === BookingStatus.Approved;
 
         // Loop through all dates between start and end
         let currentDate = new Date(startDate);
         while (currentDate <= endDate) {
-            const dateString = currentDate.toISOString().split('T')[0];
+            const dateString = getLocalDateKey(currentDate);
 
-            const isStartDate = currentDate.getTime() === startDate.getTime();
-            const isEndDate = currentDate.getTime() === endDate.getTime();
+            const isStartDate = dateString === getLocalDateKey(startDate);
+            const isEndDate = dateString === getLocalDateKey(endDate);
 
             // If date already marked, merge the dots
             if (acc[dateString]) {
@@ -107,6 +120,7 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
             }
 
             currentDate.setDate(currentDate.getDate() + 1);
+            currentDate.setHours(12, 0, 0, 0);
         }
 
         return acc;
