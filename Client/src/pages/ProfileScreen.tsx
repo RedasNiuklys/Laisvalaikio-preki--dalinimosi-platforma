@@ -249,13 +249,6 @@ const ProfileScreen = () => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <Text
-        variant="headlineMedium"
-        style={{ color: theme.colors.onBackground }}
-      >
-        {t("profile.title")}
-      </Text>
-
       {profile ? (
         <>
           <View style={styles.avatarContainer}>

@@ -1,0 +1,49 @@
+@startuml
+
+package "app" {
+}
+
+package "app/(auth)" {
+}
+
+package "app/(modals)" {
+}
+
+package "app/(tabs)" {
+  interface ChatMessage
+  interface Chat
+}
+
+package "app/equipment" {
+}
+
+package "app/friends" {
+}
+
+package "app/profile" {
+}
+
+package "app/(modals)/admin" {
+}
+
+package "app/(modals)/chat" {
+  interface User
+  interface User
+}
+
+package "app/(modals)/equipment" {
+}
+
+package "app/(modals)/location" {
+}
+
+package "app/(tabs)/equipment" {
+}
+
+package "app/equipment/details" {
+}
+
+package "app/(modals)/equipment/edit" {
+}
+
+@enduml

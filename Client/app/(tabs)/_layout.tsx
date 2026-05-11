@@ -30,8 +30,7 @@ export default function TabLayout() {
     return () => clearInterval(interval);
   }, []);
 
-  // Don't conditionally render different components - it breaks hook ordering
-  // Authentication routing should be handled at root layout level
+  
   return (
     <Tabs
         screenOptions={{
@@ -51,7 +50,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: t("navigation.myEquipment", { defaultValue: "My equipments" }),
+            title: t("navigation.myEquipment", { defaultValue: "My items" }),
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="home" size={size} color={color} />
             ),

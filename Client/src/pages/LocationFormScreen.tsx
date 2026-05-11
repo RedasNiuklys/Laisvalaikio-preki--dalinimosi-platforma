@@ -102,13 +102,20 @@ const LocationFormScreen = (
       const errorMessage = t("location.errors.requiredFields", { fields: missingFields.join(', ') });
       setError(errorMessage);
       showToast("error", errorMessage);
+                if (router.canGoBack()){
+                  router.back();
+                }
       return false;
+      
     }
 
     if (!formData.latitude || !formData.longitude) {
       const errorMessage = t("location.errors.locationRequired");
       setError(errorMessage);
       showToast("error", errorMessage);
+                      if (router.canGoBack()){
+                  router.back();
+                }
       return false;
     }
 

@@ -69,23 +69,16 @@ export default function AdminScreen() {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <Text
-        variant="headlineMedium"
-        style={[styles.title, { color: theme.colors.onBackground }]}
-      >
-        {t("admin.title")}
-      </Text>
-
       <ScrollView>
         <List.Section>
-          <List.Subheader style={{ color: theme.colors.onBackground }}>
+          <List.Subheader style={{ color: theme.colors.onBackground, fontWeight: "bold" }}>
             {t("admin.categories")}
           </List.Subheader>
           {categories.map((category) => (
             <React.Fragment key={category.id}>
               <List.Item
                 title={category.name}
-                description={category.description}
+                description={category.iconName}
                 titleStyle={{ color: theme.colors.onBackground }}
                 descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
                 right={() => (

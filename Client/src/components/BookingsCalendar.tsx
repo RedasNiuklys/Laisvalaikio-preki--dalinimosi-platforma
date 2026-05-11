@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
-import { Calendar, DateData } from 'react-native-calendars';
+import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
 import { Booking, BookingStatus } from '../types/Booking';
 import { useTranslation } from 'react-i18next';
 import { showToast } from './Toast';
+import { ltLocale, enLocale } from '../locales/calendarLocales';
+import { useSettings } from '../context/SettingsContext';
 
 interface BookingsCalendarProps {
     bookings: Booking[];
@@ -25,6 +27,9 @@ interface MarkedDate {
 interface MarkedDates {
     [date: string]: MarkedDate;
 }
+
+LocaleConfig.locales['lt'] = ltLocale;
+LocaleConfig.locales['en'] = enLocale;
 
 const getLocalDateKey = (date: Date): string => {
     const year = date.getFullYear();
@@ -56,7 +61,15 @@ const getStatusColor = (status: BookingStatus, isDark: boolean): string => {
 
 export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalendarProps) {
     const theme = useTheme();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { settings } = useSettings();
+
+    useEffect(() => {
+        LocaleConfig.locales = {};
+        LocaleConfig.locales['lt'] = ltLocale;
+        LocaleConfig.locales['en'] = enLocale;
+        LocaleConfig.defaultLocale = i18n.language || 'en';
+    }, [i18n.language]);
 
     const handleDayPress = (day: DateData) => {
         // Check if the date is blocked (has an approved booking)
@@ -129,10 +142,11 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
             <Calendar
-                key={`bookings-calendar-${theme.dark ? 'dark' : 'light'}`}
+                key={`bookings-calendar-${i18n.language}-${theme.dark ? 'dark' : 'light'}`}
                 markingType="period"
                 markedDates={markedDates}
                 onDayPress={handleDayPress}
+                firstDay={settings.startWeekOnMonday ? 1 : 0}
                 theme={{
                     calendarBackground: theme.colors.surface,
                     textSectionTitleColor: theme.colors.onSurface,
@@ -177,7 +191,7 @@ const styles = StyleSheet.create({
     },
     legend: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'center',
         padding: 12,
         flexWrap: 'wrap',
         gap: 12,
@@ -185,6 +199,8 @@ const styles = StyleSheet.create({
     legendItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        width: '30%',
         gap: 8,
     },
     legendDot: {

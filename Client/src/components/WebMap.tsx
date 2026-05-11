@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { Location } from "../types/Location";
 import { GOOGLE_API_KEY } from "../utils/envConfig";
+import i18n from "../i18n";
 
 interface WebMapProps {
   onLocationSelect: (location: Location) => void;
@@ -16,41 +17,74 @@ declare global {
   interface Window {
     google: any;
     __googleMapsLoaderPromise?: Promise<any>;
+    __googleMapsLoaderLanguage?: string;
   }
 }
 
-const loadGoogleMapsApi = (): Promise<any> => {
-  if (window.google?.maps) {
+const normalizeMapLanguage = (language: string) =>
+  language?.toLowerCase().startsWith("lt") ? "lt" : "en";
+
+const getMapRegion = (language: string) => (language === "lt" ? "LT" : "US");
+
+const loadGoogleMapsApi = (language: string): Promise<any> => {
+  const normalizedLanguage = normalizeMapLanguage(language);
+
+  if (window.google?.maps && window.__googleMapsLoaderLanguage === normalizedLanguage) {
     return Promise.resolve(window.google);
   }
 
-  if (window.__googleMapsLoaderPromise) {
+  if (
+    window.__googleMapsLoaderPromise &&
+    window.__googleMapsLoaderLanguage === normalizedLanguage
+  ) {
     return window.__googleMapsLoaderPromise;
   }
 
+  const existingScript = document.querySelector(
+    'script[data-google-maps-loader="true"]'
+  ) as HTMLScriptElement | null;
+
+  const existingScriptLanguage = existingScript?.dataset.googleMapsLanguage;
+  if (existingScript && existingScriptLanguage !== normalizedLanguage) {
+    existingScript.remove();
+    window.__googleMapsLoaderPromise = undefined;
+    window.__googleMapsLoaderLanguage = undefined;
+    // Force clean reload so labels follow current language.
+    (window as any).google = undefined;
+  }
+
   window.__googleMapsLoaderPromise = new Promise((resolve, reject) => {
-    const existingScript = document.querySelector(
+    const scriptInDom = document.querySelector(
       'script[data-google-maps-loader="true"]'
     ) as HTMLScriptElement | null;
 
-    if (existingScript) {
-      existingScript.addEventListener("load", () => resolve(window.google));
-      existingScript.addEventListener("error", () => {
+    if (scriptInDom) {
+      scriptInDom.addEventListener("load", () => {
+        window.__googleMapsLoaderLanguage = normalizedLanguage;
+        resolve(window.google);
+      });
+      scriptInDom.addEventListener("error", () => {
         window.__googleMapsLoaderPromise = undefined;
+        window.__googleMapsLoaderLanguage = undefined;
         reject(new Error("Failed to load Google Maps script"));
       });
       return;
     }
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&language=${normalizedLanguage}&region=${getMapRegion(normalizedLanguage)}`;
     script.async = true;
     script.defer = true;
     script.dataset.googleMapsLoader = "true";
+    script.dataset.googleMapsLanguage = normalizedLanguage;
 
-    script.onload = () => resolve(window.google);
+    script.onload = () => {
+      window.__googleMapsLoaderLanguage = normalizedLanguage;
+      resolve(window.google);
+    };
     script.onerror = () => {
       window.__googleMapsLoaderPromise = undefined;
+      window.__googleMapsLoaderLanguage = undefined;
       reject(new Error("Failed to load Google Maps script"));
     };
 
@@ -117,7 +151,7 @@ export default function WebMap({
 
     const initializeMap = async () => {
       try {
-        const googleApi = await loadGoogleMapsApi();
+        const googleApi = await loadGoogleMapsApi(i18n.language || "en");
         if (isCancelled || !mapElementRef.current || map) {
           return;
         }
@@ -156,7 +190,7 @@ export default function WebMap({
     return () => {
       isCancelled = true;
     };
-  }, [currentPosition, map]);
+  }, [currentPosition, map, i18n.language]);
 
   useEffect(() => {
     if (map) {

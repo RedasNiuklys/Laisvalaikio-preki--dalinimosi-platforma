@@ -79,13 +79,13 @@
     "searchIcons": "Ieškoti paveiksliukų"
   },
   "booking": {
-    "title": "Rezervuoti įrangą",
+    "title": "Rezervacijos",
     "listTitle": "Visos rezervacijos",
     "new": "Nauja rezervacija",
     "create": "Rezervuoti įrangą",
-    "viewAll": "Peržiūrėti visą",
-    "startDateTime": "Pradžios data ir laikas",
-    "endDateTime": "Pabaigos data ir laikas",
+    "viewAll": "Visos",
+    "startDateTime": "Pradžios data",
+    "endDateTime": "Pabaigos data",
     "submit": "Rezervuoti",
     "doneSuccess": "Rezervacija sėkmingai sukurta",
     "ownerSuccess": "Rezervacija sukurta ir automatiškai patvirtinta",
@@ -95,10 +95,21 @@
     "startTime": "Pradžios laikas",
     "endDate": "Pabaigos data",
     "endTime": "Pabaigos laikas",
+    "calendar": {
+      "legend": {
+        "pending": "Laukiama",
+        "planning": "Planuojama",
+        "approved": "Patvirtinta",
+        "rejected": "Atmesta",
+        "cancelled": "Atšaukta"
+      }
+    },
     "status": {
-      "wish": "Noras",
-      "pending": "Laukiama",
-      "inUse": "Naudojama"
+        "pending": "Laukiama",
+        "planning": "Planuojama",
+        "approved": "Patvirtinta",
+        "rejected": "Atmesta",
+        "cancelled": "Atšaukta"
     },
     "notes": "Pastabos",
     "notesPlaceholder": "Pridėkite papildomos informacijos apie savo rezervaciją...",
@@ -124,7 +135,9 @@
       "showAll": "Rodyti visas",
       "statusTitle": "Būsenos",
       "hidePast": "Slėpti pasibaigusias rezervacijas",
-      "noResults": "Pagal pasirinktus filtrus rezervacijų nerasta"
+      "noResults": "Pagal pasirinktus filtrus rezervacijų nerasta",
+      "showCategories": "Rodyti kategorijas",
+      "hideCategories": "Slėpti kategorijas"
     },
     "actions": {
       "book": "Rezervuoti",
@@ -278,6 +291,7 @@
       "markAvailable": "Pažymėti prieinamu",
       "markUnavailable": "Pažymėti neprieinau",
       "edit": "Redaguoti įrangą",
+      "owner": "Savininkas",
       "notFound": "Įranga nerasta",
       "loadError": "Nepavyko įkelti įrangos duomenų",
       "deleteSuccess": "Įranga sėkmingai ištrinta",
@@ -295,6 +309,10 @@
     "actions": {
       "edit": "Redaguoti įrangą",
       "delete": "Ištrinti įrangą"
+    },
+    "filters": {
+      "showCategories": "Rodyti kategorijas",
+      "hideCategories": "Slėpti kategorijas"
     },
     "name": "Įrangos pavadinimas",
     "category": "Kategorija",
@@ -402,7 +420,8 @@
     "allFieldsRequired": "Visi laukai yra privalomi."
   },
   "map": {
-    "currentLocation": "Dabartinė vieta"
+    "currentLocation": "Dabartinė vieta",
+    "title": "Žemėlapis"
   },
   "modals": {
     "addCategory": "Pridėti kategoriją",

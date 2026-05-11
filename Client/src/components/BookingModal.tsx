@@ -14,6 +14,40 @@ interface BookingModalProps {
     isOwner?: boolean;
 }
 
+const formatDateLocalISO = (date: Date) => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseISODateStrict = (value: string): Date | null => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+        parsed.getFullYear() !== year ||
+        parsed.getMonth() !== month - 1 ||
+        parsed.getDate() !== day
+    ) {
+        return null;
+    }
+
+    parsed.setHours(12, 0, 0, 0);
+    return parsed;
+};
+
+const toLocalMidday = (date: Date) => {
+    const copy = new Date(date);
+    copy.setHours(12, 0, 0, 0);
+    return copy;
+};
+
 export default function BookingModal({ visible, onDismiss, onSubmit, equipmentName, initialDate, isOwner }: BookingModalProps) {
     const { t } = useTranslation();
     const theme = useTheme();
@@ -23,6 +57,10 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
     const [notifyOwner, setNotifyOwner] = useState(true);
     const [showStartDate, setShowStartDate] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
+    const [webStartDateInput, setWebStartDateInput] = useState(formatDateLocalISO(initialDate || new Date()));
+    const [webEndDateInput, setWebEndDateInput] = useState(formatDateLocalISO(initialDate || new Date()));
+    const webStartDatePickerRef = React.useRef<HTMLInputElement>(null);
+    const webEndDatePickerRef = React.useRef<HTMLInputElement>(null);
 
     const isWeb = Platform.OS === 'web';
 
@@ -33,6 +71,51 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
             setEndDate(initialDate);
         }
     }, [initialDate]);
+
+    React.useEffect(() => {
+        setWebStartDateInput(formatDateLocalISO(startDate));
+    }, [startDate]);
+
+    React.useEffect(() => {
+        setWebEndDateInput(formatDateLocalISO(endDate));
+    }, [endDate]);
+
+    const handleWebStartDateInputChange = (value: string) => {
+        setWebStartDateInput(value);
+        const parsed = parseISODateStrict(value);
+        if (!parsed) return;
+
+        const today = toLocalMidday(new Date());
+        if (parsed < today) return;
+
+        setStartDate(parsed);
+        if (parsed > toLocalMidday(endDate)) {
+            setEndDate(parsed);
+        }
+    };
+
+    const handleWebEndDateInputChange = (value: string) => {
+        setWebEndDateInput(value);
+        const parsed = parseISODateStrict(value);
+        if (!parsed) return;
+
+        if (parsed < toLocalMidday(startDate)) return;
+        setEndDate(parsed);
+    };
+
+    const openWebDatePicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+        const input = ref.current;
+        if (!input) return;
+
+        const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+        if (typeof pickerInput.showPicker === 'function') {
+            pickerInput.showPicker();
+            return;
+        }
+
+        input.focus();
+        input.click();
+    };
 
     const handleStartDateChange = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || startDate;
@@ -65,23 +148,59 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                 <View style={styles.webDateTimeContainer}>
                     <View style={styles.dateTimeSection}>
                         <Text variant="titleSmall">{t('booking.startDateTime')}</Text>
-                        <input
-                            type="date"
-                            value={startDate.toISOString().slice(0, 10)}
-                            onChange={(e) => setStartDate(new Date(e.target.value))}
-                            style={styles.webDateTimeInput}
-                            min={new Date().toISOString().slice(0, 10)}
-                        />
+                        <View style={styles.webDateInputRow}>
+                            <input
+                                inputMode="numeric"
+                                pattern="\\d{4}-\\d{2}-\\d{2}"
+                                placeholder="YYYY-MM-DD"
+                                value={webStartDateInput}
+                                onChange={(e) => handleWebStartDateInputChange(e.target.value)}
+                                onBlur={() => setWebStartDateInput(formatDateLocalISO(startDate))}
+                                style={styles.webDateTimeInput}
+                            />
+                            <IconButton
+                                icon="calendar-month"
+                                onPress={() => openWebDatePicker(webStartDatePickerRef)}
+                                style={styles.webCalendarIconButton}
+                            />
+                            <input
+                                ref={webStartDatePickerRef}
+                                type="date"
+                                value={formatDateLocalISO(startDate)}
+                                onChange={(e) => handleWebStartDateInputChange(e.target.value)}
+                                min={formatDateLocalISO(new Date())}
+                                style={styles.webNativeDateInput}
+                                aria-label={t('booking.startDateTime')}
+                            />
+                        </View>
                     </View>
                     <View style={styles.dateTimeSection}>
                         <Text variant="titleSmall">{t('booking.endDateTime')}</Text>
-                        <input
-                            type="date"
-                            value={endDate.toISOString().slice(0, 10)}
-                            onChange={(e) => setEndDate(new Date(e.target.value))}
-                            style={styles.webDateTimeInput}
-                            min={startDate.toISOString().slice(0, 10)}
-                        />
+                        <View style={styles.webDateInputRow}>
+                            <input
+                                inputMode="numeric"
+                                pattern="\\d{4}-\\d{2}-\\d{2}"
+                                placeholder="YYYY-MM-DD"
+                                value={webEndDateInput}
+                                onChange={(e) => handleWebEndDateInputChange(e.target.value)}
+                                onBlur={() => setWebEndDateInput(formatDateLocalISO(endDate))}
+                                style={styles.webDateTimeInput}
+                            />
+                            <IconButton
+                                icon="calendar-month"
+                                onPress={() => openWebDatePicker(webEndDatePickerRef)}
+                                style={styles.webCalendarIconButton}
+                            />
+                            <input
+                                ref={webEndDatePickerRef}
+                                type="date"
+                                value={formatDateLocalISO(endDate)}
+                                onChange={(e) => handleWebEndDateInputChange(e.target.value)}
+                                min={formatDateLocalISO(startDate)}
+                                style={styles.webNativeDateInput}
+                                aria-label={t('booking.endDateTime')}
+                            />
+                        </View>
                     </View>
                 </View>
             );
@@ -96,7 +215,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                         onPress={() => setShowStartDate(true)}
                         style={styles.dateButton}
                     >
-                        {startDate.toLocaleDateString()}
+                        {formatDateLocalISO(startDate)}
                     </Button>
                 </View>
 
@@ -109,7 +228,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                         onPress={() => setShowEndDate(true)}
                         style={styles.dateButton}
                     >
-                        {endDate.toLocaleDateString()}
+                        {formatDateLocalISO(endDate)}
                     </Button>
                 </View>
 
@@ -117,6 +236,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                     <DateTimePicker
                         value={startDate}
                         mode="date"
+                        dateFormat='shortdate'
                         is24Hour={true}
                         onChange={handleStartDateChange}
                         minimumDate={new Date()}
@@ -127,6 +247,7 @@ export default function BookingModal({ visible, onDismiss, onSubmit, equipmentNa
                     <DateTimePicker
                         value={endDate}
                         mode="date"
+                        dateFormat='shortdate'
                         is24Hour={true}
                         onChange={handleEndDateChange}
                         minimumDate={startDate}
@@ -309,6 +430,20 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         borderWidth: 1,
         borderColor: '#e0e0e0',
-        width: '100%',
+        flex: 1,
+    },
+    webDateInputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    webCalendarIconButton: {
+        marginTop: 8,
+    },
+    webNativeDateInput: {
+        position: 'absolute',
+        width: 0,
+        height: 0,
+        opacity: 0,
     },
 }); 

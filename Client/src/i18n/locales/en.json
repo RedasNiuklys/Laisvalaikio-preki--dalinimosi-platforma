@@ -97,14 +97,14 @@
   },
   "navigation": {
     "home": "Home",
-    "myEquipment": "My equipments",
-    "equipment": "Equipment",
+    "myEquipment": "My Items",
+    "equipment": "Other Items",
     "profile": "Profile",
     "locations": "Locations",
     "settings": "Settings",
     "messages": "Messages",
     "admin": "Admin",
-    "equipment/index": "Equipment"
+    "equipment/index": "Other Items"
   },
   "settings": {
     "title": "Settings",
@@ -235,6 +235,10 @@
       "noResults": "No equipment found",
       "addNew": "Add New Equipment"
     },
+    "filters": {
+            "showCategories": "Show Categories",
+      "hideCategories": "Hide Categories"
+    },
     "details": {
       "title": "Equipment Details",
       "description": "Description",
@@ -305,8 +309,8 @@
     "new": "New Booking",
     "create": "Book Equipment",
     "viewAll": "View All",
-    "startDateTime": "Start Date & Time",
-    "endDateTime": "End Date & Time",
+    "startDateTime": "Start Date",
+    "endDateTime": "End Date",
     "submit": "Create Booking",
     "doneSuccess": "Booking created successfully",
     "ownerSuccess": "Booking created and automatically approved",
@@ -337,7 +341,10 @@
       "showAll": "Show all",
       "statusTitle": "Statuses",
       "hidePast": "Hide past bookings",
-      "noResults": "No bookings match the selected filters"
+      "noResults": "No bookings match the selected filters",
+      "showCategories": "Show Categories",
+      "hideCategories": "Hide Categories"
+
     },
     "errors": {
       "dateBlocked": "Date Unavailable",
@@ -464,7 +471,8 @@
     "allFieldsRequired": "All fields are required."
   },
   "map": {
-    "currentLocation": "Current Location"
+    "currentLocation": "Current Location",
+    "title": "Map"
   },
   "modals": {
     "addCategory": "Add Category",

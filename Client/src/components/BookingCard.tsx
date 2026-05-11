@@ -44,11 +44,8 @@ export default function BookingCard({ booking }: BookingCardProps) {
                         />
                         <View>
                             <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                                {startDate.toLocaleDateString()} {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </Text>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                                {endDate.toLocaleDateString()} {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </Text>
+                                {startDate.toISOString().substring(0, 10)} - {endDate.toISOString().substring(0, 10)}
+                                </Text>
                         </View>
                     </View>
                     <Chip

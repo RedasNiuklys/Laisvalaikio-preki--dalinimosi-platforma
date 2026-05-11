@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { usePathname } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 import { colors, spacing } from '@/src/styles/globalStyles';
@@ -11,6 +12,7 @@ export default function GlobalHeader() {
     const theme = useTheme();
     const pathname = usePathname();
     const { title: chatTitle } = useChatContext();
+    const { t } = useTranslation();
 
     const getTitle = () => {
         const path = pathname.split('/').pop() || '';
@@ -25,20 +27,22 @@ export default function GlobalHeader() {
         
         switch (path) {
             case 'index':
-                return 'Home';
+                return t('navigation.home');
             case 'equipment':
-                return 'Equipment';
+                return t('navigation.equipment');
             case 'profile':
-                return 'Profile';
+                return t('navigation.profile');
             case 'settings':
-                return 'Settings';
+                return t('navigation.settings');
             case 'chat':
-                return 'Messages';
+                return t('navigation.messages');
             case 'admin':
-                return 'Admin Panel';
-            case 'about':
-                return 'About';
-            default:
+                return t('admin.title');
+            case '':
+                return t('navigation.myEquipment');
+            case 'map-modal':
+                return t('map.title');
+                default:
                 return path.charAt(0).toUpperCase() + path.slice(1);
         }
     };

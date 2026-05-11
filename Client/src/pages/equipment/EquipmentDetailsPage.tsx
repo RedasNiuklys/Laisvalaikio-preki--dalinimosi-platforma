@@ -26,6 +26,7 @@ import { BASE_URL } from "@/src/utils/envConfig";
 import { getAuthToken } from "@/src/utils/authUtils";
 import { chatService } from "@/src/services/ChatService";
 import { getUserById } from "@/src/api/userApi";
+import i18n from "@/src/i18n";
 
 type EquipmentDetailsPageProps = {
     id: string;
@@ -52,6 +53,7 @@ export default function EquipmentDetailsPage({
     const [ownerDisplayName, setOwnerDisplayName] = useState("");
     const isMountedRef = useRef(true);
     const isNative = Platform.OS !== "web";
+
 
     useEffect(() => {
         return () => {
@@ -342,7 +344,7 @@ export default function EquipmentDetailsPage({
                                         size={20}
                                         color={theme.colors.primary}
                                     />
-                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{equipment.category.name}</Text>
+                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{t("equipment.details.category")}: {equipment.category.name}</Text>
                                 </View>
                                 <View style={styles.infoRow}>
                                     <MaterialCommunityIcons
@@ -350,15 +352,7 @@ export default function EquipmentDetailsPage({
                                         size={20}
                                         color={theme.colors.primary}
                                     />
-                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>Owner: {ownerDisplayName}</Text>
-                                </View>
-                                <View style={styles.infoRow}>
-                                    <MaterialCommunityIcons
-                                        name="information"
-                                        size={20}
-                                        color={theme.colors.primary}
-                                    />
-                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{equipment.description}</Text>
+                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{t("equipment.details.owner")}: {ownerDisplayName}</Text>
                                 </View>
                             </Card.Content>
                         </Card>
@@ -387,6 +381,7 @@ export default function EquipmentDetailsPage({
                                 ) : (
                                     <View style={styles.mapContainer}>
                                         <LocationMap
+                                            key={`location-map-${i18n.language}`}
                                             locations={[equipment.location]}
                                             selectedLocation={equipment.location}
                                             onLocationSelect={() => { }}
@@ -405,11 +400,12 @@ export default function EquipmentDetailsPage({
                         </Card>
 
                         <Card style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                            <Card.Content>
-                                <View style={styles.sectionHeader}>
-                                    <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+                            <Card.Content>     
+                                <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
                                         {t("booking.title")}
                                     </Text>
+                                <View style={styles.sectionHeader}>
+
                                     <View style={styles.bookingActions}>
                                         <Button
                                             mode="contained-tonal"
@@ -522,7 +518,9 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     sectionTitle: {
-        flex: 1,
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignSelf: 'center',
     },
     infoRow: {
         flexDirection: "row",

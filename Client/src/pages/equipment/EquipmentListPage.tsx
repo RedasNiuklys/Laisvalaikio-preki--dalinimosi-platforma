@@ -265,11 +265,6 @@ export default function EquipmentListPage({
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {pageTitle ? (
-                <Text style={[styles.pageTitle, { color: theme.colors.onBackground }]} variant="headlineSmall">
-                    {pageTitle}
-                </Text>
-            ) : null}
 
             <View style={styles.mapButtonContainer}>
                 <Button
