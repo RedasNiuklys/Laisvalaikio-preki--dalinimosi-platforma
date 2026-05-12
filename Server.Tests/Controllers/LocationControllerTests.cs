@@ -59,6 +59,19 @@ namespace Server.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetLocations_WithoutUser_ReturnsUnauthorized()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var result = await _controller.GetLocations();
+
+            Assert.IsType<UnauthorizedResult>(result.Result);
+        }
+
+        [Fact]
         public async Task GetLocations_WithLocations_ReturnsLocations()
         {
             // Arrange

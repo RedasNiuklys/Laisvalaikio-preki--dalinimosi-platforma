@@ -79,7 +79,9 @@ export default function EditCategoryModal() {
       const data = await getCategoryById(Number(id));
       setCategory(data);
       setName(data.name);
-      setSelectedIcon(data.iconName);
+      if (data.iconName) {
+        setSelectedIcon(data.iconName);
+      }
       setSelectedParentId(data.parentCategoryId ?? null);
     } catch (error) {
       console.error("Error loading category:", error);

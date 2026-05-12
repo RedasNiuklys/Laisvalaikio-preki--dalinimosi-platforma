@@ -28,11 +28,20 @@ namespace Server.Tests.Controllers
             _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(BookingController).Assembly)).CreateMapper();
             _controller = new BookingController(_context, _mapper);
 
-            // Setup user claims
-            var claims = new List<Claim>
+            SetCurrentUser(_currentUserId);
+
+            // Seed test data
+            SeedTestData().Wait();
+        }
+
+        private void SetCurrentUser(string? userId)
+        {
+            var claims = new List<Claim>();
+            if (!string.IsNullOrEmpty(userId))
             {
-                new Claim(ClaimTypes.NameIdentifier, _currentUserId)
-            };
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, userId));
+            }
+
             var identity = new ClaimsIdentity(claims);
             var principal = new ClaimsPrincipal(identity);
 
@@ -40,9 +49,6 @@ namespace Server.Tests.Controllers
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
-
-            // Seed test data
-            SeedTestData().Wait();
         }
 
         private new async Task SeedTestData()
@@ -153,6 +159,16 @@ namespace Server.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetBookings_WithoutUser_ReturnsUnauthorized()
+        {
+            SetCurrentUser(null);
+
+            var result = await _controller.GetBookings();
+
+            Assert.IsType<UnauthorizedResult>(result.Result);
+        }
+
+        [Fact]
         public async Task GetBookingsForEquipment_ReturnsAllEquipmentBookings()
         {
             // Act
@@ -220,6 +236,42 @@ namespace Server.Tests.Controllers
         }
 
         [Fact]
+        public async Task CreateBooking_MissingEquipment_ReturnsNotFound()
+        {
+            var createDto = new CreateBookingDto
+            {
+                EquipmentId = "missing-equipment",
+                StartDateTime = DateTime.UtcNow.AddDays(5),
+                EndDateTime = DateTime.UtcNow.AddDays(6),
+            };
+
+            var result = await _controller.CreateBooking(createDto);
+
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("Equipment not found", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateBooking_AsOwner_AutoApprovesBooking()
+        {
+            SetCurrentUser(_otherUserId);
+            var createDto = new CreateBookingDto
+            {
+                EquipmentId = _equipmentId,
+                StartDateTime = DateTime.UtcNow.AddDays(10),
+                EndDateTime = DateTime.UtcNow.AddDays(11),
+                Notes = "Owner booking"
+            };
+
+            var result = await _controller.CreateBooking(createDto);
+
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            var booking = Assert.IsType<BookingResponseDto>(createdResult.Value);
+            Assert.Equal(BookingStatus.Approved, booking.Status);
+            Assert.Equal(_otherUserId, booking.UserId);
+        }
+
+        [Fact]
         public async Task CreateBooking_ConflictingDates_ReturnsBadRequest()
         {
             // Arrange
@@ -284,6 +336,38 @@ namespace Server.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateBookingStatus_NonParticipant_ReturnsForbid()
+        {
+            SetCurrentUser("outsider-user-id");
+
+            var result = await _controller.UpdateBookingStatus("booking-1", "Pending");
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateBookingStatus_OwnerRejectsApprovedBooking_DeletesBooking()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-approved-delete",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(7),
+                EndDateTime = DateTime.UtcNow.AddDays(8),
+                Status = BookingStatus.Approved,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            SetCurrentUser(_otherUserId);
+            var result = await _controller.UpdateBookingStatus("booking-approved-delete", "Rejected");
+
+            Assert.IsType<OkResult>(result);
+            Assert.Null(await _context.Bookings.FindAsync("booking-approved-delete"));
         }
 
         [Fact]

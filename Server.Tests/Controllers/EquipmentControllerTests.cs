@@ -97,7 +97,8 @@ namespace Server.Tests.Controllers
             {
                 Id = 100,
                 Name = "Test Category",
-                IconName = "test-icon"
+                IconName = "test-icon",
+                Slug = "Slug"
             };
 
             await _context.Categories.AddAsync(category);
@@ -111,11 +112,12 @@ namespace Server.Tests.Controllers
                 OwnerId = _currentUserId,
                 CategoryId = category.Id,
                 Category = category,
-                Condition = "Good",
                 IsAvailable = true,
                 LocationId = _locationId,
                 Location = location,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Reviews = [],
+                Owner = currentUser
             };
 
             await _context.Equipment.AddAsync(equipment);

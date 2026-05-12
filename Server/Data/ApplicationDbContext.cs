@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
     public DbSet<Friendship> Friendships { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<Review> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +120,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(f => f.AddresseeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Equipment)
+            .WithMany(e => e.Reviews)
+            .HasForeignKey(r => r.EquipmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Booking)
+            .WithOne(b => b.Review)
+            .HasForeignKey<Review>(r => r.BookingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Review>()
+            .HasIndex(r => r.BookingId)
+            .IsUnique();
 
         // // Seed Categories
         modelBuilder.Entity<Category>().HasData(

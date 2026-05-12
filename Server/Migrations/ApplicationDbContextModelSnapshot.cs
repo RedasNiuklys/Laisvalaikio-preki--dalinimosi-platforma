@@ -865,6 +865,48 @@ namespace Server.Migrations
                     b.ToTable("MessageReads");
                 });
 
+            modelBuilder.Entity("Server.Models.Review", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BookingId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EquipmentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId")
+                        .IsUnique();
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1081,6 +1123,38 @@ namespace Server.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Server.Models.Review", b =>
+                {
+                    b.HasOne("Server.Models.Booking", "Booking")
+                        .WithOne("Review")
+                        .HasForeignKey("Server.Models.Review", "BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.Equipment", "Equipment")
+                        .WithMany("Reviews")
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Server.Models.Booking", b =>
+                {
+                    b.Navigation("Review");
+                });
+
             modelBuilder.Entity("Server.Models.Category", b =>
                 {
                     b.Navigation("Categories");
@@ -1102,6 +1176,8 @@ namespace Server.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("MaintenanceHistory");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("Server.Models.Message", b =>

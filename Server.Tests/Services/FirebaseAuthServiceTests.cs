@@ -2,248 +2,167 @@ using FirebaseAdmin.Auth;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Server.Services;
-using System;
-using System.Threading.Tasks;
-using Xunit;
+using System.Runtime.CompilerServices;
 
 namespace Server.Tests.Services
 {
     public class FirebaseAuthServiceTests
     {
+        private readonly Mock<IFirebaseAuthClient> _firebaseAuthClientMock;
         private readonly Mock<ILogger<FirebaseAuthService>> _loggerMock;
+        private readonly FirebaseAuthService _service;
 
         public FirebaseAuthServiceTests()
         {
+            _firebaseAuthClientMock = new Mock<IFirebaseAuthClient>();
             _loggerMock = new Mock<ILogger<FirebaseAuthService>>();
+            _service = new FirebaseAuthService(_firebaseAuthClientMock.Object, _loggerMock.Object);
         }
 
         [Fact]
-        public void FirebaseAuthService_InitializationAttempted()
+        public async Task VerifyTokenAsync_ValidToken_ReturnsDecodedToken()
         {
-            // Note: Full FirebaseAuthService initialization requires Firebase credentials
-            // This test verifies that the service attempts to initialize properly
-            // In a real environment, Firebase Admin SDK would be initialized
+            var decodedToken = CreateUninitialized<FirebaseToken>();
+            _firebaseAuthClientMock.Setup(client => client.VerifyIdTokenAsync("valid-token"))
+                .ReturnsAsync(decodedToken);
 
-            // Arrange & Act & Assert
-            // FirebaseAuthService constructor tries to initialize Firebase
-            // If credentials are not available, it throws FileNotFoundException or InvalidOperationException
+            var result = await _service.VerifyTokenAsync("valid-token");
 
-            // For testing purposes, we verify the service structure is correct
-            var loggerMock = new Mock<ILogger<FirebaseAuthService>>();
-
-            try
-            {
-                // This will throw if Firebase credentials not found (expected behavior)
-                // var service = new FirebaseAuthService(loggerMock.Object);
-
-                // Since we can't initialize without Firebase, we test the expected behavior
-                Assert.True(true); // Service structure is correct
-            }
-            catch (FileNotFoundException ex)
-            {
-                // Expected when Firebase credentials not found
-                Assert.Contains("Firebase service account JSON not found", ex.Message);
-            }
+            Assert.Same(decodedToken, result);
         }
 
         [Fact]
-        public void FirebaseAuthService_MissingCredentials_ThrowsException()
+        public async Task VerifyTokenAsync_InvalidFirebaseToken_ThrowsUnauthorizedAccessException()
         {
-            // Arrange
-            var loggerMock = new Mock<ILogger<FirebaseAuthService>>();
+            var firebaseException = CreateUninitialized<FirebaseAuthException>();
+            _firebaseAuthClientMock.Setup(client => client.VerifyIdTokenAsync("invalid-token"))
+                .ThrowsAsync(firebaseException);
 
-            // Act & Assert
-            // When Firebase credentials are missing, service throws FileNotFoundException
-            try
-            {
-                // Attempting to create service without Firebase credentials
-                // This is the expected behavior
-                throw new FileNotFoundException("Firebase service account JSON not found.");
-            }
-            catch (FileNotFoundException ex)
-            {
-                Assert.NotNull(ex);
-                Assert.Contains("Firebase", ex.Message);
-            }
+            var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _service.VerifyTokenAsync("invalid-token"));
+
+            Assert.StartsWith("Invalid Firebase token:", exception.Message);
+            Assert.Same(firebaseException, exception.InnerException);
         }
 
         [Fact]
-        public void VerifyToken_InvalidToken_ThrowsUnauthorizedAccessException()
+        public async Task VerifyTokenAsync_NetworkError_LogsAndThrowsInvalidOperationException()
         {
-            // Note: This test demonstrates expected behavior
-            // In a real scenario with Firebase initialized, this would actually call Firebase
-
-            // Arrange
-            var invalidToken = "invalid-token";
-
-            // Act & Assert
-            try
-            {
-                throw new UnauthorizedAccessException(
-                    $"Invalid Firebase token: Token verification failed");
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                Assert.Contains("Invalid Firebase token", ex.Message);
-            }
-        }
-
-        [Fact]
-        public void VerifyToken_NetworkError_ThrowsInvalidOperationException()
-        {
-            // Arrange
             var httpException = new HttpRequestException("Network error");
+            _firebaseAuthClientMock.Setup(client => client.VerifyIdTokenAsync("network-error-token"))
+                .ThrowsAsync(httpException);
 
-            // Act & Assert
-            try
-            {
-                throw new InvalidOperationException(
-                    "Failed to reach Firebase Auth service. Check server outbound internet, DNS, and TLS access to googleapis.com.",
-                    httpException);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Assert.Contains("Failed to reach Firebase Auth service", ex.Message);
-            }
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.VerifyTokenAsync("network-error-token"));
+
+            Assert.Contains("Failed to reach Firebase Auth service", exception.Message);
+            Assert.Same(httpException, exception.InnerException);
+            VerifyLogger(LogLevel.Error, "Failed calling Firebase/Google APIs while verifying token");
         }
 
         [Fact]
-        public void VerifyToken_Timeout_ThrowsInvalidOperationException()
+        public async Task VerifyTokenAsync_Timeout_LogsAndThrowsInvalidOperationException()
         {
-            // Arrange
-            var timeoutException = new TaskCanceledException("Operation timed out");
+            var timeoutException = new TaskCanceledException("Timed out");
+            _firebaseAuthClientMock.Setup(client => client.VerifyIdTokenAsync("timeout-token"))
+                .ThrowsAsync(timeoutException);
 
-            // Act & Assert
-            try
-            {
-                throw new InvalidOperationException(
-                    "Timed out reaching Firebase Auth service. Check NAT gateway, route tables, DNS, and egress rules.",
-                    timeoutException);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Assert.Contains("Timed out reaching Firebase Auth service", ex.Message);
-            }
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.VerifyTokenAsync("timeout-token"));
+
+            Assert.Contains("Timed out reaching Firebase Auth service", exception.Message);
+            Assert.Same(timeoutException, exception.InnerException);
+            VerifyLogger(LogLevel.Error, "Timeout while calling Firebase/Google APIs during token verification");
         }
 
         [Fact]
-        public void GetUser_InvalidUid_ThrowsException()
+        public async Task GetUserAsync_ValidUid_ReturnsUser()
         {
-            // Arrange
-            var invalidUid = "invalid-uid";
+            var user = CreateUninitialized<UserRecord>();
+            _firebaseAuthClientMock.Setup(client => client.GetUserAsync("valid-uid"))
+                .ReturnsAsync(user);
 
-            // Act & Assert
-            try
-            {
-                throw new Exception($"Error fetching user: User not found");
-            }
-            catch (Exception ex)
-            {
-                Assert.Contains("Error fetching user", ex.Message);
-            }
+            var result = await _service.GetUserAsync("valid-uid");
+
+            Assert.Same(user, result);
         }
 
         [Fact]
-        public void UpdateUser_InvalidUid_ThrowsException()
+        public async Task GetUserAsync_FirebaseFailure_WrapsException()
         {
-            // Arrange
-            var invalidUid = "invalid-uid";
+            var firebaseException = CreateUninitialized<FirebaseAuthException>();
+            _firebaseAuthClientMock.Setup(client => client.GetUserAsync("missing-uid"))
+                .ThrowsAsync(firebaseException);
 
-            // Act & Assert
-            try
-            {
-                throw new Exception($"Error updating user: User not found");
-            }
-            catch (Exception ex)
-            {
-                Assert.Contains("Error updating user", ex.Message);
-            }
+            var exception = await Assert.ThrowsAsync<Exception>(() => _service.GetUserAsync("missing-uid"));
+
+            Assert.StartsWith("Error fetching user:", exception.Message);
+            Assert.Same(firebaseException, exception.InnerException);
         }
 
         [Fact]
-        public void DeleteUser_InvalidUid_ThrowsException()
+        public async Task UpdateUserAsync_ValidArgs_ReturnsUser()
         {
-            // Arrange
-            var invalidUid = "invalid-uid";
+            var args = new UserRecordArgs();
+            var updatedUser = CreateUninitialized<UserRecord>();
+            _firebaseAuthClientMock.Setup(client => client.UpdateUserAsync(args))
+                .ReturnsAsync(updatedUser);
 
-            // Act & Assert
-            try
-            {
-                throw new Exception($"Error deleting user: User not found");
-            }
-            catch (Exception ex)
-            {
-                Assert.Contains("Error deleting user", ex.Message);
-            }
+            var result = await _service.UpdateUserAsync("uid", args);
+
+            Assert.Same(updatedUser, result);
         }
 
         [Fact]
-        public void Logger_LogsFirebaseInitialization()
+        public async Task UpdateUserAsync_FirebaseFailure_WrapsException()
         {
-            // Arrange
-            var loggerMock = new Mock<ILogger<FirebaseAuthService>>();
+            var args = new UserRecordArgs();
+            var firebaseException = CreateUninitialized<FirebaseAuthException>();
+            _firebaseAuthClientMock.Setup(client => client.UpdateUserAsync(args))
+                .ThrowsAsync(firebaseException);
 
-            // Act
-            loggerMock.Object.LogInformation("Firebase Admin SDK initialization attempt: {Attempt}", "test");
+            var exception = await Assert.ThrowsAsync<Exception>(() => _service.UpdateUserAsync("uid", args));
 
-            // Assert
-            loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Information,
+            Assert.StartsWith("Error updating user:", exception.Message);
+            Assert.Same(firebaseException, exception.InnerException);
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_ValidUid_DelegatesToClient()
+        {
+            await _service.DeleteUserAsync("valid-uid");
+
+            _firebaseAuthClientMock.Verify(client => client.DeleteUserAsync("valid-uid"), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_FirebaseFailure_WrapsException()
+        {
+            var firebaseException = CreateUninitialized<FirebaseAuthException>();
+            _firebaseAuthClientMock.Setup(client => client.DeleteUserAsync("missing-uid"))
+                .ThrowsAsync(firebaseException);
+
+            var exception = await Assert.ThrowsAsync<Exception>(() => _service.DeleteUserAsync("missing-uid"));
+
+            Assert.StartsWith("Error deleting user:", exception.Message);
+            Assert.Same(firebaseException, exception.InnerException);
+        }
+
+        private static T CreateUninitialized<T>() where T : class
+        {
+            return (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
+        }
+
+        private void VerifyLogger(LogLevel level, string messageFragment)
+        {
+            _loggerMock.Verify(
+                logger => logger.Log(
+                    level,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Firebase")),
+                    It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(messageFragment)),
                     It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
-        }
-
-        [Fact]
-        public void Logger_LogsErrorOnFailure()
-        {
-            // Arrange
-            var loggerMock = new Mock<ILogger<FirebaseAuthService>>();
-            var exception = new HttpRequestException("Network error");
-
-            // Act
-            loggerMock.Object.LogError(exception, "Failed calling Firebase/Google APIs while verifying token");
-
-            // Assert
-            loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Failed")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public void FirebaseAuthException_InvalidIdToken_Documented()
-        {
-            // This test documents that FirebaseAuthException exists
-            // and should be used for Firebase authentication errors
-
-            // Arrange
-            var exceptionMessage = "Invalid ID token";
-
-            // Act & Assert
-            var exception = new Exception(exceptionMessage);
-            Assert.Equal(exceptionMessage, exception.Message);
-        }
-
-        [Fact]
-        public void FirebaseAuthException_UserNotFound_Documented()
-        {
-            // This test documents that FirebaseAuthException exists
-            // and should be used when users are not found in Firebase
-
-            // Arrange
-            var exceptionMessage = "User not found";
-
-            // Act & Assert
-            var exception = new Exception(exceptionMessage);
-            Assert.Equal(exceptionMessage, exception.Message);
         }
     }
 }

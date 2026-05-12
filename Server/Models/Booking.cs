@@ -28,6 +28,8 @@ namespace Server.Models
 
         public string? Notes { get; set; }
 
+        public Review? Review { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }

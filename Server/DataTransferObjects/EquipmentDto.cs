@@ -49,6 +49,7 @@ namespace Server.DataTransferObjects
         public LocationDto Location { get; set; } = new();
         public List<EquipmentImageDto> Images { get; set; } = new();
         public List<BookingDto> Bookings { get; set; } = new();
+        public List<ReviewResponseDto> Reviews { get; set; } = new();
     }
 
     public class CategoryDto

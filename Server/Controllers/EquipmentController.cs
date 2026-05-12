@@ -80,6 +80,7 @@ namespace Server.Controllers
 
                 System.Console.WriteLine("Fetching equipment from database");
                 var equipment = await _context.Equipment
+                    .AsNoTracking()
                     .Include(e => e.Location)
                     .Include(e => e.Images)
                     .Include(e => e.Category)
@@ -115,10 +116,13 @@ namespace Server.Controllers
         public async Task<ActionResult<EquipmentResponseDto>> GetEquipment(string id)
         {
             var equipment = await _context.Equipment
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(e => e.Location)
                 .Include(e => e.Images)
                 .Include(e => e.Category)
-                .Include(e => e.Bookings)
+                .Include(e => e.Reviews)
+                    .ThenInclude(r => r.User)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (equipment == null)
@@ -414,6 +418,7 @@ namespace Server.Controllers
         public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipmentByOwner(string userId)
         {
             var equipment = await _context.Equipment
+                .AsNoTracking()
                 .Include(e => e.Location)
                 .Include(e => e.Images)
                 .Include(e => e.Category)

@@ -8,12 +8,22 @@ namespace Server.Services
 {
     public class FirebaseAuthService
     {
-        private readonly FirebaseAuth _firebaseAuth;
+        private readonly IFirebaseAuthClient _firebaseAuth;
         private readonly ILogger<FirebaseAuthService> _logger;
 
         public FirebaseAuthService(ILogger<FirebaseAuthService> logger)
+            : this(CreateFirebaseAuthClient(logger), logger)
         {
+        }
+
+        public FirebaseAuthService(IFirebaseAuthClient firebaseAuth, ILogger<FirebaseAuthService> logger)
+        {
+            _firebaseAuth = firebaseAuth;
             _logger = logger;
+        }
+
+        private static IFirebaseAuthClient CreateFirebaseAuthClient(ILogger<FirebaseAuthService> logger)
+        {
             // Initialize Firebase Admin SDK
             if (FirebaseApp.DefaultInstance == null)
             {
@@ -24,13 +34,13 @@ namespace Server.Services
                     Path.Combine(Directory.GetCurrentDirectory(), "bakis-aea6d-firebase-adminsdk-fbsvc-9964ba365b.json")
                 };
 
-                string serviceAccountPath = null;
+                string? serviceAccountPath = null;
                 foreach (var path in possiblePaths)
                 {
                     if (File.Exists(path))
                     {
                         serviceAccountPath = path;
-                        _logger.LogInformation("Found Firebase service account file at {Path}", path);
+                        logger.LogInformation("Found Firebase service account file at {Path}", path);
                         break;
                     }
                 }
@@ -41,7 +51,7 @@ namespace Server.Services
                     {
                         Credential = GoogleCredential.FromFile(serviceAccountPath)
                     });
-                    _logger.LogInformation("Firebase Admin SDK initialized successfully from file");
+                    logger.LogInformation("Firebase Admin SDK initialized successfully from file");
                 }
                 else
                 {
@@ -53,7 +63,7 @@ namespace Server.Services
                         {
                             Credential = GoogleCredential.FromJson(serviceAccountJson)
                         });
-                        _logger.LogInformation("Firebase Admin SDK initialized from environment variable");
+                        logger.LogInformation("Firebase Admin SDK initialized from environment variable");
                     }
                     else
                     {
@@ -63,7 +73,7 @@ namespace Server.Services
                 }
             }
 
-            _firebaseAuth = FirebaseAuth.DefaultInstance;
+            return new FirebaseAuthClient(FirebaseAuth.DefaultInstance);
         }
 
         /// <summary>

@@ -42,6 +42,7 @@ namespace Server.Models
 
         // Navigation properties
         public List<Booking> Bookings { get; set; } = new List<Booking>();
+        public List<Review> Reviews { get; set; } = new List<Review>();
         public List<MaintenanceRecord> MaintenanceHistory { get; set; } = new List<MaintenanceRecord>();
         public List<EquipmentImage> Images { get; set; } = new List<EquipmentImage>();
     }

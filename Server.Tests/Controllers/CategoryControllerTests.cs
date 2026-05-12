@@ -38,6 +38,7 @@ namespace Server.Tests.Controllers
                 Id = 1,
                 Name = "Parent Category",
                 IconName = "parent-icon",
+                Slug = "parent",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -48,6 +49,7 @@ namespace Server.Tests.Controllers
                 Name = "Sub Category",
                 IconName = "sub-icon",
                 ParentCategoryId = 1,
+                Slug = "slug",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -125,6 +127,53 @@ namespace Server.Tests.Controllers
         }
 
         [Fact]
+        public async Task CreateCategory_UsesNormalizedNameAsSlug()
+        {
+            var createDto = new CreateCategoryDto
+            {
+                Name = "My New Category!",
+                IconName = "new-icon"
+            };
+
+            var result = await _controller.CreateCategory(createDto);
+
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            var returnValue = Assert.IsType<CategoryResponseDto>(createdResult.Value);
+            Assert.Equal("my-new-category", returnValue.Slug);
+        }
+
+        [Fact]
+        public async Task CreateCategory_InvalidNormalizedSlug_ReturnsBadRequest()
+        {
+            var createDto = new CreateCategoryDto
+            {
+                Name = "!!!",
+                IconName = "new-icon"
+            };
+
+            var result = await _controller.CreateCategory(createDto);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Category slug is required", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task CreateCategory_DuplicateSlug_ReturnsBadRequest()
+        {
+            var createDto = new CreateCategoryDto
+            {
+                Name = "Another Parent",
+                Slug = "parent",
+                IconName = "new-icon"
+            };
+
+            var result = await _controller.CreateCategory(createDto);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Category slug already exists", badRequestResult.Value);
+        }
+
+        [Fact]
         public async Task UpdateCategory_ValidData_ReturnsNoContent()
         {
             // Arrange
@@ -166,6 +215,22 @@ namespace Server.Tests.Controllers
         }
 
         [Fact]
+        public async Task UpdateCategory_DuplicateSlug_ReturnsBadRequest()
+        {
+            var updateDto = new UpdateCategoryDto
+            {
+                Name = "Sub Category",
+                Slug = "parent",
+                IconName = "updated-icon"
+            };
+
+            var result = await _controller.UpdateCategory(2, updateDto);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Category slug already exists", badRequestResult.Value);
+        }
+
+        [Fact]
         public async Task DeleteCategory_ValidId_ReturnsNoContent()
         {
             // Act
@@ -196,6 +261,28 @@ namespace Server.Tests.Controllers
             var result = await _controller.DeleteCategory(1);
 
             // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Cannot delete category with subcategories or equipment", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteCategory_WithEquipment_ReturnsBadRequest()
+        {
+            _context.Equipment.Add(new Equipment
+            {
+                Id = "equipment-1",
+                Name = "Equipment",
+                Description = "Description",
+                OwnerId = "owner-1",
+                LocationId = "location-1",
+                CategoryId = 2,
+                Condition = "Good",
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.DeleteCategory(2);
+
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Cannot delete category with subcategories or equipment", badRequestResult.Value);
         }

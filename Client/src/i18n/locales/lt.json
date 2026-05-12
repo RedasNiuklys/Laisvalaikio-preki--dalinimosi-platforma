@@ -5,6 +5,7 @@
     "download": "Atsisiųsti"
   },
   "common": {
+    "all": "Visi",
     "buttons": {
       "cancel": "Atšaukti",
       "confirm": "Patvirtinti",
@@ -124,6 +125,10 @@
         "reachOut": "Laba diena! Pateikiau rezervacijos užklausą ir norėjau parašyti tiesiogiai."
       },
       "actions": {
+              "approve": "Patvirtinti",
+      "reject": "Atmesti",
+      "cancel": "Atšaukti",
+      "submit": "Pateikti patvirtinimui",
         "reviewRequest": "Peržiūrėti rezervacijos užklausą",
         "openMyRequest": "Atidaryti mano rezervacijos užklausą"
       }
@@ -143,7 +148,10 @@
       "book": "Rezervuoti",
       "update": "Atnaujinti",
       "cancel": "Atšaukti",
-      "delete": "Ištrinti"
+      "delete": "Ištrinti",
+      "approve": "Patvirtinti",
+      "reject": "Atmesti",
+      "submit": "Pateikti patvirtinimui"
     },
     "errors": {
       "noSelection": "Nėra pasirinkimo",
@@ -301,6 +309,30 @@
       "updateError": "Nepavyko atnaujinti įrangos",
       "contact": "Susisiekti su savininku",
       "info": "Įrangos informacija"
+    },
+    "reviews": {
+      "title": "Atsiliepimai",
+      "yourReview": "Jūsų atsiliepimas",
+      "commentPlaceholder": "Pasidalinkite savo patirtimi su šia įranga...",
+      "submit": "Pateikti atsiliepimą",
+      "submitSuccess": "Atsiliepimas sėkmingai pateiktas",
+      "submitError": "Nepavyko pateikti atsiliepimo",
+      "noReviews": "Atsiliepimų dar nėra",
+      "eligibilityHint": "Atsiliepimą galite palikti tik po patvirtinto užsakymo.",
+      "edited": "Redaguota",
+      "edit": "Redaguoti",
+      "delete": "Ištrinti",
+      "save": "Išsaugoti",
+      "cancel": "Atšaukti",
+      "show": "Rodyti atsiliepimus",
+      "close": "Uždaryti",
+      "previousPage": "Ankstesnis",
+      "nextPage": "Kitas",
+      "pageLabel": "Puslapis {{current}} iš {{total}}",
+      "updateSuccess": "Atsiliepimas sėkmingai atnaujintas",
+      "updateError": "Nepavyko atnaujinti atsiliepimo",
+      "deleteSuccess": "Atsiliepimas sėkmingai ištrintas",
+      "deleteError": "Nepavyko ištrinti atsiliepimo"
     },
     "errors": {
       "fetchFailed": "Nepavyko gauti įrangos",

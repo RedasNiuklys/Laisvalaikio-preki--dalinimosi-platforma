@@ -13,7 +13,8 @@ namespace Server.MappingProfiles
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
                 .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images))
-                .ForMember(dest => dest.Bookings, opt => opt.MapFrom(src => src.Bookings));
+                .ForMember(dest => dest.Bookings, opt => opt.MapFrom(src => src.Bookings))
+                .ForMember(dest => dest.Reviews, opt => opt.MapFrom(src => src.Reviews));
 
             // CreateEquipmentDto -> Equipment (for creating)
             CreateMap<CreateEquipmentDto, Equipment>()

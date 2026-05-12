@@ -2,6 +2,7 @@ import { Booking } from './Booking';
 import { Category } from './Category';
 import { Location } from './Location';
 import { EquipmentImage } from './EquipmentImage';
+import { Review } from './Review';
 
 export type EquipmentCondition = 'Good' | 'Fair' | 'Poor' | 'Needs Repair';
 
@@ -41,6 +42,7 @@ export interface Equipment {
     createdAt: string;
     updatedAt?: string;
     bookings: Booking[];
+    reviews?: Review[];
     maintenanceHistory: MaintenanceRecord[];
     images: EquipmentImage[];
 }
