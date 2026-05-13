@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform, Image } from 'react-native';
 import { Modal, Portal, Text, useTheme, IconButton, Button, ActivityIndicator, Chip, Switch } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { Booking, BookingStatus } from '../types/Booking';
 import BookingCard from './BookingCard';
 import { useAuth } from '../context/AuthContext';
+import { approveReturnRequest, rejectReturnRequest, submitBookingReturnRequest } from '../api/bookingApi';
+import * as ImagePicker from 'expo-image-picker';
 
 interface BookingsListModalProps {
     visible: boolean;
@@ -14,6 +16,7 @@ interface BookingsListModalProps {
     equipmentOwnerId?: string;
     initialBookingId?: string;
     onStatusChange?: (bookingId: string, newStatus: BookingStatus) => Promise<void>;
+    onRefresh?: () => Promise<void>;
 }
 
 export default function BookingsListModal({
@@ -23,7 +26,8 @@ export default function BookingsListModal({
     equipmentName,
     equipmentOwnerId,
     initialBookingId,
-    onStatusChange
+    onStatusChange,
+    onRefresh
 }: BookingsListModalProps) {
     const { t } = useTranslation();
     const theme = useTheme();
@@ -33,6 +37,14 @@ export default function BookingsListModal({
     const [selectedStatuses, setSelectedStatuses] = useState<BookingStatus[]>([]);
     const [hidePastBookings, setHidePastBookings] = useState(true);
     const [activeBookingId, setActiveBookingId] = useState<string | undefined>(initialBookingId);
+    const [showReturnRequestModal, setShowReturnRequestModal] = useState(false);
+    const [returnRequestBooking, setReturnRequestBooking] = useState<Booking | null>(null);
+    const [returnRequestEarly, setReturnRequestEarly] = useState(false);
+    const [returnPhoto, setReturnPhoto] = useState<File | Blob | { uri: string; name: string; type: string } | null>(null);
+    const [returnPhotoName, setReturnPhotoName] = useState<string | null>(null);
+    const [isSubmittingReturnRequest, setIsSubmittingReturnRequest] = useState(false);
+    const [showReturnPhotoModal, setShowReturnPhotoModal] = useState(false);
+    const [returnPhotoPreviewUrl, setReturnPhotoPreviewUrl] = useState<string | null>(null);
     const hasLoadedForOpenRef = useRef(false);
     const loadUserRef = useRef(loadUser);
     const isMountedRef = useRef(true);
@@ -130,47 +142,206 @@ export default function BookingsListModal({
         setActiveBookingId(undefined);
     };
 
-    const renderStatusActions = (booking: Booking) => {
-        if (!onStatusChange) return null;
-        const isBookingCreator = booking.userId === user?.id;
+    const refreshBookings = async () => {
+        if (onRefresh) {
+            await onRefresh();
+        }
+    };
 
-        const getAvailableActions = (currentStatus: BookingStatus) => {
-            console.log('Current status:', currentStatus);
-            if (isOwner) {
-                switch (currentStatus) {
-                    case BookingStatus.Pending:
-                        return [
-                            { status: BookingStatus.Approved, label: t('booking.actions.approve'), color: theme.colors.primary },
-                            { status: BookingStatus.Rejected, label: t('booking.actions.reject'), color: theme.colors.error }
-                        ];
-                    case BookingStatus.Approved:
-                        return [
-                            { status: BookingStatus.Cancelled, label: t('booking.actions.cancel'), color: theme.colors.error }
-                        ];
-                    case BookingStatus.Rejected:
-                    case BookingStatus.Cancelled:
-                        return [];
-                    default:
-                        return [];
-                }
-            } else {
-                // Non-owner actions (only for their own bookings)
-                if (!isBookingCreator) {
-                    return [];
-                }
-                switch (currentStatus) {
-                    case BookingStatus.Planning:
-                        return [
-                            { status: BookingStatus.Pending, label: t('booking.actions.submit'), color: theme.colors.primary }
-                        ];
-                    default:
-                        return [];
+    const handleStatusAction = async (bookingId: string, newStatus: BookingStatus) => {
+        if (onStatusChange) {
+            await onStatusChange(bookingId, newStatus);
+        }
+        await refreshBookings();
+    };
+
+    const handleReturnRequest = async (booking: Booking, isEarlyReturn: boolean) => {
+        setReturnRequestBooking(booking);
+        setReturnRequestEarly(isEarlyReturn);
+        setReturnPhoto(null);
+        setReturnPhotoName(null);
+        setShowReturnRequestModal(true);
+    };
+
+    const pickReturnPhoto = async () => {
+        try {
+            if (Platform.OS !== 'web') {
+                const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (permission.status !== 'granted') {
+                    Alert.alert(t('common.status.error'), t('profile.permissions.message'));
+                    return;
                 }
             }
-        };
 
-        const actions = getAvailableActions(booking.status);
-        console.log('Actions:', actions);
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: 'images' as any,
+                allowsEditing: false,
+                quality: 0.7,
+            });
+
+            if (result.canceled || !result.assets?.length) {
+                return;
+            }
+
+            const asset = result.assets[0];
+            const defaultName = `return-${Date.now()}.jpg`;
+            const fileName = asset.fileName || defaultName;
+            const mimeType = asset.mimeType || 'image/jpeg';
+
+            if (Platform.OS === 'web' && (asset as any).file) {
+                setReturnPhoto((asset as any).file as File);
+            } else {
+                setReturnPhoto({
+                    uri: asset.uri,
+                    name: fileName,
+                    type: mimeType,
+                });
+            }
+
+            setReturnPhotoName(fileName);
+        } catch (error) {
+            console.error('Failed to pick return photo:', error);
+            Alert.alert(t('common.status.error'), t('booking.actions.statusError'));
+        }
+    };
+
+    const submitReturnRequestFromForm = async () => {
+        if (!returnRequestBooking) {
+            return;
+        }
+
+        try {
+            setIsSubmittingReturnRequest(true);
+            await submitBookingReturnRequest(returnRequestBooking.id, {
+                isEarlyReturn: returnRequestEarly,
+                requestedEndDateTime: returnRequestEarly ? new Date().toISOString() : undefined,
+                photo: returnPhoto,
+            });
+
+            setShowReturnRequestModal(false);
+            setReturnRequestBooking(null);
+            setReturnPhoto(null);
+            setReturnPhotoName(null);
+        } finally {
+            setIsSubmittingReturnRequest(false);
+        }
+
+        await refreshBookings();
+    };
+
+    const handleReturnDecision = async (bookingId: string, approve: boolean) => {
+        if (approve) {
+            await approveReturnRequest(bookingId);
+        } else {
+            await rejectReturnRequest(bookingId);
+        }
+        await refreshBookings();
+    };
+
+    const openReturnPhotoModal = (photoUrl: string) => {
+        setReturnPhotoPreviewUrl(photoUrl);
+        setShowReturnPhotoModal(true);
+    };
+
+    const renderStatusActions = (booking: Booking) => {
+        const isBookingCreator = booking.userId === user?.id;
+        const actions: { key: string; label: string; color: string; onPress: () => Promise<void> }[] = [];
+
+        if (isOwner) {
+            if (booking.status === BookingStatus.Pending) {
+                actions.push(
+                    {
+                        key: 'approve',
+                        label: t('booking.actions.approve'),
+                        color: theme.colors.primary,
+                        onPress: async () => handleStatusAction(booking.id, BookingStatus.Approved)
+                    },
+                    {
+                        key: 'reject',
+                        label: t('booking.actions.reject'),
+                        color: theme.colors.error,
+                        onPress: async () => handleStatusAction(booking.id, BookingStatus.Rejected)
+                    }
+                );
+            }
+
+            if (booking.status === BookingStatus.Approved) {
+                actions.push({
+                    key: 'cancel',
+                    label: t('booking.actions.cancel'),
+                    color: theme.colors.error,
+                    onPress: async () => handleStatusAction(booking.id, BookingStatus.Cancelled)
+                });
+            }
+
+            if (booking.status === BookingStatus.ReturnRequested || booking.status === BookingStatus.ReturnEarlyRequested) {
+                actions.push(
+                    {
+                        key: 'approve-return',
+                        label: t('booking.actions.approveReturn'),
+                        color: theme.colors.primary,
+                        onPress: async () => handleReturnDecision(booking.id, true)
+                    },
+                    {
+                        key: 'reject-return',
+                        label: t('booking.actions.rejectReturn'),
+                        color: theme.colors.error,
+                        onPress: async () => handleReturnDecision(booking.id, false)
+                    }
+                );
+            }
+        } else if (isBookingCreator) {
+            if (booking.status === BookingStatus.Planning) {
+                actions.push({
+                    key: 'submit',
+                    label: t('booking.actions.submit'),
+                    color: theme.colors.primary,
+                    onPress: async () => handleStatusAction(booking.id, BookingStatus.Pending)
+                });
+            }
+
+            if (booking.status === BookingStatus.Approved) {
+                actions.push({
+                    key: 'picked',
+                    label: t('booking.actions.pickUp'),
+                    color: theme.colors.primary,
+                    onPress: async () => handleStatusAction(booking.id, BookingStatus.Picked)
+                });
+            }
+
+            if (booking.status === BookingStatus.Picked) {
+                const now = new Date();
+                const bookingEndDate = new Date(booking.endDateTime);
+                const shouldShowEarlyReturn = now < bookingEndDate;
+
+                if (shouldShowEarlyReturn) {
+                    actions.push({
+                        key: 'early-return',
+                        label: t('booking.actions.requestEarlyReturn'),
+                        color: theme.colors.secondary,
+                        onPress: async () => handleReturnRequest(booking, true)
+                    });
+                } else {
+                    actions.push({
+                        key: 'return',
+                        label: t('booking.actions.requestReturn'),
+                        color: theme.colors.primary,
+                        onPress: async () => handleReturnRequest(booking, false)
+                    });
+                }
+            }
+        }
+
+        if ((isOwner || isBookingCreator) && booking.returnPhotoUrl) {
+            actions.push({
+                key: `view-return-photo-${booking.id}`,
+                label: t('booking.actions.viewReturnPhoto'),
+                color: theme.colors.tertiary,
+                onPress: async () => {
+                    openReturnPhotoModal(booking.returnPhotoUrl!);
+                }
+            });
+        }
 
         if (actions.length === 0) return null;
 
@@ -178,9 +349,9 @@ export default function BookingsListModal({
             <View style={styles.actionButtons}>
                 {actions.map((action) => (
                     <Button
-                        key={action.status}
+                        key={action.key}
                         mode="contained"
-                        onPress={() => onStatusChange && onStatusChange(booking.id, action.status)}
+                        onPress={() => void action.onPress()}
                         style={[styles.actionButton, { backgroundColor: action.color }]}
                         textColor={theme.colors.onPrimary}
                     >
@@ -290,6 +461,78 @@ export default function BookingsListModal({
                     )}
                 </ScrollView>
             </Modal>
+
+            <Modal
+                visible={showReturnRequestModal}
+                onDismiss={() => setShowReturnRequestModal(false)}
+                contentContainerStyle={[
+                    styles.returnRequestModal,
+                    { backgroundColor: theme.colors.background }
+                ]}
+            >
+                <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 12 }}>
+                    {returnRequestEarly ? t('booking.actions.requestEarlyReturn') : t('booking.actions.requestReturn')}
+                </Text>
+
+                <Text style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+                    {t('booking.actions.returnPhotoHint')}
+                </Text>
+
+                <Button mode="outlined" onPress={() => void pickReturnPhoto()}>
+                    {t('booking.actions.selectReturnPhoto')}
+                </Button>
+
+                {returnPhotoName && (
+                    <Text style={{ color: theme.colors.onSurfaceVariant, marginTop: 10 }}>
+                        {t('booking.actions.selectedPhoto')}: {returnPhotoName}
+                    </Text>
+                )}
+
+                <View style={styles.returnRequestActions}>
+                    <Button onPress={() => setShowReturnRequestModal(false)}>
+                        {t('booking.actions.cancel')}
+                    </Button>
+                    <Button
+                        mode="contained"
+                        loading={isSubmittingReturnRequest}
+                        disabled={isSubmittingReturnRequest}
+                        onPress={() => void submitReturnRequestFromForm()}
+                    >
+                        {t('booking.actions.submitReturnRequest')}
+                    </Button>
+                </View>
+            </Modal>
+
+            <Modal
+                visible={showReturnPhotoModal}
+                onDismiss={() => setShowReturnPhotoModal(false)}
+                contentContainerStyle={[
+                    styles.returnPhotoModal,
+                    { backgroundColor: theme.colors.background }
+                ]}
+            >
+                <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 12 }}>
+                    {t('booking.actions.viewReturnPhoto')}
+                </Text>
+
+                {returnPhotoPreviewUrl ? (
+                    <Image
+                        source={{ uri: returnPhotoPreviewUrl }}
+                        style={styles.returnPhotoImage}
+                        resizeMode="contain"
+                    />
+                ) : (
+                    <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                        {t('booking.actions.statusError')}
+                    </Text>
+                )}
+
+                <View style={styles.returnRequestActions}>
+                    <Button onPress={() => setShowReturnPhotoModal(false)}>
+                        {t('booking.actions.cancel')}
+                    </Button>
+                </View>
+            </Modal>
         </Portal>
     );
 }
@@ -375,5 +618,28 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+    },
+    returnRequestModal: {
+        margin: 20,
+        borderRadius: 10,
+        padding: 16,
+    },
+    returnRequestActions: {
+        marginTop: 18,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 8,
+    },
+    returnPhotoModal: {
+        margin: 20,
+        borderRadius: 10,
+        padding: 16,
+        maxHeight: '80%',
+    },
+    returnPhotoImage: {
+        width: '100%',
+        height: 340,
+        borderRadius: 10,
+        backgroundColor: '#f4f4f4',
     },
 }); 

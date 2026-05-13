@@ -181,6 +181,30 @@ namespace Server.Controllers
             }
         }
 
+        [HttpGet("GetBookingReturnPhoto/{bookingId}/{fileName}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBookingReturnPhoto(string bookingId, string fileName)
+        {
+            try
+            {
+                if (!IsSafePathSegment(bookingId) || !IsSafePathSegment(fileName))
+                {
+                    return BadRequest("Invalid path segment");
+                }
+
+                var objectKey = StorageKeyHelper.Build("bookings", bookingId, fileName);
+                var storedObject = await _objectStorage.OpenReadAsync(objectKey);
+                if (storedObject == null)
+                    return NotFound("Booking return photo not found");
+
+                return File(storedObject.Stream, storedObject.ContentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpDelete("DeleteEquipmentImage/{equipmentId}/{fileName}")]
         public async Task<IActionResult> DeleteEquipmentImage(string equipmentId, string fileName)
         {

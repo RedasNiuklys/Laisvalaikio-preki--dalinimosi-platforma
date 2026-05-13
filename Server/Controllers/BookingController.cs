@@ -5,6 +5,8 @@ using Server.DataTransferObjects;
 using Server.Models;
 using System.Security.Claims;
 using AutoMapper;
+using Server.Services.Storage;
+using System.IO;
 
 namespace Server.Controllers
 {
@@ -15,11 +17,13 @@ namespace Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IObjectStorageService _objectStorage;
 
-        public BookingController(ApplicationDbContext context, IMapper mapper)
+        public BookingController(ApplicationDbContext context, IMapper mapper, IObjectStorageService objectStorage)
         {
             _context = context;
             _mapper = mapper;
+            _objectStorage = objectStorage;
         }
 
         // GET: api/Booking
@@ -40,6 +44,7 @@ namespace Server.Controllers
                 .ToListAsync();
 
             var dtos = _mapper.Map<List<BookingResponseDto>>(bookings);
+            TransformBookingPhotoUrls(dtos);
             return dtos;
         }
 
@@ -55,6 +60,7 @@ namespace Server.Controllers
                 .ToListAsync();
 
             var dtos = _mapper.Map<List<BookingResponseDto>>(bookings);
+            TransformBookingPhotoUrls(dtos);
             return dtos;
         }
 
@@ -79,7 +85,9 @@ namespace Server.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<BookingResponseDto>(booking);
+            var dto = _mapper.Map<BookingResponseDto>(booking);
+            TransformBookingPhotoUrl(dto);
+            return dto;
         }
 
         // POST: api/Booking
@@ -118,6 +126,10 @@ namespace Server.Controllers
 
             // Auto-approve if the user is the equipment owner
             booking.Status = (userId == equipment.OwnerId) ? BookingStatus.Approved : BookingStatus.Planning;
+            if (booking.Status == BookingStatus.Approved)
+            {
+                equipment.IsAvailable = false;
+            }
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
@@ -128,6 +140,7 @@ namespace Server.Controllers
             await _context.Entry(booking.Equipment).Reference(e => e.Category).LoadAsync();
 
             var responseDto = _mapper.Map<BookingResponseDto>(booking);
+            TransformBookingPhotoUrl(responseDto);
 
             return CreatedAtAction(
                 nameof(GetBooking),
@@ -167,7 +180,9 @@ namespace Server.Controllers
             {
                 await _context.SaveChangesAsync();
 
-                return _mapper.Map<BookingResponseDto>(booking);
+                var dto = _mapper.Map<BookingResponseDto>(booking);
+                TransformBookingPhotoUrl(dto);
+                return dto;
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -234,13 +249,29 @@ namespace Server.Controllers
                 return Forbid();
             }
 
-            if (!isOwner && (booking.Status != BookingStatus.Planning || statusDto != "Pending"))
+            if (!isOwner)
             {
-                return BadRequest("Users can only change their booking status from Planning to Pending");
+                var canSubmitForApproval = booking.Status == BookingStatus.Planning && statusDto == "Pending";
+                var canMarkPicked = isBookingUser && booking.Status == BookingStatus.Approved && statusDto == "Picked";
+
+                if (!canSubmitForApproval && !canMarkPicked)
+                {
+                    return BadRequest("Users can only change their booking status from Planning to Pending or Approved to Picked");
+                }
             }
 
             var newStatus = Enum.Parse<BookingStatus>(statusDto);
             Console.WriteLine("StatusDto: " + newStatus);
+
+            // User can mark an approved booking as picked up
+            if (!isOwner && isBookingUser && booking.Status == BookingStatus.Approved && newStatus == BookingStatus.Picked)
+            {
+                booking.Status = BookingStatus.Picked;
+                booking.PickedAt = DateTime.UtcNow;
+                booking.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
 
             // If owner is rejecting or cancelling an approved booking, delete it
             if (isOwner &&
@@ -254,6 +285,16 @@ namespace Server.Controllers
 
             // Otherwise, update the status
             booking.Status = newStatus;
+            if (newStatus == BookingStatus.Approved || newStatus == BookingStatus.Picked)
+            {
+                booking.Equipment.IsAvailable = false;
+            }
+
+            if (newStatus == BookingStatus.Picked)
+            {
+                booking.PickedAt = DateTime.UtcNow;
+            }
+
             booking.UpdatedAt = DateTime.UtcNow;
 
             try
@@ -271,9 +312,206 @@ namespace Server.Controllers
             }
         }
 
+        [HttpPost("{id}/return-request")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<BookingResponseDto>> SubmitReturnRequest(string id, [FromForm] SubmitBookingReturnRequestDto request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            if (booking.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status != BookingStatus.Picked)
+            {
+                return BadRequest("Return requests can only be created for picked bookings");
+            }
+
+            if (request.IsEarlyReturn)
+            {
+                if (!request.RequestedEndDateTime.HasValue)
+                {
+                    return BadRequest("Requested end date is required for early return requests");
+                }
+
+                if (request.RequestedEndDateTime.Value > booking.EndDateTime)
+                {
+                    return BadRequest("Early return date must be on or before the current booking end date");
+                }
+
+                booking.Status = BookingStatus.ReturnEarlyRequested;
+                booking.ReturnRequestType = BookingReturnRequestType.Early;
+                booking.ReturnRequestedEndDateTime = request.RequestedEndDateTime.Value;
+            }
+            else
+            {
+                booking.Status = BookingStatus.ReturnRequested;
+                booking.ReturnRequestType = BookingReturnRequestType.Regular;
+                booking.ReturnRequestedEndDateTime = null;
+            }
+
+            if (request.Photo != null)
+            {
+                booking.ReturnPhotoUrl = await SaveBookingReturnPhotoAsync(booking.Id, request.Photo);
+            }
+
+            booking.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var dto = _mapper.Map<BookingResponseDto>(booking);
+            TransformBookingPhotoUrl(dto);
+            return Ok(dto);
+        }
+
+        [HttpPatch("{id}/return-request/approve")]
+        public async Task<ActionResult<BookingResponseDto>> ApproveReturnRequest(string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            if (booking.Equipment.OwnerId != userId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status != BookingStatus.ReturnRequested && booking.Status != BookingStatus.ReturnEarlyRequested)
+            {
+                return BadRequest("No pending return request found");
+            }
+
+            if (booking.Status == BookingStatus.ReturnEarlyRequested)
+            {
+                if (!booking.ReturnRequestedEndDateTime.HasValue)
+                {
+                    return BadRequest("Requested end date is required for early return approvals");
+                }
+
+                booking.EndDateTime = booking.ReturnRequestedEndDateTime.Value;
+                booking.Status = BookingStatus.ReturnedEarly;
+            }
+            else
+            {
+                booking.Status = BookingStatus.Returned;
+            }
+
+            booking.ReturnRequestType = null;
+            booking.ReturnRequestedEndDateTime = null;
+            booking.ReturnedAt = DateTime.UtcNow;
+            booking.Equipment.IsAvailable = true;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var dto = _mapper.Map<BookingResponseDto>(booking);
+            TransformBookingPhotoUrl(dto);
+            return Ok(dto);
+        }
+
+        [HttpPatch("{id}/return-request/reject")]
+        public async Task<ActionResult<BookingResponseDto>> RejectReturnRequest(string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Equipment)
+                    .ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            if (booking.Equipment.OwnerId != userId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status != BookingStatus.ReturnRequested && booking.Status != BookingStatus.ReturnEarlyRequested)
+            {
+                return BadRequest("No pending return request found");
+            }
+
+            booking.Status = BookingStatus.Picked;
+            booking.ReturnRequestType = null;
+            booking.ReturnRequestedEndDateTime = null;
+            booking.ReturnPhotoUrl = null;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var dto = _mapper.Map<BookingResponseDto>(booking);
+            TransformBookingPhotoUrl(dto);
+            return Ok(dto);
+        }
+
         private bool BookingExists(string id)
         {
             return _context.Bookings.Any(e => e.Id == id);
+        }
+
+        private async Task<string> SaveBookingReturnPhotoAsync(string bookingId, IFormFile file)
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName).ToLowerInvariant()}";
+            var objectKey = StorageKeyHelper.Build("bookings", bookingId, fileName);
+
+            await using var stream = file.OpenReadStream();
+            await _objectStorage.SaveAsync(objectKey, stream, file.ContentType);
+            return objectKey;
+        }
+
+        private void TransformBookingPhotoUrls(IEnumerable<BookingResponseDto> bookings)
+        {
+            foreach (var booking in bookings)
+            {
+                TransformBookingPhotoUrl(booking);
+            }
+        }
+
+        private void TransformBookingPhotoUrl(BookingResponseDto booking)
+        {
+            if (string.IsNullOrWhiteSpace(booking.ReturnPhotoUrl))
+            {
+                return;
+            }
+
+            var fileName = Path.GetFileName(booking.ReturnPhotoUrl);
+            booking.ReturnPhotoUrl = $"{Request.Scheme}://{Request.Host}/api/Storage/GetBookingReturnPhoto/{booking.Id}/{fileName}";
         }
     }
 }

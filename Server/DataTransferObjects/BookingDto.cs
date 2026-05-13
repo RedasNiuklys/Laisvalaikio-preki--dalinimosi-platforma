@@ -32,6 +32,13 @@ namespace Server.DataTransferObjects
         public BookingStatus Status { get; set; }
     }
 
+    public class SubmitBookingReturnRequestDto
+    {
+        public bool IsEarlyReturn { get; set; }
+        public DateTime? RequestedEndDateTime { get; set; }
+        public IFormFile? Photo { get; set; }
+    }
+
     public class BookingResponseDto
     {
         public required string Id { get; set; }
@@ -41,6 +48,11 @@ namespace Server.DataTransferObjects
         public DateTime EndDateTime { get; set; }
         public BookingStatus Status { get; set; }
         public string? Notes { get; set; }
+        public BookingReturnRequestType? ReturnRequestType { get; set; }
+        public DateTime? ReturnRequestedEndDateTime { get; set; }
+        public string? ReturnPhotoUrl { get; set; }
+        public DateTime? PickedAt { get; set; }
+        public DateTime? ReturnedAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 

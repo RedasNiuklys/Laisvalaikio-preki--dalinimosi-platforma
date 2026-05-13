@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import { Calendar, DateData, LocaleConfig } from 'react-native-calendars';
-import { Booking, BookingStatus } from '../types/Booking';
+import { Booking, BookingStatus, BookingStatusFiltered } from '../types/Booking';
 import { useTranslation } from 'react-i18next';
 import { showToast } from './Toast';
 import { ltLocale, enLocale } from '../locales/calendarLocales';
@@ -47,9 +47,15 @@ const getDateAtLocalMidday = (value: string | Date): Date => {
 const getStatusColor = (status: BookingStatus, isDark: boolean): string => {
     switch (status) {
         case BookingStatus.Pending:
+        case BookingStatus.ReturnRequested:
+        case BookingStatus.ReturnEarlyRequested:
             return isDark ? '#E6A23C' : '#F59E0B';
         case BookingStatus.Approved:
+        case BookingStatus.Picked:
             return isDark ? '#60A5FA' : '#2563EB';
+        case BookingStatus.Returned:
+        case BookingStatus.ReturnedEarly:
+            return isDark ? '#34D399' : '#059669';
         case BookingStatus.Rejected:
             return isDark ? '#F87171' : '#DC2626';
         case BookingStatus.Cancelled:
@@ -59,10 +65,18 @@ const getStatusColor = (status: BookingStatus, isDark: boolean): string => {
     }
 };
 
+const HIDDEN_STATUSES = new Set([
+    BookingStatus.Returned,
+    BookingStatus.ReturnedEarly,
+    BookingStatus.Picked,
+]);
+
 export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalendarProps) {
     const theme = useTheme();
     const { t, i18n } = useTranslation();
     const { settings } = useSettings();
+
+    const visibleBookings = bookings.filter(b => !HIDDEN_STATUSES.has(b.status));
 
     useEffect(() => {
         LocaleConfig.locales = {};
@@ -73,8 +87,8 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
 
     const handleDayPress = (day: DateData) => {
         // Check if the date is blocked (has an approved booking)
-        const isBlocked = bookings.some(booking => {
-            if (booking.status === BookingStatus.Approved) {
+        const isBlocked = visibleBookings.some(booking => {
+            if (booking.status === BookingStatus.Approved || booking.status === BookingStatus.Picked) {
                 const startDate = getDateAtLocalMidday(booking.startDateTime);
                 const endDate = getDateAtLocalMidday(booking.endDateTime);
                 const selectedDate = getDateAtLocalMidday(day.dateString);
@@ -92,11 +106,11 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
     };
 
     // Create marked dates object for the calendar
-    const markedDates = bookings.reduce((acc: MarkedDates, booking) => {
+    const markedDates = visibleBookings.reduce((acc: MarkedDates, booking) => {
         const startDate = getDateAtLocalMidday(booking.startDateTime);
         const endDate = getDateAtLocalMidday(booking.endDateTime);
         const color = getStatusColor(booking.status, theme.dark);
-        const isApproved = booking.status === BookingStatus.Approved;
+        const isApproved = booking.status === BookingStatus.Approved || booking.status === BookingStatus.Picked;
 
         // Loop through all dates between start and end
         let currentDate = new Date(startDate);
@@ -169,9 +183,9 @@ export default function BookingsCalendar({ bookings, onDayPress }: BookingsCalen
                 }}
             />
             <View style={styles.legend}>
-                {Object.values(BookingStatus).map((status) => (
+                {Object.values(BookingStatusFiltered).map((status) => (
                     <View key={status} style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: getStatusColor(status as BookingStatus, theme.dark) }]} />
+                        <View style={[styles.legendDot, { backgroundColor: getStatusColor(status as unknown as BookingStatus, theme.dark) }]} />
                         <Text variant="bodySmall" style={{ color: theme.colors.onSurface }}>
                             {t(`booking.calendar.legend.${status.toLowerCase()}`)}
                         </Text>

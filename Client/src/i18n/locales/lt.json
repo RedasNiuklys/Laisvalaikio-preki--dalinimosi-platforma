@@ -102,7 +102,12 @@
         "planning": "Planuojama",
         "approved": "Patvirtinta",
         "rejected": "Atmesta",
-        "cancelled": "Atšaukta"
+        "cancelled": "Atšaukta",
+        "picked": "Atsiimta",
+        "returnrequested": "Prašomas grąžinimas",
+        "returnearlyrequested": "Prašomas ankstyvas grąžinimas",
+        "returned": "Grąžinta",
+        "returnedearly": "Grąžinta anksti"
       }
     },
     "status": {
@@ -110,7 +115,12 @@
         "planning": "Planuojama",
         "approved": "Patvirtinta",
         "rejected": "Atmesta",
-        "cancelled": "Atšaukta"
+        "cancelled": "Atšaukta",
+        "picked": "Atsiimta",
+        "returnrequested": "Prašomas grąžinimas",
+        "returnearlyrequested": "Prašomas ankstyvas grąžinimas",
+        "returned": "Grąžinta",
+        "returnedearly": "Grąžinta anksti"
     },
     "notes": "Pastabos",
     "notesPlaceholder": "Pridėkite papildomos informacijos apie savo rezervaciją...",
@@ -129,6 +139,11 @@
       "reject": "Atmesti",
       "cancel": "Atšaukti",
       "submit": "Pateikti patvirtinimui",
+      "pickUp": "Pažymėti kaip atsiimtą",
+      "requestReturn": "Prašyti grąžinimo",
+      "requestEarlyReturn": "Prašyti ankstyvo grąžinimo",
+      "approveReturn": "Patvirtinti grąžinimą",
+      "rejectReturn": "Atmesti grąžinimą",
         "reviewRequest": "Peržiūrėti rezervacijos užklausą",
         "openMyRequest": "Atidaryti mano rezervacijos užklausą"
       }
@@ -151,7 +166,17 @@
       "delete": "Ištrinti",
       "approve": "Patvirtinti",
       "reject": "Atmesti",
-      "submit": "Pateikti patvirtinimui"
+      "submit": "Pateikti patvirtinimui",
+      "pickUp": "Pažymėti kaip paimtą",
+      "requestReturn": "Pateikti grąžinimui",
+      "requestEarlyReturn": "Pateikti ankstyvam grąžinimui",
+      "approveReturn": "Patvirtinti grąžinimą",
+      "rejectReturn": "Atmesti grąžinimą",
+      "viewReturnPhoto": "Peržiūrėti grąžinimo nuotrauką",
+      "returnPhotoHint": "Galite pasirinktinai pridėti nuotrauką kaip grąžinimo įrodymą.",
+      "selectReturnPhoto": "Pasirinkti nuotrauką (nebūtina)",
+      "selectedPhoto": "Pasirinkta nuotrauka",
+      "submitReturnRequest": "Siųsti užklausą"
     },
     "errors": {
       "noSelection": "Nėra pasirinkimo",
@@ -334,6 +359,8 @@
       "deleteSuccess": "Atsiliepimas sėkmingai ištrintas",
       "deleteError": "Nepavyko ištrinti atsiliepimo"
     },
+    "available": "Prieinama",
+    "unavailable": "Užimta",
     "errors": {
       "fetchFailed": "Nepavyko gauti įrangos",
       "notFound": "Įranga nerasta"

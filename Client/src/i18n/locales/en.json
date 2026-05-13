@@ -381,7 +381,12 @@
       "planning": "Planning",
       "approved": "Approved",
       "rejected": "Rejected",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "picked": "Picked",
+      "returnrequested": "Return requested",
+      "returnearlyrequested": "Early return requested",
+      "returned": "Returned",
+      "returnedearly": "Returned early"
     },
     "calendar": {
       "legend": {
@@ -389,7 +394,12 @@
         "approved": "Approved",
         "planning": "Planning",
         "rejected": "Rejected",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "picked": "Picked",
+        "returnrequested": "Return requested",
+        "returnearlyrequested": "Early return requested",
+        "returned": "Returned",
+        "returnedearly": "Returned early"
       }
     },
     "actions": {
@@ -397,6 +407,16 @@
       "reject": "Reject",
       "cancel": "Cancel",
       "submit": "Submit for Approval",
+      "pickUp": "Mark as picked up",
+      "requestReturn": "Request return",
+      "requestEarlyReturn": "Request early return",
+      "approveReturn": "Approve return",
+      "rejectReturn": "Reject return",
+      "viewReturnPhoto": "View return photo",
+      "returnPhotoHint": "You can optionally attach a photo as proof of return.",
+      "selectReturnPhoto": "Select photo (optional)",
+      "selectedPhoto": "Selected photo",
+      "submitReturnRequest": "Send request",
       "statusChanged": "Booking status updated successfully",
       "statusError": "Failed to update booking status"
     }

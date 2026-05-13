@@ -26,7 +26,7 @@ namespace Server.Tests.Controllers
         public BookingControllerTests() : base()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(BookingController).Assembly)).CreateMapper();
-            _controller = new BookingController(_context, _mapper);
+            _controller = new BookingController(_context, _mapper, null);
 
             SetCurrentUser(_currentUserId);
 

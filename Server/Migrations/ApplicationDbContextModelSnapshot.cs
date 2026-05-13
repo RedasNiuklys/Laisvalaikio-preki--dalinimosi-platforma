@@ -254,6 +254,21 @@ namespace Server.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("PickedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReturnPhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReturnRequestType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReturnRequestedEndDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReturnedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("StartDateTime")
                         .HasColumnType("datetime2");
 

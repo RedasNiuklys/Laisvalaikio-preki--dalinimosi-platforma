@@ -74,6 +74,25 @@ export default function EquipmentDetailsPage({
     const isMountedRef = useRef(true);
     const isNative = Platform.OS !== "web";
     const REVIEWS_PER_PAGE = 3;
+    const now = new Date();
+
+    const hasActiveBlockingBooking = bookings.some((booking) => {
+        const statusBlocksAvailability =
+            booking.status === BookingStatus.Approved ||
+            booking.status === BookingStatus.Picked ||
+            booking.status === BookingStatus.ReturnRequested ||
+            booking.status === BookingStatus.ReturnEarlyRequested;
+
+        if (!statusBlocksAvailability) {
+            return false;
+        }
+
+        const bookingStart = new Date(booking.startDateTime);
+        const bookingEnd = new Date(booking.endDateTime);
+        return now >= bookingStart && now <= bookingEnd;
+    });
+
+    const isCurrentlyAvailable = !hasActiveBlockingBooking;
 
     const averageRating = reviews.length
         ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -525,6 +544,16 @@ export default function EquipmentDetailsPage({
                                 </Text>
                                 <View style={styles.infoRow}>
                                     <MaterialCommunityIcons
+                                        name={isCurrentlyAvailable ? "check-circle" : "close-circle"}
+                                        size={20}
+                                        color={isCurrentlyAvailable ? theme.colors.primary : theme.colors.error}
+                                    />
+                                    <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>
+                                        {t("equipment.details.availability")}: {t(isCurrentlyAvailable ? "equipment.available" : "equipment.unavailable")}
+                                    </Text>
+                                </View>
+                                <View style={styles.infoRow}>
+                                    <MaterialCommunityIcons
                                         name="tag"
                                         size={20}
                                         color={theme.colors.primary}
@@ -705,6 +734,11 @@ export default function EquipmentDetailsPage({
                 equipmentOwnerId={equipment?.ownerId}
                 initialBookingId={initialBookingId}
                 onStatusChange={handleStatusChange}
+                onRefresh={async () => {
+                    if (equipment?.id) {
+                        await loadBookings(equipment.id);
+                    }
+                }}
             />
 
             <Portal>

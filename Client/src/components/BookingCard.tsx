@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Card, Text, useTheme, Chip } from 'react-native-paper';
+import { Card, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Booking, BookingStatus } from '../types/Booking';
@@ -12,13 +12,19 @@ interface BookingCardProps {
 const getStatusColor = (status: BookingStatus): string => {
     switch (status) {
         case BookingStatus.Pending:
-            return '#FFA726'; // Orange
+        case BookingStatus.ReturnRequested:
+        case BookingStatus.ReturnEarlyRequested:
+            return '#FFA726';
         case BookingStatus.Approved:
-            return '#66BB6A'; // Green
+        case BookingStatus.Picked:
+            return '#42A5F5';
+        case BookingStatus.Returned:
+        case BookingStatus.ReturnedEarly:
+            return '#66BB6A';
         case BookingStatus.Rejected:
-            return '#EF5350'; // Red
+            return '#EF5350';
         case BookingStatus.Cancelled:
-            return '#9E9E9E'; // Grey
+            return '#9E9E9E';
         default:
             return '#9E9E9E';
     }
@@ -45,19 +51,22 @@ export default function BookingCard({ booking }: BookingCardProps) {
                         <View>
                             <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
                                 {startDate.toISOString().substring(0, 10)} - {endDate.toISOString().substring(0, 10)}
-                                </Text>
+                            </Text>
                         </View>
                     </View>
-                    <Chip
-                        mode="flat"
+
+                    <View
                         style={[
-                            styles.statusChip,
+                            styles.statusBadge,
                             { backgroundColor: getStatusColor(booking.status) + '20' }
-                        ]}
-                        textStyle={{ color: getStatusColor(booking.status) }}
-                    >
-                        {t(`booking.status.${booking.status.toString().toLowerCase()}`)}
-                    </Chip>
+                        ]}>
+                        <Text
+                            variant="labelMedium"
+                            style={[styles.statusBadgeText, { color: getStatusColor(booking.status) }]}
+                        >
+                            {t(`booking.status.${booking.status.toString().toLowerCase()}`)}
+                        </Text>
+                    </View>
                 </View>
 
                 {booking.notes && (
@@ -109,13 +118,24 @@ const styles = StyleSheet.create({
     dateContainer: {
         flexDirection: 'row',
         alignItems: 'flex-start',
+        flex: 1,
+        minWidth: 0,
+        marginRight: 8,
     },
     icon: {
         marginRight: 8,
         marginTop: 2,
     },
-    statusChip: {
-        borderRadius: 16,
+    statusBadge: {
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        maxWidth: '35%',
+        marginLeft: 'auto',
+        alignSelf: 'flex-start',
+    },
+    statusBadgeText: {
+        textAlign: 'left',
     },
     notesContainer: {
         flexDirection: 'row',

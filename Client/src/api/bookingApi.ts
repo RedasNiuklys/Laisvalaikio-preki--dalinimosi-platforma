@@ -6,7 +6,8 @@ import {
     BookingStatus,
     bookingStatusToNumeric,
     numericToBookingStatus,
-    BookingStatusNumeric
+    BookingStatusNumeric,
+    SubmitBookingReturnRequestDto
 } from '../types/Booking';
 import { getAuthToken } from '../utils/authUtils';
 import { BOOKING_ENDPOINT } from '../utils/envConfig';
@@ -76,6 +77,66 @@ export const updateBookingStatus = async (id: string, status: BookingStatus): Pr
             }
         }
     );
+};
+
+export const markBookingPicked = async (id: string): Promise<void> => {
+    await updateBookingStatus(id, BookingStatus.Picked);
+};
+
+export const submitBookingReturnRequest = async (
+    id: string,
+    request: SubmitBookingReturnRequestDto
+): Promise<Booking> => {
+    const token = await getAuthToken();
+    const formData = new FormData();
+
+    formData.append('isEarlyReturn', request.isEarlyReturn ? 'true' : 'false');
+    if (request.requestedEndDateTime) {
+        formData.append('requestedEndDateTime', request.requestedEndDateTime);
+    }
+    if (request.photo) {
+        formData.append('photo', request.photo as any);
+    }
+
+    const response = await axios.post(`${BOOKING_ENDPOINT}/${id}/return-request`, formData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+    return {
+        ...response.data,
+        status: numericToBookingStatus(response.data.status as BookingStatusNumeric)
+    };
+};
+
+export const approveReturnRequest = async (id: string): Promise<Booking> => {
+    const token = await getAuthToken();
+    const response = await axios.patch(`${BOOKING_ENDPOINT}/${id}/return-request/approve`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    return {
+        ...response.data,
+        status: numericToBookingStatus(response.data.status as BookingStatusNumeric)
+    };
+};
+
+export const rejectReturnRequest = async (id: string): Promise<Booking> => {
+    const token = await getAuthToken();
+    const response = await axios.patch(`${BOOKING_ENDPOINT}/${id}/return-request/reject`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    return {
+        ...response.data,
+        status: numericToBookingStatus(response.data.status as BookingStatusNumeric)
+    };
 };
 
 export const updateBooking = async (id: string, booking: UpdateBookingDto): Promise<Booking | void> => {
