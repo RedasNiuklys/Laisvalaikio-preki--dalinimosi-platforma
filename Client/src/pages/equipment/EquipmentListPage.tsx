@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, FlatList, useWindowDimensions, Pressable, Platform } from "react-native";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { View, StyleSheet, FlatList, useWindowDimensions, Pressable, Platform, TextInput } from "react-native";
 import {
     Card,
     FAB,
@@ -7,6 +7,7 @@ import {
     Button,
     ActivityIndicator,
     Chip,
+    Text,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import * as equipmentApi from "@/src/api/equipmentApi";
@@ -18,6 +19,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getCategoryLabel } from "@/src/utils/categoryUtils";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type EquipmentListPageProps = {
     ownerOnly?: boolean;
@@ -34,6 +36,14 @@ export default function EquipmentListPage({
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategorySlug, setSelectedCategorySlug] = useState<string>("");
     const [showCategories, setShowCategories] = useState(true);
+    const [searchText, setSearchText] = useState("");
+    const [availableOnly, setAvailableOnly] = useState(false);
+    const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
+    const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
+    const startDateInputRef = useRef<any>(null);
+    const endDateInputRef = useRef<any>(null);
     const theme = useTheme();
     const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
@@ -63,14 +73,13 @@ export default function EquipmentListPage({
 
     const filterEquipment = useCallback(() => {
         let filtered = equipment;
-        console.log("selectedCategorySlug", selectedCategorySlug);
+
         if (selectedCategorySlug !== "") {
             const selectedCategoryObj = categories.find(
                 (c) => c.slug === selectedCategorySlug
             );
             if (selectedCategoryObj) {
                 if (!selectedCategoryObj.parentCategoryId) {
-                    // If parent category is selected, show all its children
                     const childCategories = categories
                         .filter((c) => c.parentCategoryId === selectedCategoryObj.id)
                         .map((c) => c.slug);
@@ -80,19 +89,30 @@ export default function EquipmentListPage({
                             item.category.slug === selectedCategorySlug
                     );
                 } else {
-                    // If child category is selected, show only that category
                     filtered = filtered.filter(
                         (item) => item.category.slug === selectedCategorySlug
                     );
                 }
             }
         }
-        console.log("filtered", filtered.length);
+
+        if (searchText.trim()) {
+            const term = searchText.trim().toLowerCase();
+            filtered = filtered.filter(
+                (item) =>
+                    item.name.toLowerCase().includes(term) ||
+                    (item.description?.toLowerCase().includes(term) ?? false)
+            );
+        }
+
+        if (availableOnly) {
+            filtered = filtered.filter((item) => item.isAvailable);
+        }
 
         setFilteredEquipment(filtered);
-    }, [categories, equipment, selectedCategorySlug]);
+    }, [categories, equipment, selectedCategorySlug, searchText, availableOnly]);
 
-    const fetchEquipment = useCallback(async () => {
+    const fetchEquipment = useCallback(async (startDate?: Date | null, endDate?: Date | null) => {
         if (!isAuthenticated) {
             setEquipment([]);
             setFilteredEquipment([]);
@@ -107,14 +127,18 @@ export default function EquipmentListPage({
             if (ownerOnly) {
                 data = user?.id ? await equipmentApi.getByOwner(user.id) : [];
             } else {
-                const allEquipment = await equipmentApi.getAll();
+                const filters: equipmentApi.EquipmentFilterParams = {};
+                if (startDate && endDate) {
+                    filters.startDate = startDate.toISOString().split("T")[0];
+                    filters.endDate = endDate.toISOString().split("T")[0];
+                }
+                const allEquipment = await equipmentApi.getAll(filters);
                 data = user?.id
                     ? allEquipment.filter((item) => item.ownerId !== user.id)
                     : allEquipment;
             }
 
             setEquipment(data);
-            console.log("equipment", data);
         } catch (error) {
             console.error("Error fetching equipment:", error);
             showToast("error", t("equipment.errors.fetchFailed"));
@@ -132,8 +156,24 @@ export default function EquipmentListPage({
     }, [fetchEquipment]);
 
     useEffect(() => {
+        if (filterStartDate && filterEndDate) {
+            fetchEquipment(filterStartDate, filterEndDate);
+        } else if (!filterStartDate && !filterEndDate) {
+            fetchEquipment();
+        }
+    }, [filterStartDate, filterEndDate]);
+
+    useEffect(() => {
         filterEquipment();
     }, [filterEquipment]);
+
+    const clearDateFilter = () => {
+        setFilterStartDate(null);
+        setFilterEndDate(null);
+    };
+
+    const formatDate = (date: Date) =>
+        date.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" });
 
     const renderCategoryChips = () => {
         return (
@@ -293,6 +333,125 @@ export default function EquipmentListPage({
                 </Button>
             </View>
 
+            {/* Search bar */}
+            <View style={[styles.searchRow, { borderColor: theme.colors.outline }]}>
+                <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.onSurfaceVariant} style={styles.searchIcon} />
+                <TextInput
+                    style={[styles.searchInput, { color: theme.colors.onSurface }]}
+                    placeholder={t("search.equipment")}
+                    placeholderTextColor={theme.colors.onSurfaceVariant}
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    returnKeyType="search"
+                />
+                {searchText.length > 0 && (
+                    <Pressable onPress={() => setSearchText("")}>
+                        <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.onSurfaceVariant} />
+                    </Pressable>
+                )}
+            </View>
+
+            {/* Quick filter chips */}
+            <View style={styles.quickFiltersRow}>
+                <Chip
+                    selected={availableOnly}
+                    onPress={() => setAvailableOnly((v) => !v)}
+                    icon={() => (
+                        <MaterialCommunityIcons
+                            name="check-circle-outline"
+                            size={16}
+                            color={availableOnly ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                        />
+                    )}
+                    style={availableOnly ? { backgroundColor: theme.colors.primaryContainer } : undefined}
+                >
+                    {t("equipment.available")}
+                </Chip>
+
+                {/* Date range filter */}
+                {Platform.OS === "web" ? (
+                    <>
+                        <View style={[styles.webDateInput, { borderColor: theme.colors.outline }]}>
+                            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginRight: 4 }}>
+                                {t("booking.startDateTime")}:
+                            </Text>
+                            <input
+                                type="date"
+                                value={filterStartDate ? filterStartDate.toISOString().split("T")[0] : ""}
+                                onChange={(e) => setFilterStartDate(e.target.value ? new Date(e.target.value) : null)}
+                                style={{ border: "none", background: "transparent", fontSize: 13, color: "inherit", outline: "none" }}
+                            />
+                        </View>
+                        <View style={[styles.webDateInput, { borderColor: theme.colors.outline }]}>
+                            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginRight: 4 }}>
+                                {t("booking.endDateTime")}:
+                            </Text>
+                            <input
+                                type="date"
+                                value={filterEndDate ? filterEndDate.toISOString().split("T")[0] : ""}
+                                min={filterStartDate ? filterStartDate.toISOString().split("T")[0] : undefined}
+                                onChange={(e) => setFilterEndDate(e.target.value ? new Date(e.target.value) : null)}
+                                style={{ border: "none", background: "transparent", fontSize: 13, color: "inherit", outline: "none" }}
+                            />
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        <Chip
+                            icon={() => <MaterialCommunityIcons name="calendar-start" size={16} color={theme.colors.onSurfaceVariant} />}
+                            onPress={() => setShowStartPicker(true)}
+                            selected={!!filterStartDate}
+                            style={filterStartDate ? { backgroundColor: theme.colors.secondaryContainer } : undefined}
+                        >
+                            {filterStartDate ? formatDate(filterStartDate) : t("booking.startDateTime")}
+                        </Chip>
+                        <Chip
+                            icon={() => <MaterialCommunityIcons name="calendar-end" size={16} color={theme.colors.onSurfaceVariant} />}
+                            onPress={() => setShowEndPicker(true)}
+                            selected={!!filterEndDate}
+                            style={filterEndDate ? { backgroundColor: theme.colors.secondaryContainer } : undefined}
+                        >
+                            {filterEndDate ? formatDate(filterEndDate) : t("booking.endDateTime")}
+                        </Chip>
+                    </>
+                )}
+
+                {(filterStartDate || filterEndDate) && (
+                    <Chip
+                        icon={() => <MaterialCommunityIcons name="close" size={16} color={theme.colors.error} />}
+                        onPress={clearDateFilter}
+                        textStyle={{ color: theme.colors.error }}
+                    >
+                        {t("common.buttons.clear")}
+                    </Chip>
+                )}
+            </View>
+
+            {showStartPicker && Platform.OS !== "web" && (
+                <DateTimePicker
+                    value={filterStartDate ?? new Date()}
+                    mode="date"
+                    display="default"
+                    minimumDate={new Date()}
+                    onChange={(_, date) => {
+                        setShowStartPicker(false);
+                        if (date) setFilterStartDate(date);
+                    }}
+                />
+            )}
+            {showEndPicker && Platform.OS !== "web" && (
+                <DateTimePicker
+                    value={filterEndDate ?? filterStartDate ?? new Date()}
+                    mode="date"
+                    display="default"
+                    minimumDate={filterStartDate ?? new Date()}
+                    onChange={(_, date) => {
+                        setShowEndPicker(false);
+                        if (date) setFilterEndDate(date);
+                    }}
+                />
+            )}
+
             {showCategories ? renderCategoryChips() : null}
 
             <FlatList
@@ -335,6 +494,40 @@ const styles = StyleSheet.create({
     },
     categoriesToggleButton: {
         marginTop: 10,
+    },
+    searchRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginHorizontal: 16,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+    },
+    searchIcon: {
+        marginRight: 6,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        paddingVertical: 0,
+    },
+    quickFiltersRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        paddingHorizontal: 12,
+        paddingBottom: 6,
+        gap: 8,
+        alignItems: "center",
+    },
+    webDateInput: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
     },
     filtersContainer: {
         flexDirection: "row",

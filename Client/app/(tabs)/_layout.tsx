@@ -66,6 +66,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="bookings"
+          options={{
+            title: t("navigation.bookings", { defaultValue: "Bookings" }),
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="calendar-check" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: t("navigation.profile"),

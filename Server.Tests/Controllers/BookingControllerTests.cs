@@ -11,6 +11,11 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Http;
 using AutoMapper;
+using Moq;
+using Server.Services.Storage;
+using System.IO;
+using Microsoft.AspNetCore.SignalR;
+using Server.Hubs;
 
 namespace Server.Tests.Controllers
 {
@@ -22,11 +27,24 @@ namespace Server.Tests.Controllers
         private readonly string _otherUserId = "other-user-id";
         private readonly string _equipmentId = "test-equipment-id";
         private readonly string _locationId = "test-location-id";
+        private readonly Mock<IObjectStorageService> _objectStorageMock;
+        private readonly Mock<IHubContext<ChatHub>> _hubContextMock;
 
         public BookingControllerTests() : base()
         {
             _mapper = new MapperConfiguration(cfg => cfg.AddMaps(typeof(BookingController).Assembly)).CreateMapper();
-            _controller = new BookingController(_context, _mapper, null);
+            _objectStorageMock = new Mock<IObjectStorageService>();
+
+            _hubContextMock = new Mock<IHubContext<ChatHub>>();
+            var mockClients = new Mock<IHubClients>();
+            var mockClientProxy = new Mock<IClientProxy>();
+            _hubContextMock.Setup(h => h.Clients).Returns(mockClients.Object);
+            mockClients.Setup(c => c.User(It.IsAny<string>())).Returns(mockClientProxy.Object);
+            mockClientProxy
+                .Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            _controller = new BookingController(_context, _mapper, _objectStorageMock.Object, _hubContextMock.Object);
 
             SetCurrentUser(_currentUserId);
 
@@ -480,6 +498,244 @@ namespace Server.Tests.Controllers
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateBookingStatus_AsBookingUser_ApprovedToPicked_SetsPickedAt()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-approved-pick",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(1),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Approved,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.UpdateBookingStatus("booking-approved-pick", "Picked");
+
+            Assert.IsType<OkResult>(result);
+            var updatedBooking = await _context.Bookings.FindAsync("booking-approved-pick");
+            Assert.NotNull(updatedBooking);
+            Assert.Equal(BookingStatus.Picked, updatedBooking!.Status);
+            Assert.NotNull(updatedBooking.PickedAt);
+        }
+
+        [Fact]
+        public async Task SubmitReturnRequest_RegularPickedBooking_ReturnsOkAndUpdatesStatus()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-picked-regular-return",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-2),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Picked,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var dto = new SubmitBookingReturnRequestDto { IsEarlyReturn = false };
+            var result = await _controller.SubmitReturnRequest("booking-picked-regular-return", dto);
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<BookingResponseDto>(ok.Value);
+            Assert.Equal(BookingStatus.ReturnRequested, response.Status);
+
+            var updated = await _context.Bookings.FindAsync("booking-picked-regular-return");
+            Assert.NotNull(updated);
+            Assert.Equal(BookingStatus.ReturnRequested, updated!.Status);
+            Assert.Equal(BookingReturnRequestType.Regular, updated.ReturnRequestType);
+            Assert.Null(updated.ReturnRequestedEndDateTime);
+        }
+
+        [Fact]
+        public async Task SubmitReturnRequest_EarlyWithoutDate_ReturnsBadRequest()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-picked-early-missing-date",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-2),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Picked,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var dto = new SubmitBookingReturnRequestDto { IsEarlyReturn = true, RequestedEndDateTime = null };
+            var result = await _controller.SubmitReturnRequest("booking-picked-early-missing-date", dto);
+
+            var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal("Requested end date is required for early return requests", bad.Value);
+        }
+
+        [Fact]
+        public async Task SubmitReturnRequest_WithPhoto_SavesObjectAndSetsPhotoUrl()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-picked-with-photo",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-2),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.Picked,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            await using var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+            IFormFile file = new FormFile(ms, 0, ms.Length, "photo", "proof.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+
+            var dto = new SubmitBookingReturnRequestDto
+            {
+                IsEarlyReturn = false,
+                Photo = file
+            };
+
+            var result = await _controller.SubmitReturnRequest("booking-picked-with-photo", dto);
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<BookingResponseDto>(ok.Value);
+            Assert.Contains("/api/Storage/GetBookingReturnPhoto/booking-picked-with-photo/", response.ReturnPhotoUrl);
+
+            var updated = await _context.Bookings.FindAsync("booking-picked-with-photo");
+            Assert.NotNull(updated);
+            Assert.False(string.IsNullOrWhiteSpace(updated!.ReturnPhotoUrl));
+            _objectStorageMock.Verify(s => s.SaveAsync(It.IsAny<string>(), It.IsAny<Stream>(), "image/jpeg", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ApproveReturnRequest_Regular_SetsReturnedAndEquipmentAvailable()
+        {
+            var booking = new Booking
+            {
+                Id = "booking-return-requested",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-3),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.ReturnRequested,
+                ReturnRequestType = BookingReturnRequestType.Regular,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _context.Bookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+
+            var equipment = await _context.Equipment.FindAsync(_equipmentId);
+            equipment!.IsAvailable = false;
+            await _context.SaveChangesAsync();
+
+            SetCurrentUser(_otherUserId);
+            var result = await _controller.ApproveReturnRequest("booking-return-requested");
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<BookingResponseDto>(ok.Value);
+            Assert.Equal(BookingStatus.Returned, response.Status);
+
+            var updated = await _context.Bookings.FindAsync("booking-return-requested");
+            Assert.NotNull(updated);
+            Assert.Equal(BookingStatus.Returned, updated!.Status);
+            Assert.NotNull(updated.ReturnedAt);
+
+            var updatedEquipment = await _context.Equipment.FindAsync(_equipmentId);
+            Assert.True(updatedEquipment!.IsAvailable);
+        }
+
+        [Fact]
+        public async Task ApproveReturnRequest_Early_ShortensEndDateAndSetsReturnedEarly()
+        {
+            var requestedEnd = DateTime.UtcNow.AddHours(1);
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-early-return-requested",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-3),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.ReturnEarlyRequested,
+                ReturnRequestType = BookingReturnRequestType.Early,
+                ReturnRequestedEndDateTime = requestedEnd,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            SetCurrentUser(_otherUserId);
+            var result = await _controller.ApproveReturnRequest("booking-early-return-requested");
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<BookingResponseDto>(ok.Value);
+            Assert.Equal(BookingStatus.ReturnedEarly, response.Status);
+
+            var updated = await _context.Bookings.FindAsync("booking-early-return-requested");
+            Assert.NotNull(updated);
+            Assert.Equal(BookingStatus.ReturnedEarly, updated!.Status);
+            Assert.Equal(requestedEnd, updated.EndDateTime, TimeSpan.FromSeconds(1));
+            Assert.Null(updated.ReturnRequestedEndDateTime);
+            Assert.Null(updated.ReturnRequestType);
+        }
+
+        [Fact]
+        public async Task RejectReturnRequest_ValidRequest_RevertsToPickedAndClearsRequestFields()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-return-to-reject",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-3),
+                EndDateTime = DateTime.UtcNow.AddDays(2),
+                Status = BookingStatus.ReturnRequested,
+                ReturnRequestType = BookingReturnRequestType.Regular,
+                ReturnPhotoUrl = "bookings/booking-return-to-reject/proof.jpg",
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            SetCurrentUser(_otherUserId);
+            var result = await _controller.RejectReturnRequest("booking-return-to-reject");
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var response = Assert.IsType<BookingResponseDto>(ok.Value);
+            Assert.Equal(BookingStatus.Picked, response.Status);
+
+            var updated = await _context.Bookings.FindAsync("booking-return-to-reject");
+            Assert.NotNull(updated);
+            Assert.Equal(BookingStatus.Picked, updated!.Status);
+            Assert.Null(updated.ReturnRequestType);
+            Assert.Null(updated.ReturnRequestedEndDateTime);
+            Assert.Null(updated.ReturnPhotoUrl);
+        }
+
+        [Fact]
+        public async Task ApproveReturnRequest_NonOwner_ReturnsForbid()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "booking-return-forbid",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = DateTime.UtcNow.AddDays(-1),
+                EndDateTime = DateTime.UtcNow.AddDays(1),
+                Status = BookingStatus.ReturnRequested,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            SetCurrentUser(_currentUserId);
+            var result = await _controller.ApproveReturnRequest("booking-return-forbid");
+
+            Assert.IsType<ForbidResult>(result.Result);
         }
     }
 }

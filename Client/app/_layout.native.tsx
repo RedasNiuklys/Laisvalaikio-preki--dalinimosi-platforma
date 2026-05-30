@@ -52,6 +52,8 @@ import { useEffect, useState } from "react";
 import ThemeToggle from "@/src/components/ThemeToggle";
 import LanguageToggle from "@/src/components/LanguageToggle";
 import { spacing } from "@/src/styles/globalStyles";
+import { chatService } from "@/src/services/ChatService";
+import { showToast } from "@/src/components/Toast";
 
 const styles = StyleSheet.create({
   authHeader: {
@@ -75,6 +77,14 @@ function NavigationStack() {
   useEffect(() => {
     setNavigationReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const unsubscribe = chatService.onBookingStatusChanged((data) => {
+      showToast("info", data.message);
+    });
+    return unsubscribe;
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!navigationReady) return;

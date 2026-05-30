@@ -13,6 +13,17 @@ import { getAuthToken } from '../utils/authUtils';
 import { BOOKING_ENDPOINT } from '../utils/envConfig';
 import { coolDownAsync } from 'expo-web-browser';
 
+export const getUserBookings = async (): Promise<Booking[]> => {
+    const token = await getAuthToken();
+    const response = await axios.get(BOOKING_ENDPOINT, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data.map((booking: any) => ({
+        ...booking,
+        status: numericToBookingStatus(booking.status as BookingStatusNumeric)
+    }));
+};
+
 export const getBookingsForEquipment = async (equipmentId: string): Promise<Booking[]> => {
     const token = await getAuthToken();
 
@@ -30,22 +41,6 @@ export const getBookingsForEquipment = async (equipmentId: string): Promise<Book
 
     console.log("Bookings for equipment:", bookings);
     return bookings;
-};
-
-export const getBookingsForUser = async (userId: string): Promise<Booking[]> => {
-    const token = await getAuthToken();
-
-    const response = await axios.get(`${BOOKING_ENDPOINT}/user/${userId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    // Convert numeric status to string enum
-    return response.data.map((booking: any) => ({
-        ...booking,
-        status: numericToBookingStatus(booking.status as BookingStatusNumeric)
-    }));
 };
 
 export const createBooking = async (booking: CreateBookingDto): Promise<Booking> => {

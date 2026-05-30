@@ -33,6 +33,7 @@ import i18n from "@/src/i18n";
 import { getCategoryLabel } from "@/src/utils/categoryUtils";
 import { createReview, deleteReview, getReviewEligibility, updateReview } from "@/src/api/reviewApi";
 import { Review, ReviewEligibility } from "@/src/types/Review";
+import * as maintenanceApi from "@/src/api/maintenanceApi";
 import Rating from "react-rating";
 
 type EquipmentDetailsPageProps = {
@@ -71,6 +72,15 @@ export default function EquipmentDetailsPage({
     const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
     const [showReviewsModal, setShowReviewsModal] = useState(false);
     const [reviewsPage, setReviewsPage] = useState(1);
+    const [maintenanceRecords, setMaintenanceRecords] = useState<maintenanceApi.MaintenanceRecord[]>([]);
+    const [showAddMaintenanceModal, setShowAddMaintenanceModal] = useState(false);
+    const [maintenanceTitle, setMaintenanceTitle] = useState("");
+    const [maintenanceDescription, setMaintenanceDescription] = useState("");
+    const [maintenanceDate, setMaintenanceDate] = useState(new Date().toISOString().split("T")[0]);
+    const [maintenancePerformedBy, setMaintenancePerformedBy] = useState("");
+    const [maintenanceNotes, setMaintenanceNotes] = useState("");
+    const [maintenanceSetUnavailable, setMaintenanceSetUnavailable] = useState(false);
+    const [submittingMaintenance, setSubmittingMaintenance] = useState(false);
     const isMountedRef = useRef(true);
     const isNative = Platform.OS !== "web";
     const REVIEWS_PER_PAGE = 3;
@@ -202,6 +212,15 @@ export default function EquipmentDetailsPage({
         }
     }, []);
 
+    const loadMaintenanceRecords = useCallback(async (equipmentId: string) => {
+        try {
+            const data = await maintenanceApi.getByEquipment(equipmentId);
+            if (isMountedRef.current) setMaintenanceRecords(data);
+        } catch {
+            // non-critical — silently ignore
+        }
+    }, []);
+
     const loadReviewEligibility = useCallback(async (equipmentId: string) => {
         try {
             const data = await getReviewEligibility(equipmentId);
@@ -234,6 +253,7 @@ export default function EquipmentDetailsPage({
                 resolveOwnerDisplayName(data.ownerId),
                 loadBookings(data.id),
                 loadReviewEligibility(data.id),
+                loadMaintenanceRecords(data.id),
             ]);
         } catch (error) {
             console.error("Error fetching equipment details:", error);
@@ -245,7 +265,7 @@ export default function EquipmentDetailsPage({
                 setLoading(false);
             }
         }
-    }, [id, loadBookings, loadReviewEligibility, resolveOwnerDisplayName]);
+    }, [id, loadBookings, loadMaintenanceRecords, loadReviewEligibility, resolveOwnerDisplayName]);
 
     useEffect(() => {
         fetchEquipmentDetails();
@@ -286,6 +306,50 @@ export default function EquipmentDetailsPage({
             }
 
             showToast("error", t("equipment.errors.deleteFailed"));
+        }
+    };
+
+    const handleAddMaintenance = async () => {
+        if (!equipment || !maintenanceTitle.trim() || !maintenanceDescription.trim() || !maintenancePerformedBy.trim()) {
+            showToast("error", t("forms.allFieldsRequired"));
+            return;
+        }
+        try {
+            setSubmittingMaintenance(true);
+            await maintenanceApi.create({
+                equipmentId: equipment.id,
+                title: maintenanceTitle.trim(),
+                description: maintenanceDescription.trim(),
+                maintenanceDate: maintenanceDate,
+                performedBy: maintenancePerformedBy.trim(),
+                notes: maintenanceNotes.trim() || undefined,
+                setUnavailable: maintenanceSetUnavailable,
+            });
+            await loadMaintenanceRecords(equipment.id);
+            if (maintenanceSetUnavailable) {
+                setEquipment((prev) => prev ? { ...prev, isAvailable: false } : prev);
+            }
+            setShowAddMaintenanceModal(false);
+            setMaintenanceTitle("");
+            setMaintenanceDescription("");
+            setMaintenancePerformedBy("");
+            setMaintenanceNotes("");
+            setMaintenanceSetUnavailable(false);
+            showToast("success", t("maintenance.addSuccess"));
+        } catch {
+            showToast("error", t("maintenance.addError"));
+        } finally {
+            setSubmittingMaintenance(false);
+        }
+    };
+
+    const handleDeleteMaintenance = async (recordId: number) => {
+        if (!equipment) return;
+        try {
+            await maintenanceApi.remove(recordId);
+            setMaintenanceRecords((prev) => prev.filter((r) => r.id !== recordId));
+        } catch {
+            showToast("error", t("maintenance.deleteError"));
         }
     };
 
@@ -695,6 +759,65 @@ export default function EquipmentDetailsPage({
                             </Card.Content>
                         </Card>
 
+                        {/* Maintenance History */}
+                        <Card style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+                            <Card.Content>
+                                <View style={styles.sectionHeader}>
+                                    <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+                                        {t("maintenance.title")}
+                                    </Text>
+                                    {user?.id === equipment.ownerId && (
+                                        <Button
+                                            mode="contained-tonal"
+                                            icon="plus"
+                                            compact
+                                            onPress={() => setShowAddMaintenanceModal(true)}
+                                        >
+                                            {t("maintenance.add")}
+                                        </Button>
+                                    )}
+                                </View>
+
+                                {maintenanceRecords.length === 0 ? (
+                                    <Text style={{ color: theme.colors.onSurfaceVariant }}>
+                                        {t("maintenance.noRecords")}
+                                    </Text>
+                                ) : (
+                                    maintenanceRecords.map((record) => (
+                                        <View key={record.id} style={[styles.maintenanceRow, { borderColor: theme.colors.outlineVariant }]}>
+                                            <View style={styles.maintenanceInfo}>
+                                                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface, fontWeight: "600" }}>
+                                                    {record.title}
+                                                </Text>
+                                                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                                                    {new Date(record.maintenanceDate).toLocaleDateString()} · {record.performedBy}
+                                                </Text>
+                                                <Text variant="bodySmall" style={{ color: theme.colors.onSurface }}>
+                                                    {record.description}
+                                                </Text>
+                                                {record.notes ? (
+                                                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                                                        {record.notes}
+                                                    </Text>
+                                                ) : null}
+                                            </View>
+                                            {user?.id === equipment.ownerId && (
+                                                <Button
+                                                    icon="delete"
+                                                    compact
+                                                    onPress={() => handleDeleteMaintenance(record.id)}
+                                                    mode="contained"
+                                                    textColor={theme.colors.error}
+                                                >
+                                                    {t("common.delete")}
+                                                </Button>
+                                            )}
+                                        </View>
+                                    ))
+                                )}
+                            </Card.Content>
+                        </Card>
+
                         {user?.id === equipment.ownerId && (
                             <View style={styles.actions}>
                                 <Button
@@ -716,6 +839,67 @@ export default function EquipmentDetailsPage({
                     </>
                 )}
             </ScrollView>
+
+            {/* Add Maintenance Modal */}
+            <Portal>
+                <Modal
+                    visible={showAddMaintenanceModal}
+                    onDismiss={() => setShowAddMaintenanceModal(false)}
+                    contentContainerStyle={[styles.modalContainer, { backgroundColor: theme.colors.surface }]}
+                >
+                    <Text variant="titleMedium" style={{ marginBottom: 12, color: theme.colors.onSurface }}>
+                        {t("maintenance.addTitle")}
+                    </Text>
+                    <TextInput
+                        label={t("maintenance.form.title")}
+                        value={maintenanceTitle}
+                        onChangeText={setMaintenanceTitle}
+                        style={styles.modalInput}
+                    />
+                    <TextInput
+                        label={t("maintenance.form.description")}
+                        value={maintenanceDescription}
+                        onChangeText={setMaintenanceDescription}
+                        multiline
+                        numberOfLines={3}
+                        style={styles.modalInput}
+                    />
+                    <TextInput
+                        label={t("maintenance.form.performedBy")}
+                        value={maintenancePerformedBy}
+                        onChangeText={setMaintenancePerformedBy}
+                        style={styles.modalInput}
+                    />
+                    <TextInput
+                        label={t("maintenance.form.date")}
+                        value={maintenanceDate}
+                        onChangeText={setMaintenanceDate}
+                        style={styles.modalInput}
+                    />
+                    <TextInput
+                        label={t("maintenance.form.notes")}
+                        value={maintenanceNotes}
+                        onChangeText={setMaintenanceNotes}
+                        style={styles.modalInput}
+                    />
+                    <Button
+                        mode={maintenanceSetUnavailable ? "contained-tonal" : "outlined"}
+                        icon={maintenanceSetUnavailable ? "checkbox-marked" : "checkbox-blank-outline"}
+                        onPress={() => setMaintenanceSetUnavailable((v) => !v)}
+                        style={{ marginBottom: 16 }}
+                    >
+                        {t("equipment.details.markUnavailable")}
+                    </Button>
+                    <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
+                        <Button onPress={() => setShowAddMaintenanceModal(false)}>
+                            {t("common.buttons.cancel")}
+                        </Button>
+                        <Button mode="contained" onPress={handleAddMaintenance} loading={submittingMaintenance}>
+                            {t("common.buttons.save")}
+                        </Button>
+                    </View>
+                </Modal>
+            </Portal>
 
             <BookingModal
                 visible={showBookingModal}
@@ -946,6 +1130,26 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignContent: 'center',
         alignSelf: 'center',
+    },
+    modalContainer: {
+        margin: 20,
+        borderRadius: 12,
+        padding: 20,
+    },
+    maintenanceRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        marginBottom: 4,
+    },
+    maintenanceInfo: {
+        flex: 1,
+        gap: 2,
+    },
+    modalInput: {
+        marginBottom: 10,
     },
     infoRow: {
         flexDirection: "row",

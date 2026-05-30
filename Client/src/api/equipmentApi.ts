@@ -4,21 +4,32 @@ import { CreateEquipmentDto, Equipment, UpdateEquipmentDto } from '../types/Equi
 import { getAuthToken } from '../utils/authUtils';
 import { EQUIPMENT_ENDPOINT } from '../utils/envConfig';
 
-export const getAll = async (): Promise<Equipment[]> => {
+export interface EquipmentFilterParams {
+    search?: string;
+    categoryId?: number;
+    isAvailable?: boolean;
+    startDate?: string; // ISO date string YYYY-MM-DD
+    endDate?: string;   // ISO date string YYYY-MM-DD
+}
+
+export const getAll = async (filters?: EquipmentFilterParams): Promise<Equipment[]> => {
     try {
-        console.log("Fetching equipment from API...");
         const token = await getAuthToken();
-        console.log("Auth token obtained");
+
+        const params: Record<string, string> = {};
+        if (filters?.search) params.search = filters.search;
+        if (filters?.categoryId != null) params.categoryId = String(filters.categoryId);
+        if (filters?.isAvailable != null) params.isAvailable = String(filters.isAvailable);
+        if (filters?.startDate) params.startDate = filters.startDate;
+        if (filters?.endDate) params.endDate = filters.endDate;
 
         const response = await axios.get(EQUIPMENT_ENDPOINT, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            params
         });
-
-        console.log("API Response:", response.status, response.statusText);
-        console.log("Response data:", response.data);
 
         return response.data;
     } catch (error) {
@@ -26,7 +37,6 @@ export const getAll = async (): Promise<Equipment[]> => {
         if (axios.isAxiosError(error)) {
             console.error("Response data:", error.response?.data);
             console.error("Response status:", error.response?.status);
-            console.error("Response headers:", error.response?.headers);
         }
         throw error;
     }

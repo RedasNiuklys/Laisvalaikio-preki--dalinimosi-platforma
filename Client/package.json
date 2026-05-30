@@ -14,6 +14,9 @@
     "web:deploy:aws": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy-web-aws.ps1",
     "web:https": "npm run web:build && node https-server.js",
     "web:dev:https": "node https-dev-proxy.js",
+    "analyze:loc": "node ./scripts/analyze-loc.cjs",
+    "analyze:loc:src": "node ./scripts/analyze-loc.cjs --src-only",
+    "analyze:unused-loc": "node ./scripts/analyze-unused-loc.cjs",
     "eas:build:development": "npx eas build --platform android --profile development",
     "eas:build:preview": "npx eas build --platform android --profile preview",
     "eas:build:production": "npx eas build --platform android --profile production",
@@ -48,7 +51,6 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-i18next": "^15.4.1",
-    "react-rating": "^2.0.5",
     "react-native": "0.83.2",
     "react-native-calendars": "^1.1311.0",
     "react-native-geocoding": "^0.5.0",
@@ -67,8 +69,10 @@
     "@types/google.maps": "^3.58.1",
     "@types/node": "^25.6.2",
     "@types/react": "~19.2.10",
+    "baseline-browser-mapping": "^2.10.29",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.0",
+    "knip": "^6.13.1",
     "typescript": "~5.9.2"
   },
   "private": true

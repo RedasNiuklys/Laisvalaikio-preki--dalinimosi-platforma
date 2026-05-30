@@ -62,45 +62,78 @@ namespace Server.Controllers
             return StorageKeyHelper.StripLegacyUploadsPrefix(normalizedUrl.TrimStart('/'));
         }
 
-        // GET: api/Equipment
+        // GET: api/Equipment?search=drill&categoryId=3&isAvailable=true&startDate=2026-06-01&endDate=2026-06-07
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipment()
+        public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipment(
+            [FromQuery] string? search = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] bool? isAvailable = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             try
             {
-                System.Console.WriteLine("GetEquipment method called");
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                System.Console.WriteLine($"User ID from token: {userId}");
-
                 if (string.IsNullOrEmpty(userId))
-                {
-                    System.Console.WriteLine("User ID is null or empty, returning Unauthorized");
                     return Unauthorized();
-                }
 
-                System.Console.WriteLine("Fetching equipment from database");
-                var equipment = await _context.Equipment
+                var query = _context.Equipment
                     .AsNoTracking()
                     .Include(e => e.Location)
                     .Include(e => e.Images)
                     .Include(e => e.Category)
-                    .ToListAsync();
+                    .AsQueryable();
 
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var term = search.Trim().ToLower();
+                    query = query.Where(e =>
+                        e.Name.ToLower().Contains(term) ||
+                        (e.Description != null && e.Description.ToLower().Contains(term)));
+                }
+
+                if (categoryId.HasValue)
+                {
+                    // Collect the category and all its descendants so items in subcategories are included
+                    var allCategories = await _context.Categories.AsNoTracking().ToListAsync();
+                    var matchingIds = new HashSet<int>();
+                    var queue = new Queue<int>();
+                    queue.Enqueue(categoryId.Value);
+                    while (queue.Count > 0)
+                    {
+                        var current = queue.Dequeue();
+                        matchingIds.Add(current);
+                        foreach (var child in allCategories.Where(c => c.ParentCategoryId == current))
+                            queue.Enqueue(child.Id);
+                    }
+                    query = query.Where(e => matchingIds.Contains(e.CategoryId));
+                }
+
+                if (isAvailable.HasValue)
+                    query = query.Where(e => e.IsAvailable == isAvailable.Value);
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var start = startDate.Value.ToUniversalTime();
+                    var end = endDate.Value.ToUniversalTime();
+                    var activeStatuses = new[] { BookingStatus.Approved, BookingStatus.Picked };
+                    // Exclude equipment that has an active booking overlapping the requested window
+                    query = query.Where(e => !e.Bookings.Any(b =>
+                        activeStatuses.Contains(b.Status) &&
+                        b.StartDateTime < end &&
+                        b.EndDateTime > start));
+                }
+
+                var equipment = await query.ToListAsync();
                 var dtos = _mapper.Map<List<EquipmentResponseDto>>(equipment);
 
-                // Transform image URLs to full URLs
                 foreach (var dto in dtos)
                 {
                     if (dto.Images != null)
-                    {
                         foreach (var image in dto.Images)
-                        {
                             image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
-                        }
-                    }
                 }
 
-                System.Console.WriteLine($"Found {dtos.Count} equipment items");
                 return Ok(dtos);
             }
             catch (Exception ex)

@@ -157,7 +157,9 @@
       "hidePast": "Slėpti pasibaigusias rezervacijas",
       "noResults": "Pagal pasirinktus filtrus rezervacijų nerasta",
       "showCategories": "Rodyti kategorijas",
-      "hideCategories": "Slėpti kategorijas"
+      "hideCategories": "Slėpti kategorijas",
+      "upcoming": "Būsimos",
+      "past": "Praėjusios"
     },
     "actions": {
       "book": "Rezervuoti",
@@ -211,6 +213,7 @@
     "locations": "Vietos",
     "settings": "Nustatymai",
     "messages": "Pranešimai",
+    "bookings": "Rezervacijos",
     "admin": "Administratorius"
   },
   "settings": {
@@ -322,7 +325,7 @@
       "deleteConfirmTitle": "Ištrinti įrangą",
       "deleteConfirmMessage": "Ar tikrai norite ištrinti šią įrangą? Šis veiksmas negalimas atstatyti.",
       "markAvailable": "Pažymėti prieinamu",
-      "markUnavailable": "Pažymėti neprieinau",
+      "markUnavailable": "Pažymėti užimta",
       "edit": "Redaguoti įrangą",
       "owner": "Savininkas",
       "notFound": "Įranga nerasta",
@@ -410,7 +413,7 @@
     "email": "El. paštas",
     "personalInfo": "Asmeninė informacija",
     "myEquipment": "Mano įranga",
-    "myBookings": "Mano užsakymai",
+    "myBookings": "Mano rezervacijos",
     "settings": "Nustatymai",
     "editTitle": "Redaguoti profilį",
     "logout": "Atsijungti",
@@ -528,5 +531,21 @@
     "messages": "Pranešimai",
     "adminPanel": "Administratoriaus sąsaja",
     "about": "Apie"
+  },
+  "maintenance": {
+    "title": "Priežiūros istorija",
+    "add": "Pridėti",
+    "addTitle": "Pridėti priežiūros įrašą",
+    "noRecords": "Priežiūros įrašų nėra",
+    "addSuccess": "Priežiūros įrašas pridėtas",
+    "addError": "Nepavyko pridėti priežiūros įrašo",
+    "deleteError": "Nepavyko ištrinti priežiūros įrašo",
+    "form": {
+      "title": "Pavadinimas",
+      "description": "Aprašymas",
+      "performedBy": "Atliko",
+      "date": "Priežiūros data (YYYY-MM-DD)",
+      "notes": "Pastabos (neprivaloma)"
+    }
   }
 }

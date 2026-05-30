@@ -103,6 +103,7 @@
     "locations": "Locations",
     "settings": "Settings",
     "messages": "Messages",
+    "bookings": "Bookings",
     "admin": "Admin",
     "equipment/index": "Other Items"
   },
@@ -368,7 +369,9 @@
       "hidePast": "Hide past bookings",
       "noResults": "No bookings match the selected filters",
       "showCategories": "Show Categories",
-      "hideCategories": "Hide Categories"
+      "hideCategories": "Hide Categories",
+      "upcoming": "Upcoming",
+      "past": "Past"
 
     },
     "errors": {
@@ -565,5 +568,21 @@
     "messages": "Messages",
     "adminPanel": "Admin Panel",
     "about": "About"
+  },
+  "maintenance": {
+    "title": "Maintenance History",
+    "add": "Add",
+    "addTitle": "Add Maintenance Record",
+    "noRecords": "No maintenance records",
+    "addSuccess": "Maintenance record added",
+    "addError": "Failed to add maintenance record",
+    "deleteError": "Failed to delete maintenance record",
+    "form": {
+      "title": "Title",
+      "description": "Description",
+      "performedBy": "Performed By",
+      "date": "Maintenance Date (YYYY-MM-DD)",
+      "notes": "Notes (optional)"
+    }
   }
 }

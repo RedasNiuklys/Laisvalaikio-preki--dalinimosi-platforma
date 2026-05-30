@@ -33,6 +33,7 @@ export const CATEGORY_ENDPOINT = `${BASE_URL}/category`;
 export const CHAT_HUB_ENDPOINT = getWebSocketUrl();
 export const CHAT_ENDPOINT = `${BASE_URL}/chat`;
 export const MAINTENANCE_RECORD_ENDPOINT = `${BASE_URL}/maintenance-record`;
+export const MAINTENANCE_ENDPOINT = `${BASE_URL}/maintenance`;
 export const EQUIPMENT_IMAGE_ENDPOINT = `${BASE_URL}/equipment-image`;
 export const BOOKING_ENDPOINT = `${BASE_URL}/booking`;
 // Google Maps API Key

@@ -46,12 +46,20 @@ export interface Chat {
 //     createdAt: string;
 // }
 
+export interface BookingNotification {
+    bookingId: string;
+    status: string;
+    equipmentName: string;
+    message: string;
+}
+
 class ChatService {
     private hubConnection: HubConnection | null = null;
     private messageCallbacks: ((message: Message) => void)[] = [];
     private readReceiptCallbacks: ((data: { messageId: string; userId: string; readAt: string }) => void)[] = [];
     private chatUpdatedCallbacks: ((chatId: number) => void)[] = [];
     private unreadCountCallbacks: ((data: { chatId: number; unreadCount: number }) => void)[] = [];
+    private bookingNotificationCallbacks: ((data: BookingNotification) => void)[] = [];
     private reconnectAttempts = 0;
     private readonly maxReconnectAttempts = 5;
     private initialized = false;
@@ -104,6 +112,11 @@ class ChatService {
             // Set up unread count changed handling
             this.hubConnection.on('UnreadCountChanged', (data: { chatId: number; unreadCount: number }) => {
                 this.unreadCountCallbacks.forEach(callback => callback(data));
+            });
+
+            // Set up booking status notification handling
+            this.hubConnection.on('BookingStatusChanged', (data: BookingNotification) => {
+                this.bookingNotificationCallbacks.forEach(callback => callback(data));
             });
 
             // Handle reconnection
@@ -161,6 +174,13 @@ class ChatService {
         this.unreadCountCallbacks.push(callback);
         return () => {
             this.unreadCountCallbacks = this.unreadCountCallbacks.filter(cb => cb !== callback);
+        };
+    }
+
+    public onBookingStatusChanged(callback: (data: BookingNotification) => void) {
+        this.bookingNotificationCallbacks.push(callback);
+        return () => {
+            this.bookingNotificationCallbacks = this.bookingNotificationCallbacks.filter(cb => cb !== callback);
         };
     }
 

@@ -450,5 +450,159 @@ namespace Server.Tests.Controllers
             var result = await _controller.DeleteEquipment("nonexistent-id");
             Assert.IsType<NotFoundResult>(result);
         }
+
+        [Fact]
+        public async Task GetEquipment_WithSearchText_ReturnsMatchingResults()
+        {
+            var result = await _controller.GetEquipment(search: "Test");
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value).ToList();
+            Assert.Single(equipment);
+            Assert.Equal(_equipmentId, equipment[0].Id);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithSearchText_NoMatch_ReturnsEmpty()
+        {
+            var result = await _controller.GetEquipment(search: "Nonexistent_XYZ");
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value);
+            Assert.Empty(equipment);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithCategoryId_ReturnsMatchingResults()
+        {
+            var result = await _controller.GetEquipment(categoryId: 100);
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value).ToList();
+            Assert.Single(equipment);
+            Assert.Equal(_equipmentId, equipment[0].Id);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithCategoryId_UnknownCategory_ReturnsEmpty()
+        {
+            var result = await _controller.GetEquipment(categoryId: 9999);
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value);
+            Assert.Empty(equipment);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithCategoryId_IncludesSubcategoryDescendants()
+        {
+            var subCategory = new Category { Id = 200, Name = "Sub Category", IconName = "sub-icon", Slug = "SubSlug", ParentCategoryId = 100 };
+            await _context.Categories.AddAsync(subCategory);
+            var location = await _context.Locations.FindAsync(_locationId);
+            var currentUser = await _context.Users.FindAsync(_currentUserId);
+            await _context.Equipment.AddAsync(new Equipment
+            {
+                Id = "sub-equipment-id",
+                Name = "Sub Equipment",
+                Description = "Subcategory item",
+                OwnerId = _currentUserId,
+                Owner = currentUser,
+                CategoryId = 200,
+                Category = subCategory,
+                IsAvailable = true,
+                LocationId = _locationId,
+                Location = location,
+                CreatedAt = DateTime.UtcNow,
+                Reviews = []
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.GetEquipment(categoryId: 100);
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value).ToList();
+            Assert.Equal(2, equipment.Count);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithIsAvailable_True_ReturnsOnlyAvailableItems()
+        {
+            var existingEquipment = await _context.Equipment.FindAsync(_equipmentId);
+            existingEquipment!.IsAvailable = false;
+            var location = await _context.Locations.FindAsync(_locationId);
+            var category = await _context.Categories.FindAsync(100);
+            var currentUser = await _context.Users.FindAsync(_currentUserId);
+            await _context.Equipment.AddAsync(new Equipment
+            {
+                Id = "available-equipment-id",
+                Name = "Available Equipment",
+                Description = "This one is available",
+                OwnerId = _currentUserId,
+                Owner = currentUser,
+                CategoryId = 100,
+                Category = category,
+                IsAvailable = true,
+                LocationId = _locationId,
+                Location = location,
+                CreatedAt = DateTime.UtcNow,
+                Reviews = []
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.GetEquipment(isAvailable: true);
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value).ToList();
+            Assert.Single(equipment);
+            Assert.Equal("available-equipment-id", equipment[0].Id);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithDateRange_ExcludesEquipmentWithConflictingApprovedBooking()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "filter-booking",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = new DateTime(2026, 6, 5, 0, 0, 0, DateTimeKind.Utc),
+                EndDateTime = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc),
+                Status = BookingStatus.Approved,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.GetEquipment(
+                startDate: new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc),
+                endDate: new DateTime(2026, 6, 12, 0, 0, 0, DateTimeKind.Utc));
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value);
+            Assert.Empty(equipment);
+        }
+
+        [Fact]
+        public async Task GetEquipment_WithDateRange_IncludesEquipmentWithNonConflictingBooking()
+        {
+            await _context.Bookings.AddAsync(new Booking
+            {
+                Id = "non-conflicting-booking",
+                EquipmentId = _equipmentId,
+                UserId = _currentUserId,
+                StartDateTime = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+                EndDateTime = new DateTime(2026, 6, 5, 0, 0, 0, DateTimeKind.Utc),
+                Status = BookingStatus.Approved,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            var result = await _controller.GetEquipment(
+                startDate: new DateTime(2026, 6, 6, 0, 0, 0, DateTimeKind.Utc),
+                endDate: new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc));
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            var equipment = Assert.IsAssignableFrom<IEnumerable<EquipmentResponseDto>>(okObjectResult.Value);
+            Assert.Single(equipment);
+        }
     }
 }

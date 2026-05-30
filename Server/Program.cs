@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Amazon;
 using Amazon.S3;
-using System.Text;
 using Server.Services;
 using Server.Services.Storage;
 using Microsoft.AspNetCore.SignalR;
@@ -83,17 +82,10 @@ else
     });
 }
 
-var jwtKey = builder.Configuration["Jwt:Key"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
-builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddSingleton<IFirebaseTokenVerifier, FirebaseTokenVerifier>();
 builder.Services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
-
-System.Console.WriteLine("JWT Key: " + jwtKey);
-System.Console.WriteLine("JWT Issuer: " + jwtIssuer);
-System.Console.WriteLine("JWT Audience: " + jwtAudience);
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Configure authentication
 builder.Services.AddAuthentication(options =>

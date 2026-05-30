@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
+using Server.Hubs;
 using Server.Models;
 using System.Security.Claims;
 using AutoMapper;
@@ -18,12 +20,32 @@ namespace Server.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IObjectStorageService _objectStorage;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public BookingController(ApplicationDbContext context, IMapper mapper, IObjectStorageService objectStorage)
+        public BookingController(ApplicationDbContext context, IMapper mapper, IObjectStorageService objectStorage, IHubContext<ChatHub> hubContext)
         {
             _context = context;
             _mapper = mapper;
             _objectStorage = objectStorage;
+            _hubContext = hubContext;
+        }
+
+        private async Task SendBookingNotification(string recipientUserId, string bookingId, string status, string equipmentName)
+        {
+            try
+            {
+                await _hubContext.Clients.User(recipientUserId).SendAsync("BookingStatusChanged", new
+                {
+                    bookingId,
+                    status,
+                    equipmentName,
+                    message = $"Booking for \"{equipmentName}\" is now {status}"
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send booking notification: {ex.Message}");
+            }
         }
 
         // GET: api/Booking
@@ -133,6 +155,12 @@ namespace Server.Controllers
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
+
+            // Notify the equipment owner of the new booking request (if booker is not the owner)
+            if (userId != equipment.OwnerId)
+            {
+                await SendBookingNotification(equipment.OwnerId, booking.Id, booking.Status.ToString(), equipment.Name);
+            }
 
             // Reload with related data for response
             await _context.Entry(booking).Reference(b => b.Equipment).LoadAsync();
@@ -270,6 +298,7 @@ namespace Server.Controllers
                 booking.PickedAt = DateTime.UtcNow;
                 booking.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
+                await SendBookingNotification(booking.Equipment.OwnerId, booking.Id, BookingStatus.Picked.ToString(), booking.Equipment.Name);
                 return Ok();
             }
 
@@ -280,6 +309,7 @@ namespace Server.Controllers
             {
                 _context.Bookings.Remove(booking);
                 await _context.SaveChangesAsync();
+                await SendBookingNotification(booking.UserId, booking.Id, newStatus.ToString(), booking.Equipment.Name);
                 return Ok();
             }
 
@@ -300,6 +330,11 @@ namespace Server.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Notify the other party of the status change
+                var notifyUserId = isOwner ? booking.UserId : booking.Equipment.OwnerId;
+                await SendBookingNotification(notifyUserId, booking.Id, newStatus.ToString(), booking.Equipment.Name);
+
                 return Ok();
             }
             catch (DbUpdateConcurrencyException)
@@ -431,6 +466,7 @@ namespace Server.Controllers
             booking.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+            await SendBookingNotification(booking.UserId, booking.Id, booking.Status.ToString(), booking.Equipment.Name);
 
             var dto = _mapper.Map<BookingResponseDto>(booking);
             TransformBookingPhotoUrl(dto);
@@ -474,6 +510,7 @@ namespace Server.Controllers
             booking.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+            await SendBookingNotification(booking.UserId, booking.Id, BookingStatus.Picked.ToString(), booking.Equipment.Name);
 
             var dto = _mapper.Map<BookingResponseDto>(booking);
             TransformBookingPhotoUrl(dto);
