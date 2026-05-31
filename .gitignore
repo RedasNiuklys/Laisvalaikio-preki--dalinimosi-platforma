@@ -10,6 +10,7 @@ Server/**/bin/
 Server/**/obj/
 **/bin/
 **/obj/
+./.expo/
 node_modules/
 .vs/
 *.user
@@ -23,3 +24,4 @@ Server/appsettings.*.json
 Server/publish/
 Server/.ebbundle/
 Client/.env
+.claude/settings.json

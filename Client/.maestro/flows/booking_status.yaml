@@ -1,0 +1,15 @@
+appId: com.redasn.Client
+---
+- launchApp
+
+# Navigate to Bookings tab (profile or dedicated bookings section)
+- tapOn: "bookings.title"
+
+# The bookings screen heading must be visible
+- assertVisible: "bookings.title"
+
+# At least one booking card should exist (may be pending from prior E2E run)
+# Verify one of the known statuses appears
+- assertVisible:
+    text: "booking.status.*"
+    regex: true

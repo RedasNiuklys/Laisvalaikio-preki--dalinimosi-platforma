@@ -79,6 +79,7 @@ namespace Server.Controllers
 
                 var query = _context.Equipment
                     .AsNoTracking()
+                    .AsSplitQuery()
                     .Include(e => e.Location)
                     .Include(e => e.Images)
                     .Include(e => e.Category)
@@ -452,6 +453,7 @@ namespace Server.Controllers
         {
             var equipment = await _context.Equipment
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(e => e.Location)
                 .Include(e => e.Images)
                 .Include(e => e.Category)

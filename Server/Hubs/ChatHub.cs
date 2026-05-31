@@ -32,12 +32,10 @@ public class ChatHub : Hub
 
             Console.WriteLine($"Found {userChats.Count} chats for user {userId}");
 
-            // Join all chat groups
-            foreach (var chatId in userChats)
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-                Console.WriteLine($"Joined chat group {chatId}");
-            }
+            // Join all chat groups in parallel
+            await Task.WhenAll(userChats.Select(chatId =>
+                Groups.AddToGroupAsync(Context.ConnectionId, chatId)));
+            Console.WriteLine($"Joined {userChats.Count} chat groups");
         }
         await base.OnConnectedAsync();
     }

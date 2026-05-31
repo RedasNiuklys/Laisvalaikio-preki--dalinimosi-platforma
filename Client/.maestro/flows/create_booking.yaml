@@ -1,0 +1,34 @@
+appId: com.redasn.Client
+---
+- launchApp
+
+# Navigate to Equipment tab
+- tapOn: "equipment.title"
+
+# Open first equipment card
+- tapOn:
+    index: 0
+
+# Tap the "Book" / create booking button
+- tapOn: "booking.create"
+
+# Booking modal should appear — pick start date
+- assertVisible: "booking.startDate"
+- tapOn: "booking.startDate"
+
+# Select a date from the calendar (tap a date cell)
+- tapOn:
+    index: 1
+    id: "calendar-day"
+
+# Pick end date
+- tapOn: "booking.endDate"
+- tapOn:
+    index: 3
+    id: "calendar-day"
+
+# Confirm
+- tapOn: "common.buttons.save"
+
+# Booking created — status pending should be visible in the list
+- assertVisible: "booking.status.pending"

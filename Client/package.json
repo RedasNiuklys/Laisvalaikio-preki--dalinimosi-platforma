@@ -21,7 +21,13 @@
     "eas:build:preview": "npx eas build --platform android --profile preview",
     "eas:build:production": "npx eas build --platform android --profile production",
     "proxy": "node https-dev-proxy.js",
-    "lint": "npx expo lint"
+    "lint": "npx expo lint",
+    "test": "jest --watchAll=false",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --watchAll=false",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "overrides": {
     "glob": "^12.0.0",
@@ -66,13 +72,19 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@playwright/test": "^1.60.0",
+    "@testing-library/react-native": "^13.3.3",
     "@types/google.maps": "^3.58.1",
+    "@types/jest": "^29.5.14",
     "@types/node": "^25.6.2",
     "@types/react": "~19.2.10",
     "baseline-browser-mapping": "^2.10.29",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.0",
+    "jest": "^29.7.0",
+    "jest-expo": "~55.0.0",
     "knip": "^6.13.1",
+    "react-test-renderer": "^19.2.0",
     "typescript": "~5.9.2"
   },
   "private": true

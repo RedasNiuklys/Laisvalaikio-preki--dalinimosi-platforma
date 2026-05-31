@@ -1,0 +1,18 @@
+appId: com.redasn.Client
+---
+- launchApp
+
+# Navigate to Equipment tab
+- tapOn: "equipment.title"
+
+# Equipment list should show cards
+- assertVisible:
+    id: "equipment-list"
+
+# Type in the search bar
+- tapOn:
+    id: "equipment-search-input"
+- inputText: "Bicycle"
+
+# At least one result matching the query should appear
+- assertVisible: "Bicycle"

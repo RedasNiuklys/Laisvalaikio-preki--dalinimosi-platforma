@@ -36,13 +36,11 @@ public class ChatController : ControllerBase
 
         Console.WriteLine($"GetUserChats - UserId: {userId}");
 
+        // AsNoTracking + no Include on Messages: EF Core generates correlated SQL
+        // subqueries for LastMessage/UnreadCount instead of loading all messages eagerly.
         var chats = await _context.ChatParticipants
+            .AsNoTracking()
             .Where(p => p.UserId == userId)
-            .Include(p => p.Chat)
-                .ThenInclude(c => c.Participants)
-                    .ThenInclude(p => p.User)
-            .Include(p => p.Chat.Messages)
-                .ThenInclude(m => m.ReadReceipts)
             .Select(p => new ChatResponseDto
             {
                 Id = p.Chat.Id,
@@ -66,8 +64,7 @@ public class ChatController : ControllerBase
                     })
                     .FirstOrDefault(),
                 UnreadCount = p.Chat.Messages
-                    .Where(m => m.SenderId != userId && !m.ReadReceipts.Any(r => r.UserId == userId))
-                    .Count(),
+                    .Count(m => m.SenderId != userId && !m.ReadReceipts.Any(r => r.UserId == userId)),
                 Participants = p.Chat.Participants.Select(part => new ParticipantDto
                 {
                     Id = part.User.Id,

@@ -595,9 +595,10 @@ namespace Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("ChatId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("ChatParticipants");
                 });
@@ -805,7 +806,6 @@ namespace Server.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PerformedBy")
@@ -848,9 +848,9 @@ namespace Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
-
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("ChatId", "SentAt");
 
                     b.ToTable("Messages");
                 });

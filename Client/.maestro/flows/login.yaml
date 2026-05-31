@@ -1,0 +1,19 @@
+appId: com.redasn.Client
+---
+- launchApp:
+    clearState: true
+
+# Wait for login screen
+- assertVisible: "auth.login.title"
+
+# Enter credentials
+- tapOn: "auth.login.emailLabel"
+- inputText: "test@example.com"
+- tapOn: "auth.login.passwordLabel"
+- inputText: "Password123!"
+
+# Submit
+- tapOn: "auth.login.submit"
+
+# After successful login the equipment tab should be visible
+- assertVisible: "equipment.title"
