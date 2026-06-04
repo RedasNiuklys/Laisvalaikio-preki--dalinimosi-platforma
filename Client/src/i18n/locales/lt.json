@@ -428,6 +428,10 @@
     },
     "updateSuccess": "Profilis sėkmingai atnaujintas",
     "updateError": "Nepavyko atnaujinti profilio",
+    "memberSince": "Narys nuo {{date}}",
+    "completedRentals": "{{count}} užbaigtų nuomų",
+    "lentOut": "{{count}} išnuomota daiktų",
+    "ratingAsOwner": "{{rating}} vid. savininko įvertinimas",
     "permissions": {
       "title": "Reikalingi leidimai",
       "message": "Prašome suteikti prieigą"
@@ -506,7 +510,11 @@
     "users": "Ieškoti vartotojų...",
     "equipment": "Ieškoti įrangos...",
     "location": "Ieškoti vietos...",
-    "loadingUsers": "Įkeliami vartotojai..."
+    "loadingUsers": "Įkeliami vartotojai...",
+    "nearMe": "Šalia manęs",
+    "radius": "Spindulys",
+    "km": "km",
+    "locationPermissionDenied": "Prieiga prie vietos atsisakyta. Įjunkite nustatymuose."
   },
   "forms": {
     "selectLocation": "Pasirinkite vietą",
@@ -547,5 +555,29 @@
       "date": "Priežiūros data (YYYY-MM-DD)",
       "notes": "Pastabos (neprivaloma)"
     }
+  },
+  "notifications": {
+    "bookingApproved": "Jūsų rezervacija patvirtinta",
+    "bookingRejected": "Rezervacijos užklausa atmesta",
+    "bookingPicked": "Įranga paimta — nuoma pradėta",
+    "returnRequested": "Pateikta grąžinimo užklausa",
+    "returnApproved": "Grąžinimas patvirtintas",
+    "newMessage": "Nauja žinutė nuo {{sender}}"
+  },
+  "notificationCenter": {
+    "title": "Pranešimai",
+    "empty": "Pranešimų dar nėra",
+    "markAllRead": "Pažymėti visus kaip skaitytus"
+  },
+  "addToCalendar": {
+    "title": "Pridėti į kalendorių",
+    "subtitle": "Ar norite išsaugoti šį užsakymą kalendoriuje?",
+    "addGoogle": "Pridėti į Google kalendorių",
+    "addOutlook": "Pridėti į Outlook kalendorių",
+    "addGeneric": "Pridėti į kalendorių",
+    "skip": "Praleisti",
+    "permissionDenied": "Prieiga prie kalendoriaus atsisakyta",
+    "success": "Įvykis pridėtas į kalendorių",
+    "error": "Nepavyko pridėti įvykio į kalendorių"
   }
 }

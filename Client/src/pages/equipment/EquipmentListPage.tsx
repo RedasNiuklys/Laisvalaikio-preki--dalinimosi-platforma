@@ -20,6 +20,9 @@ import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getCategoryLabel } from "@/src/utils/categoryUtils";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Location from "expo-location";
+
+const RADIUS_OPTIONS = [5, 10, 25, 50];
 
 type EquipmentListPageProps = {
     ownerOnly?: boolean;
@@ -38,6 +41,9 @@ export default function EquipmentListPage({
     const [showCategories, setShowCategories] = useState(true);
     const [searchText, setSearchText] = useState("");
     const [availableOnly, setAvailableOnly] = useState(false);
+    const [nearMeEnabled, setNearMeEnabled] = useState(false);
+    const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [selectedRadius, setSelectedRadius] = useState(10);
     const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
     const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
     const [showStartPicker, setShowStartPicker] = useState(false);
@@ -106,11 +112,27 @@ export default function EquipmentListPage({
         }
 
         if (availableOnly) {
-            filtered = filtered.filter((item) => item.isAvailable);
+            filtered = filtered.filter((item) => item.IsAvailable);
         }
 
         setFilteredEquipment(filtered);
     }, [categories, equipment, selectedCategorySlug, searchText, availableOnly]);
+
+    const toggleNearMe = useCallback(async () => {
+        if (nearMeEnabled) {
+            setNearMeEnabled(false);
+            setUserCoords(null);
+            return;
+        }
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+            showToast("error", t("search.locationPermissionDenied"));
+            return;
+        }
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setNearMeEnabled(true);
+    }, [nearMeEnabled, t]);
 
     const fetchEquipment = useCallback(async (startDate?: Date | null, endDate?: Date | null) => {
         if (!isAuthenticated) {
@@ -132,6 +154,11 @@ export default function EquipmentListPage({
                     filters.startDate = startDate.toISOString().split("T")[0];
                     filters.endDate = endDate.toISOString().split("T")[0];
                 }
+                if (nearMeEnabled && userCoords) {
+                    filters.latitude = userCoords.latitude;
+                    filters.longitude = userCoords.longitude;
+                    filters.radiusKm = selectedRadius;
+                }
                 const allEquipment = await equipmentApi.getAll(filters);
                 data = user?.id
                     ? allEquipment.filter((item) => item.ownerId !== user.id)
@@ -145,7 +172,7 @@ export default function EquipmentListPage({
         } finally {
             setLoading(false);
         }
-    }, [isAuthenticated, ownerOnly, t, user?.id]);
+    }, [isAuthenticated, nearMeEnabled, userCoords, selectedRadius, ownerOnly, t, user?.id]);
 
     useEffect(() => {
         fetchCategories();
@@ -162,6 +189,10 @@ export default function EquipmentListPage({
             fetchEquipment();
         }
     }, [filterStartDate, filterEndDate]);
+
+    useEffect(() => {
+        fetchEquipment(filterStartDate, filterEndDate);
+    }, [nearMeEnabled, userCoords, selectedRadius, fetchEquipment, filterStartDate, filterEndDate]);
 
     useEffect(() => {
         filterEquipment();
@@ -225,6 +256,7 @@ export default function EquipmentListPage({
     };
 
     const renderEquipmentItem = ({ item }: { item: Equipment }) => {
+        console.log("Rendering item", item.id);
         const isOwner = item.ownerId === user?.id;
         const mainImage =
             item.images?.find((img) => img.isMainImage || img.isMain)?.imageUrl ||
@@ -244,7 +276,11 @@ export default function EquipmentListPage({
                     />
                     <Card.Title
                         title={item.name}
-                        subtitle={getCategoryLabel(item.category, t)}
+                        subtitle={
+                            item.distanceKm != null
+                                ? `${getCategoryLabel(item.category, t)} · ${item.distanceKm} ${t("search.km")}`
+                                : getCategoryLabel(item.category, t)
+                        }
                         titleStyle={styles.cardTitle}
                         subtitleStyle={styles.cardSubtitle}
                     />
@@ -367,6 +403,34 @@ export default function EquipmentListPage({
                 >
                     {t("equipment.available")}
                 </Chip>
+
+                {!ownerOnly && (
+                    <Chip
+                        selected={nearMeEnabled}
+                        onPress={toggleNearMe}
+                        icon={() => (
+                            <MaterialCommunityIcons
+                                name="crosshairs-gps"
+                                size={16}
+                                color={nearMeEnabled ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                            />
+                        )}
+                        style={nearMeEnabled ? { backgroundColor: theme.colors.primaryContainer } : undefined}
+                    >
+                        {t("search.nearMe")}
+                    </Chip>
+                )}
+
+                {nearMeEnabled && RADIUS_OPTIONS.map((r) => (
+                    <Chip
+                        key={r}
+                        selected={selectedRadius === r}
+                        onPress={() => setSelectedRadius(r)}
+                        style={selectedRadius === r ? { backgroundColor: theme.colors.secondaryContainer } : undefined}
+                    >
+                        {r} {t("search.km")}
+                    </Chip>
+                ))}
 
                 {/* Date range filter */}
                 {Platform.OS === "web" ? (

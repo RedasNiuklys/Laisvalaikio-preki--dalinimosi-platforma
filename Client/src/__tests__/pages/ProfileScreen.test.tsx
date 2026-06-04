@@ -65,4 +65,53 @@ describe('ProfileScreen', () => {
     }
     expect(error).toBeUndefined();
   });
+
+  it('calls getProfile on mount', () => {
+    const { getProfile } = require('@/src/api/userApi');
+    render(<ProfileScreen />, { wrapper: Wrapper });
+    expect(getProfile).toHaveBeenCalled();
+  });
+});
+
+describe('ProfileScreen — with resolved profile data', () => {
+  const mockProfile = {
+    id: 'user-1',
+    email: 'alice@example.com',
+    firstName: 'Alice',
+    lastName: 'Smith',
+    userName: 'alice',
+    avatarUrl: null,
+  };
+
+  beforeEach(() => {
+    const { getProfile } = require('@/src/api/userApi');
+    (getProfile as jest.Mock).mockResolvedValueOnce(mockProfile);
+  });
+
+  it('shows user email after profile loads', async () => {
+    const { findByText } = render(<ProfileScreen />, { wrapper: Wrapper });
+    await expect(
+      findByText(/alice@example\.com/i, {}, { timeout: 3000 })
+    ).resolves.toBeTruthy();
+  });
+
+  it('shows avatar placeholder initial when no avatar', async () => {
+    const { findByText } = render(<ProfileScreen />, { wrapper: Wrapper });
+    // Initial letter of firstName shown as avatar placeholder
+    await expect(findByText('A', {}, { timeout: 3000 })).resolves.toBeTruthy();
+  });
+
+  it('shows Edit Profile button after profile loads', async () => {
+    const { findByText } = render(<ProfileScreen />, { wrapper: Wrapper });
+    await expect(
+      findByText(/edit profile/i, {}, { timeout: 3000 })
+    ).resolves.toBeTruthy();
+  });
+
+  it('shows logout button after profile loads', async () => {
+    const { findByText } = render(<ProfileScreen />, { wrapper: Wrapper });
+    await expect(
+      findByText(/profile\.logout|logout|log out/i, {}, { timeout: 3000 })
+    ).resolves.toBeTruthy();
+  });
 });

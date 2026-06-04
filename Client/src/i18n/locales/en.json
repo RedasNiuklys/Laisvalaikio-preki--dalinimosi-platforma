@@ -466,6 +466,10 @@
     },
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
+    "memberSince": "Member since {{date}}",
+    "completedRentals": "{{count}} completed rentals",
+    "lentOut": "{{count}} items lent out",
+    "ratingAsOwner": "{{rating}} avg. owner rating",
     "permissions": {
       "title": "Permissions Required",
       "message": "Please grant access to continue"
@@ -543,7 +547,11 @@
     "users": "Search users...",
     "equipment": "Search equipment...",
     "location": "Search location...",
-    "loadingUsers": "Loading users..."
+    "loadingUsers": "Loading users...",
+    "nearMe": "Near me",
+    "radius": "Radius",
+    "km": "km",
+    "locationPermissionDenied": "Location access denied. Enable in settings."
   },
   "forms": {
     "selectLocation": "Select a location",
@@ -584,5 +592,29 @@
       "date": "Maintenance Date (YYYY-MM-DD)",
       "notes": "Notes (optional)"
     }
+  },
+  "notifications": {
+    "bookingApproved": "Your booking was approved",
+    "bookingRejected": "Booking request was declined",
+    "bookingPicked": "Equipment picked up — rental started",
+    "returnRequested": "Return has been requested",
+    "returnApproved": "Return was approved",
+    "newMessage": "New message from {{sender}}"
+  },
+  "notificationCenter": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all as read"
+  },
+  "addToCalendar": {
+    "title": "Add to Calendar",
+    "subtitle": "Would you like to save this booking to your calendar?",
+    "addGoogle": "Add to Google Calendar",
+    "addOutlook": "Add to Outlook Calendar",
+    "addGeneric": "Add to Calendar",
+    "skip": "Skip",
+    "permissionDenied": "Calendar access was denied",
+    "success": "Event added to calendar",
+    "error": "Failed to add event to calendar"
   }
 }

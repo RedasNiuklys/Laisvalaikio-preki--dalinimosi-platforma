@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Server.Models;
 using Microsoft.EntityFrameworkCore;
 using Server.DataTransferObjects;
+using Server.Services;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,27 +15,19 @@ public class UserController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
-    // private readonly ILogger<UserController> // _logger;
-
-    // public class UpdateUserDto
-    // {
-    //     public string Name { get; set; }
-    //     public string Theme { get; set; }
-    //     [EmailAddress]
-    //     public string Email { get; set; }
-    //     public string AvatarUrl { get; set; }
-    // }
+    private readonly ApplicationDbContext _context;
 
     public UserController(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
-        ILogger<UserController> logger)
+        ILogger<UserController> logger,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _configuration = configuration;
-        // _logger = logger;
+        _context = context;
     }
 
     private string GetFullAvatarUrl(string avatarUrl)
@@ -100,7 +93,6 @@ public class UserController : ControllerBase
     }
 
     // GET: api/user/{id}
-    // [Authorize(Roles = "Admin")] // For development purposes
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetUser(string id)
     {
@@ -111,6 +103,7 @@ public class UserController : ControllerBase
                 return NotFound($"User with ID {id} not found");
 
             var roles = await _userManager.GetRolesAsync(user);
+            var reputation = await GetReputationAsync(id);
 
             return Ok(new UserDto
             {
@@ -121,12 +114,15 @@ public class UserController : ControllerBase
                 LastName = user.LastName,
                 Theme = user.Theme,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
-                Roles = roles
+                Roles = roles,
+                CompletedBookingsCount = reputation.completedBookings,
+                LentOutCount = reputation.lentOut,
+                AverageRatingAsOwner = reputation.avgRating,
+                MemberSince = user.CreatedAt
             });
         }
         catch (Exception ex)
         {
-            // _logger.LogError(ex, "Error retrieving user {UserId}", id);
             return StatusCode(500, "Internal server error occurred while retrieving user");
         }
     }
@@ -145,6 +141,9 @@ public class UserController : ControllerBase
                 return NotFound("User not found");
 
             var roles = await _userManager.GetRolesAsync(user);
+            var reputation = await GetReputationAsync(userId);
+            var unreadNotifications = await _context.Notifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
 
             return Ok(new UserDto
             {
@@ -155,14 +154,51 @@ public class UserController : ControllerBase
                 LastName = user.LastName,
                 AvatarUrl = GetFullAvatarUrl(user.AvatarUrl),
                 Theme = user.Theme,
-                Roles = roles
+                Roles = roles,
+                CompletedBookingsCount = reputation.completedBookings,
+                LentOutCount = reputation.lentOut,
+                AverageRatingAsOwner = reputation.avgRating,
+                MemberSince = user.CreatedAt,
+                UnreadNotificationsCount = unreadNotifications
             });
         }
         catch (Exception ex)
         {
-            // _logger.LogError(ex, "Error retrieving user profile");
             return StatusCode(500, "Internal server error occurred while retrieving profile");
         }
+    }
+
+    // PATCH: api/user/push-token
+    [Authorize]
+    [HttpPatch("push-token")]
+    public async Task<IActionResult> UpdatePushToken([FromBody] PushTokenDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound();
+
+        user.PushToken = dto.PushToken;
+        await _userManager.UpdateAsync(user);
+        return NoContent();
+    }
+
+    private async Task<(int completedBookings, int lentOut, double avgRating)> GetReputationAsync(string userId)
+    {
+        var completedStatuses = new[] { BookingStatus.Returned, BookingStatus.ReturnedEarly };
+
+        var completedBookings = await _context.Bookings
+            .CountAsync(b => b.UserId == userId && completedStatuses.Contains(b.Status));
+
+        var lentOut = await _context.Bookings
+            .Include(b => b.Equipment)
+            .CountAsync(b => b.Equipment.OwnerId == userId && completedStatuses.Contains(b.Status));
+
+        var avgRating = await _context.Reviews
+            .Include(r => r.Equipment)
+            .Where(r => r.Equipment.OwnerId == userId)
+            .AverageAsync(r => (double?)r.Rating) ?? 0.0;
+
+        return (completedBookings, lentOut, Math.Round(avgRating, 1));
     }
 
     // PUT: api/user/{id}

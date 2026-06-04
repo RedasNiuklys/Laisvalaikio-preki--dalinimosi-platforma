@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -52,6 +52,14 @@ jest.mock('@/src/components/LocationMap', () => () => null);
 jest.mock('@/src/components/BookingModal', () => () => null);
 jest.mock('@/src/components/BookingsCalendar', () => () => null);
 jest.mock('@/src/components/BookingsListModal', () => () => null);
+jest.mock('@/src/components/AddToCalendarDialog', () => () => null);
+jest.mock('@/src/utils/calendarUtils', () => ({
+  resolveCalendarMode: jest.fn(() => 'web_both'),
+  buildEventDetails: jest.fn(),
+  buildGoogleCalendarUrl: jest.fn(() => ''),
+  buildOutlookCalendarUrl: jest.fn(() => ''),
+  addToDeviceCalendar: jest.fn(() => Promise.resolve('success')),
+}));
 jest.mock('@/src/utils/envConfig', () => ({ BASE_URL: 'http://localhost:5000' }));
 jest.mock('react-native-maps', () => ({ default: () => null, Marker: () => null }));
 jest.mock('react-rating', () => () => null);
@@ -98,5 +106,35 @@ describe('EquipmentDetailsPage', () => {
     expect(() =>
       render(<EquipmentDetailsPage id="eq-1" initialBookingId="b-1" />, { wrapper: Wrapper })
     ).not.toThrow();
+  });
+
+  it('renders with openBookingsListOnLoad=true without crashing', () => {
+    expect(() =>
+      render(<EquipmentDetailsPage id="eq-1" openBookingsListOnLoad={true} />, { wrapper: Wrapper })
+    ).not.toThrow();
+  });
+
+  it('shows loading indicator while data is loading', () => {
+    const { UNSAFE_getByType } = render(
+      <EquipmentDetailsPage id="eq-1" />,
+      { wrapper: Wrapper }
+    );
+    const { ActivityIndicator } = require('react-native-paper');
+    // Component starts in loading state — ActivityIndicator is present
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+  });
+});
+
+describe('EquipmentDetailsPage — API interactions', () => {
+  it('calls getById with the provided id', async () => {
+    const { getById } = require('@/src/api/equipmentApi');
+    render(<EquipmentDetailsPage id="eq-42" />, { wrapper: Wrapper });
+    await waitFor(() => expect(getById).toHaveBeenCalledWith('eq-42'));
+  });
+
+  it('calls getById immediately on mount with a different id', async () => {
+    const { getById } = require('@/src/api/equipmentApi');
+    render(<EquipmentDetailsPage id="eq-99" />, { wrapper: Wrapper });
+    await waitFor(() => expect(getById).toHaveBeenCalledWith('eq-99'));
   });
 });

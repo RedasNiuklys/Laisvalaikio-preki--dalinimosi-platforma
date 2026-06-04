@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { View, StyleSheet, ScrollView, Image, Platform } from "react-native";
 import {
     Text,
@@ -29,12 +29,15 @@ import { BASE_URL } from "@/src/utils/envConfig";
 import { getAuthToken } from "@/src/utils/authUtils";
 import { chatService } from "@/src/services/ChatService";
 import { getUserById } from "@/src/api/userApi";
+import UserProfileCard, { UserReputation } from "@/src/components/UserProfileCard";
 import i18n from "@/src/i18n";
 import { getCategoryLabel } from "@/src/utils/categoryUtils";
 import { createReview, deleteReview, getReviewEligibility, updateReview } from "@/src/api/reviewApi";
 import { Review, ReviewEligibility } from "@/src/types/Review";
 import * as maintenanceApi from "@/src/api/maintenanceApi";
 import Rating from "react-rating";
+import AddToCalendarDialog from "@/src/components/AddToCalendarDialog";
+import { resolveCalendarMode } from "@/src/utils/calendarUtils";
 
 type EquipmentDetailsPageProps = {
     id: string;
@@ -52,7 +55,7 @@ export default function EquipmentDetailsPage({
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, authProvider } = useAuth();
     const router = useRouter();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [showBookingModal, setShowBookingModal] = useState(false);
@@ -60,6 +63,7 @@ export default function EquipmentDetailsPage({
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [didAutoOpenBookings, setDidAutoOpenBookings] = useState(false);
     const [ownerDisplayName, setOwnerDisplayName] = useState("");
+    const [ownerReputation, setOwnerReputation] = useState<UserReputation | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [reviewEligibility, setReviewEligibility] = useState<ReviewEligibility | null>(null);
     const [reviewRating, setReviewRating] = useState(5);
@@ -81,6 +85,11 @@ export default function EquipmentDetailsPage({
     const [maintenanceNotes, setMaintenanceNotes] = useState("");
     const [maintenanceSetUnavailable, setMaintenanceSetUnavailable] = useState(false);
     const [submittingMaintenance, setSubmittingMaintenance] = useState(false);
+    const [calendarDialogBooking, setCalendarDialogBooking] = useState<Booking | null>(null);
+    const calendarMode = useMemo(
+        () => resolveCalendarMode(Platform.OS, authProvider ?? ""),
+        [authProvider]
+    );
     const isMountedRef = useRef(true);
     const isNative = Platform.OS !== "web";
     const REVIEWS_PER_PAGE = 3;
@@ -187,6 +196,7 @@ export default function EquipmentDetailsPage({
                 .trim();
             if (isMountedRef.current) {
                 setOwnerDisplayName(fullName || owner?.userName || owner?.email || ownerId);
+                setOwnerReputation(owner as UserReputation);
             }
         } catch (error) {
             console.error("Error fetching equipment owner details:", error);
@@ -441,6 +451,7 @@ export default function EquipmentDetailsPage({
             // Reload bookings after creating a new one
             await loadBookings(equipment.id);
             showToast("success", isOwner ? t("booking.ownerSuccess") : t("booking.doneSuccess"));
+            setCalendarDialogBooking(createdBooking);
         } catch (error) {
             console.error("Error creating booking:", error);
             showToast("error", t("booking.error"));
@@ -632,6 +643,9 @@ export default function EquipmentDetailsPage({
                                     />
                                     <Text style={[styles.infoText, { color: theme.colors.onSurface }]}>{t("equipment.details.owner")}: {ownerDisplayName}</Text>
                                 </View>
+                                {ownerReputation && user?.id !== equipment?.ownerId && (
+                                    <UserProfileCard user={ownerReputation} showReputation />
+                                )}
                             </Card.Content>
                         </Card>
 
@@ -924,6 +938,16 @@ export default function EquipmentDetailsPage({
                     }
                 }}
             />
+
+            {calendarDialogBooking && (
+                <AddToCalendarDialog
+                    visible={!!calendarDialogBooking}
+                    onDismiss={() => setCalendarDialogBooking(null)}
+                    booking={calendarDialogBooking}
+                    equipmentName={equipment?.name || ''}
+                    calendarMode={calendarMode}
+                />
+            )}
 
             <Portal>
                 <Modal

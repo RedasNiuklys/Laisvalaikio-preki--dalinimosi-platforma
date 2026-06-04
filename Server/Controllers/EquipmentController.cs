@@ -35,6 +35,17 @@ namespace Server.Controllers
             _objectStorage = objectStorage;
         }
 
+        private static double HaversineDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double R = 6371.0;
+            var dLat = (lat2 - lat1) * Math.PI / 180.0;
+            var dLon = (lon2 - lon1) * Math.PI / 180.0;
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+                + Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2 * Math.PI / 180.0)
+                * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        }
+
         private string GetFullImageUrl(string imageUrl, string equipmentId)
         {
             if (string.IsNullOrEmpty(imageUrl)) return null;
@@ -62,14 +73,17 @@ namespace Server.Controllers
             return StorageKeyHelper.StripLegacyUploadsPrefix(normalizedUrl.TrimStart('/'));
         }
 
-        // GET: api/Equipment?search=drill&categoryId=3&isAvailable=true&startDate=2026-06-01&endDate=2026-06-07
+        // GET: api/Equipment?search=drill&categoryId=3&isAvailable=true&startDate=2026-06-01&endDate=2026-06-07&latitude=54.68&longitude=25.27&radiusKm=10
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EquipmentResponseDto>>> GetEquipment(
             [FromQuery] string? search = null,
             [FromQuery] int? categoryId = null,
             [FromQuery] bool? isAvailable = null,
             [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null)
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] double? latitude = null,
+            [FromQuery] double? longitude = null,
+            [FromQuery] double? radiusKm = null)
         {
             try
             {
@@ -126,13 +140,38 @@ namespace Server.Controllers
                 }
 
                 var equipment = await query.ToListAsync();
+
+                // Apply Haversine radius filter in memory (after EF evaluation)
+                const double R = 6371.0;
+                var effectiveRadius = radiusKm ?? 10.0;
+                if (latitude.HasValue && longitude.HasValue)
+                {
+                    equipment = equipment
+                        .Where(e =>
+                            e.Location?.Latitude != null && e.Location?.Longitude != null &&
+                            HaversineDistance(latitude.Value, longitude.Value,
+                                e.Location.Latitude!.Value, e.Location.Longitude!.Value) <= effectiveRadius)
+                        .OrderBy(e => HaversineDistance(latitude.Value, longitude.Value,
+                            e.Location!.Latitude!.Value, e.Location.Longitude!.Value))
+                        .ToList();
+                }
+
                 var dtos = _mapper.Map<List<EquipmentResponseDto>>(equipment);
 
-                foreach (var dto in dtos)
+                for (var i = 0; i < dtos.Count; i++)
                 {
+                    var dto = dtos[i];
                     if (dto.Images != null)
                         foreach (var image in dto.Images)
                             image.ImageUrl = GetFullImageUrl(image.ImageUrl, image.EquipmentId);
+
+                    if (latitude.HasValue && longitude.HasValue &&
+                        equipment[i].Location?.Latitude != null && equipment[i].Location?.Longitude != null)
+                    {
+                        dto.DistanceKm = Math.Round(HaversineDistance(
+                            latitude.Value, longitude.Value,
+                            equipment[i].Location!.Latitude!.Value, equipment[i].Location!.Longitude!.Value), 1);
+                    }
                 }
 
                 return Ok(dtos);

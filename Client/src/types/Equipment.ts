@@ -37,6 +37,7 @@ export interface Equipment {
     tags: string[];
     condition: string;
     IsAvailable: boolean;
+    isAvailable?: boolean;
     locationId?: string;
     location: Location;
     createdAt: string;
@@ -45,6 +46,7 @@ export interface Equipment {
     reviews?: Review[];
     maintenanceHistory: MaintenanceRecord[];
     images: EquipmentImage[];
+    distanceKm?: number;
 }
 
 // export interface Category {

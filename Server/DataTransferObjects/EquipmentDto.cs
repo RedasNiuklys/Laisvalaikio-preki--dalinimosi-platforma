@@ -50,6 +50,7 @@ namespace Server.DataTransferObjects
         public List<EquipmentImageDto> Images { get; set; } = new();
         public List<BookingDto> Bookings { get; set; } = new();
         public List<ReviewResponseDto> Reviews { get; set; } = new();
+        public double? DistanceKm { get; set; }
     }
 
     public class CategoryDto

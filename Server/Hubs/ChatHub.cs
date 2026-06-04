@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
+using Server.Services;
 
 namespace Server.Hubs;
 
@@ -9,12 +10,12 @@ namespace Server.Hubs;
 public class ChatHub : Hub
 {
     private readonly ApplicationDbContext _context;
-    // private readonly ILogger<ChatHub> _logger;
+    private readonly NotificationService _notificationService;
 
-    public ChatHub(ApplicationDbContext context)
+    public ChatHub(ApplicationDbContext context, NotificationService notificationService)
     {
         _context = context;
-        // _logger = logger;
+        _notificationService = notificationService;
     }
 
     public override async Task OnConnectedAsync()
@@ -124,6 +125,9 @@ public class ChatHub : Hub
 
         if (chat != null)
         {
+            var senderName = $"{sender.FirstName} {sender.LastName}".Trim();
+            if (string.IsNullOrEmpty(senderName)) senderName = sender.UserName ?? "Someone";
+
             // Notify sender about chat update (for LastMessage in chat list)
             await NotifyUserOfChatUpdate(userId, chatId);
 
@@ -141,6 +145,14 @@ public class ChatHub : Hub
 
                 // Notify about unread count change
                 await NotifyUnreadCountChanged(participant.UserId, chatId, unreadCount);
+
+                // Send push notification for new message
+                await _notificationService.CreateAndSendAsync(
+                    participant.UserId,
+                    NotificationType.Chat,
+                    senderName,
+                    content.Length > 100 ? content[..100] + "…" : content,
+                    new { chatId, senderId = userId });
             }
         }
     }

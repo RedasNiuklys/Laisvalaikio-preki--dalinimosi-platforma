@@ -7,6 +7,8 @@ import axios from 'axios';
 import { BASE_URL } from '../../utils/envConfig';
 import { getAuthToken } from '../../utils/authUtils';
 import { globalStyles } from '../../styles/globalStyles';
+import UserProfileCard, { UserReputation } from '../../components/UserProfileCard';
+import { getUserById } from '../../api/userApi';
 
 interface Friend {
     id: string;
@@ -18,6 +20,7 @@ interface Friend {
 
 export const FriendProfilePage: React.FC = () => {
     const [friend, setFriend] = useState<Friend | null>(null);
+    const [reputation, setReputation] = useState<UserReputation | null>(null);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
     const router = useRouter();
@@ -31,10 +34,12 @@ export const FriendProfilePage: React.FC = () => {
         try {
             setLoading(true);
             const token = await getAuthToken();
-            const response = await axios.get(`${BASE_URL}/friendship/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setFriend(response.data);
+            const [friendResponse, userResponse] = await Promise.allSettled([
+                axios.get(`${BASE_URL}/friendship/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+                getUserById(id as string)
+            ]);
+            if (friendResponse.status === 'fulfilled') setFriend(friendResponse.value.data);
+            if (userResponse.status === 'fulfilled') setReputation(userResponse.value as UserReputation);
         } catch (error) {
             console.error('Error loading friend:', error);
         } finally {
@@ -116,6 +121,12 @@ export const FriendProfilePage: React.FC = () => {
                     {friend.email}
                 </Text>
             </View>
+
+            {reputation && (
+                <View style={{ paddingHorizontal: 16 }}>
+                    <UserProfileCard user={reputation} showReputation />
+                </View>
+            )}
 
             <View style={globalStyles.actions}>
                 <Button

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Server.Hubs;
 using Server.Models;
+using Server.Services;
 using System.Security.Claims;
 using Xunit;
 
@@ -38,7 +39,19 @@ namespace Server.Tests.Hubs
             _mockHubContext.Setup(x => x.ConnectionId).Returns(_testConnectionId);
 
             // Setup hub
-            _hub = new ChatHub(_context)
+            var hubContextMock = new Mock<IHubContext<ChatHub>>();
+            var hubClientsMock = new Mock<IHubClients>();
+            var hubClientProxyMock = new Mock<IClientProxy>();
+            hubContextMock.Setup(h => h.Clients).Returns(hubClientsMock.Object);
+            hubClientsMock.Setup(c => c.User(It.IsAny<string>())).Returns(hubClientProxyMock.Object);
+            hubClientProxyMock
+                .Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var pushService = new PushNotificationService(new Mock<System.Net.Http.IHttpClientFactory>().Object);
+            var notificationService = new NotificationService(_context, pushService, hubContextMock.Object);
+
+            _hub = new ChatHub(_context, notificationService)
             {
                 Clients = _mockClients.Object,
                 Context = _mockHubContext.Object,

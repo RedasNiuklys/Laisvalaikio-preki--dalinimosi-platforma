@@ -8,6 +8,7 @@ using Server.Models;
 using System.Security.Claims;
 using AutoMapper;
 using Server.Services.Storage;
+using Server.Services;
 using System.IO;
 
 namespace Server.Controllers
@@ -21,13 +22,20 @@ namespace Server.Controllers
         private readonly IMapper _mapper;
         private readonly IObjectStorageService _objectStorage;
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly NotificationService _notificationService;
 
-        public BookingController(ApplicationDbContext context, IMapper mapper, IObjectStorageService objectStorage, IHubContext<ChatHub> hubContext)
+        public BookingController(
+            ApplicationDbContext context,
+            IMapper mapper,
+            IObjectStorageService objectStorage,
+            IHubContext<ChatHub> hubContext,
+            NotificationService notificationService)
         {
             _context = context;
             _mapper = mapper;
             _objectStorage = objectStorage;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         private async Task SendBookingNotification(string recipientUserId, string bookingId, string status, string equipmentName)
@@ -41,6 +49,24 @@ namespace Server.Controllers
                     equipmentName,
                     message = $"Booking for \"{equipmentName}\" is now {status}"
                 });
+
+                var (title, body) = status switch
+                {
+                    "Approved" => ("Booking Approved", $"Your booking for \"{equipmentName}\" has been approved"),
+                    "Rejected" => ("Booking Declined", $"Your booking for \"{equipmentName}\" was declined"),
+                    "Picked" => ("Equipment Picked Up", $"Rental started for \"{equipmentName}\""),
+                    "Returned" or "ReturnedEarly" => ("Return Approved", $"Return of \"{equipmentName}\" has been approved"),
+                    "ReturnRequested" or "ReturnEarlyRequested" => ("Return Requested", $"A return was requested for \"{equipmentName}\""),
+                    "Planning" => ("New Booking Request", $"New booking request for \"{equipmentName}\""),
+                    _ => ("Booking Update", $"Booking for \"{equipmentName}\" is now {status}")
+                };
+
+                await _notificationService.CreateAndSendAsync(
+                    recipientUserId,
+                    NotificationType.Booking,
+                    title,
+                    body,
+                    new { bookingId, status, equipmentName });
             }
             catch (Exception ex)
             {

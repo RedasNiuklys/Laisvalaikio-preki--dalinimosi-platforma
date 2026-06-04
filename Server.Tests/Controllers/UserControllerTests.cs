@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Server.Tests.Controllers
 {
@@ -27,6 +28,7 @@ namespace Server.Tests.Controllers
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<ILogger<UserController>> _loggerMock;
+        private readonly ApplicationDbContext _dbContext;
 
         public UserControllerTests()
         {
@@ -47,12 +49,19 @@ namespace Server.Tests.Controllers
             _configurationMock.Setup(x => x["AppSettings:LocalIP"]).Returns("localhost");
             _configurationMock.Setup(x => x["AppSettings:ApiPort"]).Returns("5000");
 
+            // Create in-memory DbContext
+            var dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            _dbContext = new ApplicationDbContext(dbOptions);
+
             // Create controller instance
             _controller = new UserController(
                 _userManagerMock.Object,
                 _roleManagerMock.Object,
                 _configurationMock.Object,
-                _loggerMock.Object
+                _loggerMock.Object,
+                _dbContext
             );
 
             // Setup authorization middleware

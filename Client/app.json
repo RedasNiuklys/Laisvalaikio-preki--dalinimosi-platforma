@@ -39,7 +39,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar to save bookings."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

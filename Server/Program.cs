@@ -86,6 +86,8 @@ builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddSingleton<IFirebaseTokenVerifier, FirebaseTokenVerifier>();
 builder.Services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<PushNotificationService>();
+builder.Services.AddScoped<NotificationService>();
 
 // Configure authentication
 builder.Services.AddAuthentication(options =>

@@ -7,7 +7,7 @@ async function loginAs(page: Page, email: string, password: string) {
   await page.goto('/auth/login');
   await page.locator('input[type="email"], input[placeholder*="email" i]').first().fill(email);
   await page.locator('input[type="password"]').first().fill(password);
-  await page.getByRole('button', { name: /login|sign in/i }).click();
+  await page.getByRole('button', { name: /login|sign in/i }).first().click();
   await page.waitForURL(/equipment|tabs/, { timeout: 15000 });
 }
 

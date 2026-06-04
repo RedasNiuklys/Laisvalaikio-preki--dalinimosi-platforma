@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using AutoMapper;
 using Moq;
 using Server.Services.Storage;
+using Server.Services;
 using System.IO;
 using Microsoft.AspNetCore.SignalR;
 using Server.Hubs;
@@ -44,7 +45,11 @@ namespace Server.Tests.Controllers
                 .Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
-            _controller = new BookingController(_context, _mapper, _objectStorageMock.Object, _hubContextMock.Object);
+            var pushNotificationService = new PushNotificationService(
+                new Moq.Mock<System.Net.Http.IHttpClientFactory>().Object);
+            var notificationService = new NotificationService(_context, pushNotificationService, _hubContextMock.Object);
+
+            _controller = new BookingController(_context, _mapper, _objectStorageMock.Object, _hubContextMock.Object, notificationService);
 
             SetCurrentUser(_currentUserId);
 

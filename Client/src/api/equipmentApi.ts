@@ -10,6 +10,9 @@ export interface EquipmentFilterParams {
     isAvailable?: boolean;
     startDate?: string; // ISO date string YYYY-MM-DD
     endDate?: string;   // ISO date string YYYY-MM-DD
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
 }
 
 export const getAll = async (filters?: EquipmentFilterParams): Promise<Equipment[]> => {
@@ -22,6 +25,9 @@ export const getAll = async (filters?: EquipmentFilterParams): Promise<Equipment
         if (filters?.isAvailable != null) params.isAvailable = String(filters.isAvailable);
         if (filters?.startDate) params.startDate = filters.startDate;
         if (filters?.endDate) params.endDate = filters.endDate;
+        if (filters?.latitude != null) params.latitude = String(filters.latitude);
+        if (filters?.longitude != null) params.longitude = String(filters.longitude);
+        if (filters?.radiusKm != null) params.radiusKm = String(filters.radiusKm);
 
         const response = await axios.get(EQUIPMENT_ENDPOINT, {
             headers: {

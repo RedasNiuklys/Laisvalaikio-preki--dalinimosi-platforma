@@ -54,6 +54,7 @@ import LanguageToggle from "@/src/components/LanguageToggle";
 import { spacing } from "@/src/styles/globalStyles";
 import { chatService } from "@/src/services/ChatService";
 import { showToast } from "@/src/components/Toast";
+import * as Notifications from "expo-notifications";
 
 const styles = StyleSheet.create({
   authHeader: {
@@ -85,6 +86,25 @@ function NavigationStack() {
     });
     return unsubscribe;
   }, [isAuthenticated]);
+
+  // Show toast for foreground push notifications
+  useEffect(() => {
+    const sub = Notifications.addNotificationReceivedListener((notification) => {
+      const { title, body } = notification.request.content;
+      if (title || body) showToast("info", body ?? title ?? "");
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Deep-link from notification tap
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as any;
+      if (data?.chatId) router.push({ pathname: "/(modals)/chat/[id]", params: { id: String(data.chatId) } } as any);
+      else if (data?.bookingId && data?.equipmentId) router.push({ pathname: "/equipment/details/[id]", params: { id: data.equipmentId } } as any);
+    });
+    return () => sub.remove();
+  }, [router]);
 
   useEffect(() => {
     if (!navigationReady) return;

@@ -1,9 +1,29 @@
 // context/AuthContext.tsx
 import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import { Platform } from "react-native";
 import { AuthContextType } from "../types/AuthContextType";
 import { authApi } from "../api/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/User";
+import { updatePushToken } from "../api/userApi";
+
+async function registerPushToken() {
+  if (Platform.OS === "web") return;
+  try {
+    const { default: Notifications } = await import("expo-notifications");
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") return;
+    const tokenData = await Notifications.getExpoPushTokenAsync();
+    await updatePushToken(tokenData.data);
+  } catch (err) {
+    console.warn("Push token registration failed:", err);
+  }
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -103,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(storedToken);
         setIsAuthenticated(true);
         setAuthProvider("Email");
+        registerPushToken();
         console.log("AuthContext: ✓ User loaded and authenticated");
       } catch (userError) {
         console.error("AuthContext: ❌ Failed to load user after login:", userError);
@@ -143,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(storedToken);
         setIsAuthenticated(true);
         setAuthProvider("Email");
+        registerPushToken();
         console.log("AuthContext: ✓ User loaded and authenticated");
       } catch (userError) {
         console.error("AuthContext: ❌ Failed to load user after register:", userError);
@@ -202,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(storedToken);
         setIsAuthenticated(true);
         setAuthProvider(provider);
+        registerPushToken();
         console.log("AuthContext: ✓ User loaded and authenticated via OAuth");
       } catch (userError) {
         console.error("AuthContext: ❌ Failed to load user after OAuth:", userError);

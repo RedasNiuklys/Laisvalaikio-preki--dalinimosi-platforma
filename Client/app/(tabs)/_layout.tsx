@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/src/context/AuthContext";
 import { isSingleAdminUser } from "@/src/utils/adminAccess";
+import { getNotifications } from "@/src/api/notificationApi";
 
 export default function TabLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const canAccessAdmin = isSingleAdminUser(user);
 
   useEffect(() => {
@@ -29,6 +31,13 @@ export default function TabLayout() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    getNotifications(1, 1)
+      .then(data => setUnreadNotifications(data.unreadCount))
+      .catch(() => {});
+  }, [isAuthenticated]);
 
   
   return (
@@ -94,6 +103,16 @@ export default function TabLayout() {
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="chat" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="notifications"
+          options={{
+            title: t("notificationCenter.title"),
+            tabBarBadge: unreadNotifications > 0 ? unreadNotifications : undefined,
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="bell" size={size} color={color} />
             ),
           }}
         />

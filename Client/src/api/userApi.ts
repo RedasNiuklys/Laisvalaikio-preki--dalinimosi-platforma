@@ -83,6 +83,17 @@ export const updateUserThemePreference = async (themePreference: string) => {
   }
 };
 
+export const updatePushToken = async (pushToken: string) => {
+  try {
+    const token = await AsyncStorage.getItem('firebaseToken');
+    await axios.patch(`${apiUrl}/push-token`, { pushToken }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (error) {
+    console.error('Error updating push token:', error);
+  }
+};
+
 export const deleteUser = async (userId: number) => {
   try {
     const token = await AsyncStorage.getItem('firebaseToken');

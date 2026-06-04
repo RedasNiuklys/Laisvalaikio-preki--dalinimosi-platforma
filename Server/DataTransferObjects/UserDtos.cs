@@ -12,6 +12,18 @@ public class UserDto
     public string? Theme { get; set; }
     public string? AvatarUrl { get; set; }
     public IList<string>? Roles { get; set; }
+    // Reputation fields
+    public int CompletedBookingsCount { get; set; }
+    public int LentOutCount { get; set; }
+    public double AverageRatingAsOwner { get; set; }
+    public DateTime? MemberSince { get; set; }
+    // Notification count (profile endpoint only)
+    public int UnreadNotificationsCount { get; set; }
+}
+
+public class PushTokenDto
+{
+    public required string PushToken { get; set; }
 }
 
 public class UpdateUserDto
