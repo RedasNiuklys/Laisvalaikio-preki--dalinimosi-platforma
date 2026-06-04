@@ -130,4 +130,47 @@ describe('DateSelector', () => {
     // onDateSelect called with same date for start and end (or not called if overlap guard fires)
     // We only assert it does not throw
   });
+
+  it('renders with an initial date', () => {
+    expect(() =>
+      render(
+        <DateSelector equipmentId="eq-1" onDateSelect={mockOnDateSelect} initialDate={new Date('2027-08-01')} />,
+        { wrapper: Wrapper }
+      )
+    ).not.toThrow();
+  });
+
+  it('renders with both initialStartDate and initialEndDate', () => {
+    expect(() =>
+      render(
+        <DateSelector
+          equipmentId="eq-1"
+          onDateSelect={mockOnDateSelect}
+          initialStartDate={new Date('2027-08-01')}
+          initialEndDate={new Date('2027-08-05')}
+        />,
+        { wrapper: Wrapper }
+      )
+    ).not.toThrow();
+  });
+
+  it('long-pressing a calendar day does not throw', () => {
+    const { getByTestId } = render(
+      <DateSelector equipmentId="eq-1" onDateSelect={mockOnDateSelect} />,
+      { wrapper: Wrapper }
+    );
+    expect(() => fireEvent(getByTestId('calendar-day'), 'longPress')).not.toThrow();
+  });
+
+  it('usedDates resolving covers date marking branch', async () => {
+    const { getUsedDatesForEquipment } = require('@/src/api/usedDatesApi');
+    getUsedDatesForEquipment.mockResolvedValue([
+      { startDate: '2027-07-10', endDate: '2027-07-12' },
+    ]);
+    const { getByTestId } = render(
+      <DateSelector equipmentId="eq-1" onDateSelect={mockOnDateSelect} />,
+      { wrapper: Wrapper }
+    );
+    expect(getByTestId('calendar-component')).toBeTruthy();
+  });
 });

@@ -38,6 +38,7 @@ jest.mock('react-native-toast-message', () => {
 });
 
 import { AuthProvider } from '@/src/context/AuthContext';
+import * as AuthContextModule from '@/src/context/AuthContext';
 import { ThemeProvider } from '@/src/context/ThemeContext';
 import BookingsListModal from '@/src/components/BookingsListModal';
 import { BookingStatus } from '@/src/types/Booking';
@@ -124,5 +125,221 @@ describe('BookingsListModal', () => {
         { wrapper: Wrapper }
       )
     ).not.toThrow();
+  });
+
+  it('renders with initialBookingId filtering', () => {
+    expect(() =>
+      render(
+        <BookingsListModal {...baseProps} initialBookingId="b1" />,
+        { wrapper: Wrapper }
+      )
+    ).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Helper to set up the owner user in AuthContext
+// ---------------------------------------------------------------------------
+const OWNER_ID = 'owner-1';
+const ownerAuthValue = {
+  user: { id: OWNER_ID, firstName: 'Owner', lastName: 'User', userName: 'owner', email: 'owner@test.com' },
+  isAuthenticated: true,
+  authProvider: '',
+  token: 'tok',
+  loadUser: jest.fn().mockResolvedValue(undefined),
+  login: jest.fn(),
+  logout: jest.fn(),
+  register: jest.fn(),
+} as any;
+
+const makeB = (id: string, status: BookingStatus, userId = 'user-1', opts: any = {}) => ({
+  id,
+  equipmentId: 'eq-1',
+  userId,
+  startDateTime: '2026-07-01T12:00:00',
+  endDateTime: opts.pastEnd ? '2020-01-01T12:00:00' : '2099-07-10T12:00:00',
+  status,
+  createdAt: '2026-01-01',
+  returnPhotoUrl: opts.returnPhotoUrl || null,
+  ...opts,
+});
+
+describe('BookingsListModal — owner view (isOwner=true)', () => {
+  let spy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useRealTimers();
+    spy = jest.spyOn(AuthContextModule, 'useAuth').mockReturnValue(ownerAuthValue);
+  });
+
+  afterEach(() => {
+    spy.mockRestore();
+    jest.useFakeTimers();
+  });
+
+  it('renders approve/reject actions for Pending booking when isOwner', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.Pending)]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.approve')).toBeTruthy();
+    expect(getByText('booking.actions.reject')).toBeTruthy();
+  });
+
+  it('renders cancel action for Approved booking when isOwner', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.Approved)]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.cancel')).toBeTruthy();
+  });
+
+  it('renders approveReturn/rejectReturn for ReturnRequested booking when isOwner', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.ReturnRequested)]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.approveReturn')).toBeTruthy();
+    expect(getByText('booking.actions.rejectReturn')).toBeTruthy();
+  });
+
+  it('renders approveReturn/rejectReturn for ReturnEarlyRequested booking when isOwner', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.ReturnEarlyRequested)]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.approveReturn')).toBeTruthy();
+  });
+
+  it('shows filter toggle button when isOwner', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.Pending)]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.filters.button')).toBeTruthy();
+  });
+
+  it('renders viewReturnPhoto action when booking has returnPhotoUrl', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[makeB('b1', BookingStatus.Returned, 'user-1', { returnPhotoUrl: 'http://test.com/photo.jpg' })]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.viewReturnPhoto')).toBeTruthy();
+  });
+
+  it('hides past bookings by default when isOwner (hidePastBookings branch)', () => {
+    const pastBooking = makeB('b-past', BookingStatus.Returned, 'user-1', { pastEnd: true });
+    const futureBooking = makeB('b-future', BookingStatus.Pending);
+    const { getAllByTestId } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId={OWNER_ID}
+        bookings={[pastBooking, futureBooking]}
+      />,
+      { wrapper: Wrapper }
+    );
+    // Future booking card shown, past booking filtered out
+    expect(getAllByTestId(/booking-card/).length).toBe(1);
+  });
+});
+
+describe('BookingsListModal — booking creator view', () => {
+  let spy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useRealTimers();
+    spy = jest.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      ...ownerAuthValue,
+      user: { id: 'user-1', firstName: 'Creator', userName: 'creator', email: 'c@test.com' },
+    });
+  });
+
+  afterEach(() => {
+    spy.mockRestore();
+    jest.useFakeTimers();
+  });
+
+  it('renders pickUp action for Approved booking when user is creator', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId="other-owner"
+        bookings={[makeB('b1', BookingStatus.Approved, 'user-1')]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.pickUp')).toBeTruthy();
+  });
+
+  it('renders submit action for Planning booking when user is creator', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId="other-owner"
+        bookings={[makeB('b1', BookingStatus.Planning, 'user-1')]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.submit')).toBeTruthy();
+  });
+
+  it('renders early return action for Picked booking with future end date', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId="other-owner"
+        bookings={[makeB('b1', BookingStatus.Picked, 'user-1')]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.requestEarlyReturn')).toBeTruthy();
+  });
+
+  it('renders regular return action for Picked booking with past end date', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId="other-owner"
+        bookings={[makeB('b1', BookingStatus.Picked, 'user-1', { pastEnd: true })]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.requestReturn')).toBeTruthy();
+  });
+
+  it('renders viewReturnPhoto for creator when booking has returnPhotoUrl', () => {
+    const { getByText } = render(
+      <BookingsListModal
+        {...baseProps}
+        equipmentOwnerId="other-owner"
+        bookings={[makeB('b1', BookingStatus.Returned, 'user-1', { returnPhotoUrl: 'http://test.com/p.jpg' })]}
+      />,
+      { wrapper: Wrapper }
+    );
+    expect(getByText('booking.actions.viewReturnPhoto')).toBeTruthy();
   });
 });

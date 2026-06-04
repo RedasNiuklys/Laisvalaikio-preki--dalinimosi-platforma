@@ -3,6 +3,7 @@
 *.ppk
 *.pfx
 *.cer
+Client/coverage*
 Server/certs/
 Server/bin/
 Server/obj/

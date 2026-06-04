@@ -138,3 +138,116 @@ describe('ChatService', () => {
     expect(cb).not.toHaveBeenCalled();
   });
 });
+
+describe('ChatService — extended branch coverage', () => {
+  it('does not connect when getAuthToken returns null', async () => {
+    const { getAuthToken } = require('@/src/utils/authUtils');
+    getAuthToken.mockResolvedValue(null);
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await fresh.ensureInitialized();
+    // No connection established → still Disconnected
+    expect(fresh.getConnectionState()).toBe('Disconnected');
+  });
+
+  it('disconnect stops the hub connection', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await fresh.ensureInitialized();
+    await fresh.disconnect();
+    expect(fresh.getConnectionState()).toBe('Disconnected');
+  });
+
+  it('disconnect is a no-op when not connected', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await expect(fresh.disconnect()).resolves.toBeUndefined();
+  });
+
+  it('markAsRead converts number messageId to string', async () => {
+    await chatService.ensureInitialized();
+    const mockHub = getMockHub();
+    await chatService.markAsRead(42);
+    expect(mockHub.invoke).toHaveBeenCalledWith('MarkAsRead', '42');
+  });
+
+  it('joinChat with string chatId converts to number', async () => {
+    await chatService.ensureInitialized();
+    const mockHub = getMockHub();
+    await chatService.joinChat('7');
+    expect(mockHub.invoke).toHaveBeenCalledWith('JoinChat', 7);
+  });
+
+  it('leaveChat with string chatId converts to number', async () => {
+    await chatService.ensureInitialized();
+    const mockHub = getMockHub();
+    await chatService.leaveChat('8');
+    expect(mockHub.invoke).toHaveBeenCalledWith('LeaveChat', 8);
+  });
+
+  it('waitForConnection returns a boolean', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    const result = await fresh.waitForConnection(50);
+    expect(typeof result).toBe('boolean');
+  });
+
+  it('sendMessageToAPI sends via hub invoke', async () => {
+    await chatService.ensureInitialized();
+    const mockHub = getMockHub();
+    await chatService.sendMessageToAPI(3, 'api msg');
+    expect(mockHub.invoke).toHaveBeenCalledWith('SendMessage', 3, 'api msg');
+  });
+
+  it('sendMessageToAPI throws when hub is not initialised', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    // Do NOT call ensureInitialized → hubConnection stays null
+    // Manually set initialized so ensureInitialized inside sendMessageToAPI is skipped:
+    // We can't easily do this, so we use the no-token path to stay disconnected
+    const { getAuthToken } = require('@/src/utils/authUtils');
+    getAuthToken.mockResolvedValue(null);
+    const { chatService: noConnService } = require('@/src/services/ChatService');
+    await noConnService.ensureInitialized(); // token null → no hub
+    await expect(noConnService.sendMessageToAPI(1, 'x')).rejects.toThrow('SignalR connection not established');
+  });
+
+  it('getMessages fetches messages from API on success', async () => {
+    const mockJson = jest.fn().mockResolvedValue([{ id: '1', content: 'hi' }]);
+    (global as any).fetch = jest.fn().mockResolvedValue({ ok: true, json: mockJson });
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    const messages = await fresh.getMessages(1);
+    expect(Array.isArray(messages)).toBe(true);
+    delete (global as any).fetch;
+  });
+
+  it('getMessages throws when response is not ok', async () => {
+    (global as any).fetch = jest.fn().mockResolvedValue({ ok: false });
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await expect(fresh.getMessages(1)).rejects.toThrow('Failed to fetch messages');
+    delete (global as any).fetch;
+  });
+
+  it('subscribeToMessages returns an unsubscribe handle', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await fresh.ensureInitialized();
+    const cb = jest.fn();
+    const sub = fresh.subscribeToMessages(1, cb);
+    expect(typeof sub.unsubscribe).toBe('function');
+    sub.unsubscribe();
+  });
+
+  it('getConnectionState returns Connected when hub is initialized', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await fresh.ensureInitialized();
+    // mock hub state is 'Connected' per __mocks__/@microsoft/signalr.js
+    expect(fresh.getConnectionState()).toBe('Connected');
+  });
+
+  it('subscribeToMessages unsubscribe calls off on the connected hub', async () => {
+    const { chatService: fresh } = require('@/src/services/ChatService');
+    await fresh.ensureInitialized();
+    const cb = jest.fn();
+    const sub = fresh.subscribeToMessages(1, cb);
+    sub.unsubscribe();
+    // Get the same fresh @microsoft/signalr mock used by fresh service
+    const { HubConnectionBuilder: FreshBuilder } = require('@microsoft/signalr');
+    const freshHub = new FreshBuilder().build();
+    expect(freshHub.off).toHaveBeenCalled();
+  });
+});

@@ -121,4 +121,32 @@ describe('BookingsCalendar', () => {
       render(<BookingsCalendar bookings={bookings} />, { wrapper: Wrapper })
     ).not.toThrow();
   });
+
+  it('marks ReturnRequested booking dates in calendar', () => {
+    const bookings = [makeBooking('b8', BookingStatus.ReturnRequested, '2026-09-01T12:00:00', '2026-09-03T12:00:00')];
+    const { getByTestId } = render(<BookingsCalendar bookings={bookings} />, { wrapper: Wrapper });
+    const markedCount = parseInt(getByTestId('marked-count').props.children, 10);
+    expect(markedCount).toBeGreaterThan(0);
+  });
+
+  it('marks ReturnEarlyRequested booking dates in calendar', () => {
+    const bookings = [makeBooking('b9', BookingStatus.ReturnEarlyRequested, '2026-09-05T12:00:00', '2026-09-07T12:00:00')];
+    const { getByTestId } = render(<BookingsCalendar bookings={bookings} />, { wrapper: Wrapper });
+    const markedCount = parseInt(getByTestId('marked-count').props.children, 10);
+    expect(markedCount).toBeGreaterThan(0);
+  });
+
+  it('marks Planning booking dates in calendar', () => {
+    const bookings = [makeBooking('b10', BookingStatus.Planning, '2026-10-01T12:00:00', '2026-10-02T12:00:00')];
+    const { getByTestId } = render(<BookingsCalendar bookings={bookings} />, { wrapper: Wrapper });
+    const markedCount = parseInt(getByTestId('marked-count').props.children, 10);
+    expect(markedCount).toBeGreaterThan(0);
+  });
+
+  it('renders booking spanning multiple months correctly', () => {
+    const bookings = [makeBooking('b11', BookingStatus.Approved, '2026-07-28T12:00:00', '2026-08-02T12:00:00')];
+    const { getByTestId } = render(<BookingsCalendar bookings={bookings} />, { wrapper: Wrapper });
+    const markedCount = parseInt(getByTestId('marked-count').props.children, 10);
+    expect(markedCount).toBeGreaterThan(0);
+  });
 });
