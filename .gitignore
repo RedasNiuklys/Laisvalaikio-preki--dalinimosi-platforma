@@ -10,6 +10,7 @@ Server/obj/
 Server/**/bin/
 Server/**/obj/
 **/bin/
+Office_stuff/*.md
 **/obj/
 ./.expo/
 node_modules/

@@ -16,6 +16,7 @@ const googleMapsApiKey =
   appJson.expo.android?.config?.googleMaps?.apiKey ||
   '';
 
+  
 module.exports = ({ config }) => {
   const mergedAndroid = {
     ...(appJson.expo.android || {}),
