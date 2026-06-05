@@ -43,7 +43,7 @@
     "@react-native-picker/picker": "2.11.4",
     "@types/signalr": "^2.4.3",
     "axios": "^1.16.1",
-    "babel-preset-expo": "^56.0.14",
+    "babel-preset-expo": "~55.0.8",
     "date-fns": "^4.1.0",
     "expo": "^55.0.26",
     "expo-auth-session": "^55.0.6",
